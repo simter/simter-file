@@ -1,0 +1,13 @@
+#### Development Environment ####
+spring:
+  main:
+    banner-mode: 'console'
+logging:
+  file: target/app.log
+  level: # one of TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
+    root: WARN
+    org.springframework: WARN
+    org.springframework.web: WARN
+    org.springframework.boot: WARN
+    org.springframework.boot.web.embedded.netty.NettyWebServer: INFO # server port
+    tech.simter.file.starter: DEBUG

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>tech.simter</groupId>
+    <artifactId>simter-build</artifactId>
+    <version>0.4.0</version>
+    <!-- lookup parent from repository -->
+    <relativePath/>
+  </parent>
+  <artifactId>simter-file-build</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
+  <description>Simter File Build</description>
+  <properties>
+    <revision>0.1.0-SNAPSHOT</revision>
+    <simter.version>0.4.0</simter.version>
+    <!-- kotlin -->
+    <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
+    <kotlin.version>1.2.10</kotlin.version>
+    <!-- spring-boot -->
+    <spring-boot.version>2.0.0.M7</spring-boot.version>
+    <!-- junit -->
+    <junit.platform.version>1.0.2</junit.platform.version>
+    <junit.jupiter.version>5.0.2</junit.jupiter.version>
+  </properties>
+  <modules>
+    <module>simter-file-dependencies</module>
+    <module>simter-file-parent</module>
+    <module>simter-file-data</module>
+    <module>simter-file-starter</module>
+  </modules>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+              <flattenedPomFilename>flattened-pom.xml</flattenedPomFilename>
+              <updatePomFile>true</updatePomFile>
+              <flattenMode>oss</flattenMode>
+              <pomElements>
+                <parent>remove</parent>
+                <modules>keep</modules>
+                <properties>interpolate</properties>
+              </pomElements>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <url>https://github.com/simter/simter-file</url>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+  <scm>
+    <url>https://github.com/simter/simter-file.git</url>
+  </scm>
+  <organization>
+    <name>simter</name>
+    <url>https://github.com/simter</url>
+  </organization>
+  <developers>
+    <developer>
+      <name>RJ.Hwang</name>
+      <email>rongjihuang@gmail.com</email>
+    </developer>
+  </developers>
+  <issueManagement>
+    <system>github</system>
+    <url>https://github.com/simter/simter-file/issues</url>
+  </issueManagement>
+</project>

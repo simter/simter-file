@@ -1,0 +1,7 @@
+server:
+  contextPath: /
+  port: ${port:9013}
+  server-header: @project.artifactId@-@project.version@
+spring:
+  profiles:
+    active: @spring-active-profiles@
