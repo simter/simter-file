@@ -35,6 +35,7 @@
   <build>
     <pluginManagement>
       <plugins>
+        <!-- https://kotlinlang.org/docs/reference/compiler-plugins.html#using-in-maven -->
         <plugin>
           <groupId>org.jetbrains.kotlin</groupId>
           <artifactId>kotlin-maven-plugin</artifactId>
@@ -57,7 +58,27 @@
           </executions>
           <configuration>
             <jvmTarget>${java.version}</jvmTarget>
+            <compilerPlugins>
+              <!-- for the Spring support -->
+              <plugin>spring</plugin>
+              <!-- for the JPA support -->
+              <plugin>jpa</plugin>
+            </compilerPlugins>
           </configuration>
+          <dependencies>
+            <!-- https://kotlinlang.org/docs/reference/compiler-plugins.html#all-open-compiler-plugin -->
+            <dependency>
+              <groupId>org.jetbrains.kotlin</groupId>
+              <artifactId>kotlin-maven-allopen</artifactId>
+              <version>${kotlin.version}</version>
+            </dependency>
+            <!-- https://kotlinlang.org/docs/reference/compiler-plugins.html#no-arg-compiler-plugin -->
+            <dependency>
+              <groupId>org.jetbrains.kotlin</groupId>
+              <artifactId>kotlin-maven-noarg</artifactId>
+              <version>${kotlin.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
       </plugins>
     </pluginManagement>
