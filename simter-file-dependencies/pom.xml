@@ -27,7 +27,7 @@
       </dependency>
       <dependency>
         <groupId>tech.simter</groupId>
-        <artifactId>simter-file-server-api</artifactId>
+        <artifactId>simter-file-starter</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>
