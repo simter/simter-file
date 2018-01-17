@@ -13,6 +13,8 @@ import javax.persistence.Id
 data class Attachment(
   /** UUID */
   @Column(length = 36) @Id val id: String? = null,
+  /** The relative path that store the actual physical file */
+  val path: String,
   /** File name without extension */
   val name: String,
   /** File extension without dot symbol */
