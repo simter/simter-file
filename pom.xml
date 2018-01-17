@@ -29,6 +29,7 @@
     <module>simter-file-dependencies</module>
     <module>simter-file-parent</module>
     <module>simter-file-data</module>
+    <module>simter-file-rest-webflux</module>
     <module>simter-file-starter</module>
   </modules>
   <build>
