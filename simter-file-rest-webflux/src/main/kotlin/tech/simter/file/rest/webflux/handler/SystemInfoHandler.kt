@@ -22,27 +22,27 @@ import java.time.ZoneId
  */
 @Component
 class SystemInfoHandler @Autowired constructor(
-  gitProperties: GitProperties,
-  buildProperties: BuildProperties
+  gitProperties: GitProperties?,
+  buildProperties: BuildProperties?
 ) : HandlerFunction<ServerResponse> {
 
   private var systemInfo = linkedMapOf(
-    "gitBranch" to gitProperties.branch,
-    "gitCommitTime" to OffsetDateTime.ofInstant(gitProperties.commitTime.toInstant(), ZoneId.systemDefault()).toString(),
-    "gitCommitId" to gitProperties.commitId,
-    "gitShortCommitId" to gitProperties.shortCommitId,
-    "gitDirty" to java.lang.Boolean(gitProperties.get("dirty")),
+    "gitBranch" to gitProperties?.branch,
+    "gitCommitTime" to if (gitProperties != null) OffsetDateTime.ofInstant(gitProperties.commitTime.toInstant(), ZoneId.systemDefault()).toString() else null,
+    "gitCommitId" to gitProperties?.commitId,
+    "gitShortCommitId" to gitProperties?.shortCommitId,
+    "gitDirty" to if (gitProperties != null) java.lang.Boolean(gitProperties.get("dirty")) else null,
 
-    "projectName" to buildProperties.name,
-    "projectDescription" to buildProperties.get("description"),
-    "projectGroupId" to buildProperties.group,
-    "projectGroupId" to buildProperties.group,
-    "projectArtifactId" to buildProperties.artifact,
-    "projectVersion" to buildProperties.version,
-    "projectSimterVersion" to buildProperties.get("simter.version"),
-    "projectJavaTarget" to buildProperties.get("java.target"),
+    "projectName" to buildProperties?.name,
+    "projectDescription" to buildProperties?.get("description"),
+    "projectGroupId" to buildProperties?.group,
+    "projectGroupId" to buildProperties?.group,
+    "projectArtifactId" to buildProperties?.artifact,
+    "projectVersion" to buildProperties?.version,
+    "projectSimterVersion" to buildProperties?.get("simter.version"),
+    "projectJavaTarget" to buildProperties?.get("java.target"),
 
-    "projectBuildTime" to OffsetDateTime.ofInstant(buildProperties.time.toInstant(), ZoneId.systemDefault()).toString(),
+    "projectBuildTime" to if (buildProperties != null) OffsetDateTime.ofInstant(buildProperties.time.toInstant(), ZoneId.systemDefault()).toString() else null,
     "projectStartTime" to OffsetDateTime.now().toString()
   )
 
