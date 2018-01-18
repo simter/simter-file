@@ -128,6 +128,7 @@
         <executions>
           <execution>
             <id>get-the-git-infos</id>
+            <phase>process-sources</phase>
             <goals>
               <goal>revision</goal>
             </goals>
