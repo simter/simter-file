@@ -1,6 +1,7 @@
 package tech.simter.file.service
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
@@ -10,6 +11,7 @@ import tech.simter.file.po.Attachment
  *
  * @author cjw
  */
+@Component
 class AttachmentServiceImpl : AttachmentService {
   @Autowired lateinit var attachmentDao: AttachmentDao
 
