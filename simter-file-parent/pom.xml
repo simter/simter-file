@@ -40,6 +40,21 @@
       <!-- simter base modules -->
       <dependency>
         <groupId>tech.simter</groupId>
+        <artifactId>simter-test</artifactId>
+        <version>${simter.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>tech.simter</groupId>
+            <artifactId>simter-rest-jaxrs</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>tech.simter</groupId>
+            <artifactId>simter-rest-jaxrs-jersey</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>tech.simter</groupId>
         <artifactId>simter-dependencies</artifactId>
         <version>${simter.version}</version>
         <type>pom</type>
