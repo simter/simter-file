@@ -2,12 +2,37 @@
 spring:
   main:
     banner-mode: 'off'
+  datasource:
+    initialize: ${db.init:true} # true for use schema-{x}.sql、data-{x}.sql to initialize database
+  jpa:
+    hibernate.ddl-auto: create-drop  # none | create | create-drop | update | validate
 logging:
   file: target/app.log
   level: # one of TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
     root: WARN
+
+    #---- simter ----#
+    tech.simter.file.starter: INFO
+
+    #---- spring ----#
     org.springframework: WARN
     org.springframework.web: WARN
+    org.springframework.jdbc: INFO
+
+    #---- spring-boot ----#
     org.springframework.boot: WARN
     org.springframework.boot.web.embedded.netty.NettyWebServer: INFO # server port
-    tech.simter.file.starter: DEBUG
+
+    #---- spring reactive ----#
+    org.springframework.http.client.reactive: DEBUG
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+
+    #---- hibernate sql ----#
+    org.hibernate.SQL: DEBUG                                  # DEBUG for log by logger
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE # TRACE for show sql param value, such as 'binding parameter [N] as [SQL-TYPE] - [VALUE]'
+
+    #---- hibernate jpql ----#
+    #org.hibernate.engine.query.spi.HQLQueryPlan: TRACE   # TRACE for show jpql
+    #org.hibernate.engine.spi.QueryParameters: TRACE      # TRACE for show jpql query parameter
+    #org.hibernate.type.descriptor.converter.AttributeConverterSqlTypeDescriptorAdapter: DEBUG # DEBUG for value convert, such as 'Converted value on binding : Enabled -> 2'

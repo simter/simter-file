@@ -5,3 +5,8 @@ server:
 spring:
   profiles:
     active: @spring-active-profiles@
+  datasource:
+    username: ${db.username:file}
+    password: ${db.password:password}
+    continue-on-error: false
+    sql-script-encoding: UTF-8

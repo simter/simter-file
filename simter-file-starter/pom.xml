@@ -161,6 +161,78 @@
         <spring-active-profiles>prod</spring-active-profiles>
       </properties>
     </profile>
+    <profile>
+      <!-- development environment: spring-boot + webflux + hibernate-jpa + hsql) -->
+      <id>dev-hsql</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <spring-active-profiles>dev,db-hsql</spring-active-profiles>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>tech.simter</groupId>
+          <artifactId>simter-file-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hibernate.javax.persistence</groupId>
+          <artifactId>hibernate-jpa-2.1-api</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-entitymanager</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hsqldb</groupId>
+          <artifactId>hsqldb</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <!-- development environment: spring-boot + webflux + hibernate-jpa + postgres) -->
+      <id>dev-postgres</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <spring-active-profiles>dev,db-postgres</spring-active-profiles>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>tech.simter</groupId>
+          <artifactId>simter-file-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hibernate.javax.persistence</groupId>
+          <artifactId>hibernate-jpa-2.1-api</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-entitymanager</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.hibernate</groupId>
+          <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
   <url>https://github.com/simter/simter-file</url>
   <licenses>
