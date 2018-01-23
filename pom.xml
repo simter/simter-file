@@ -24,6 +24,7 @@
     <!-- junit -->
     <junit.platform.version>1.0.2</junit.platform.version>
     <junit.jupiter.version>5.0.2</junit.jupiter.version>
+    <maven-surefire-plugin.version>2.19.1</maven-surefire-plugin.version>
   </properties>
   <modules>
     <module>simter-file-dependencies</module>
