@@ -4,6 +4,7 @@ import java.time.OffsetDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.Transient
 
 /**
  * The meta information of the upload file.
@@ -27,5 +28,5 @@ data class Attachment(
   val uploader: String) {
 
   /** File name with extension */
-  val fileName = name + "." + ext
+  @Transient val fileName = name + "." + ext
 }
