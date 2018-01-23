@@ -10,13 +10,11 @@ import tech.simter.file.po.Attachment
  * The attachment service implementation.
  *
  * @author cjw
+ * @author RJ
  */
 @Component
-class AttachmentServiceImpl : AttachmentService {
-  @Autowired lateinit var attachmentDao: AttachmentDao
-
+class AttachmentServiceImpl @Autowired constructor(val attachmentDao: AttachmentDao) : AttachmentService {
   override fun create(attachment: Mono<Attachment>): Mono<Attachment> {
-    if (attachment == null) throw IllegalArgumentException("Can't saving the null attachment!")
-    return attachmentDao.save(attachment.block())
+    return attachmentDao.save(attachment.block() as Attachment)
   }
 }
