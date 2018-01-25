@@ -37,7 +37,7 @@
   </dependencies>
   <profiles>
     <profile>
-      <id>unit-test</id>
+      <id>test</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>

@@ -13,20 +13,22 @@ import javax.persistence.Transient
 @Entity
 data class Attachment(
   /** UUID */
-  @Column(length = 36) @Id val id: String? = null,
+  @Column(nullable = false, length = 36) @Id @org.springframework.data.annotation.Id val id: String? = null,
   /** The relative path that store the actual physical file */
-  val path: String,
+  @Column(nullable = false) val path: String,
   /** File name without extension */
-  val name: String,
+  @Column(nullable = false) val name: String,
   /** File extension without dot symbol */
-  @Column(length = 10) val ext: String,
+  @Column(nullable = false, length = 10) val ext: String,
   /** The byte unit file length */
-  val size: Long,
+  @Column(nullable = false) val size: Long,
   /** Upload time */
-  val uploadOn: OffsetDateTime,
+  @Column(nullable = false) val uploadOn: OffsetDateTime,
   /** The account do the upload */
-  val uploader: String) {
+  @Column(nullable = false) val uploader: String) {
 
   /** File name with extension */
-  @Transient val fileName = name + "." + ext
+  @Transient
+  @org.springframework.data.annotation.Transient
+  val fileName = name + "." + ext
 }

@@ -10,10 +10,10 @@ import tech.simter.file.po.Attachment
  */
 interface AttachmentService {
   /**
-   * Create a given attachment entity. Use the returned instance for further operations.
+   * Create a given attachment.
    *
    * @param attachment the attachment to save
-   * @return {@link Mono} emitting the saved attachment
+   * @return [Mono] emitting the saved attachment
    */
   fun create(attachment: Mono<Attachment>): Mono<Attachment>
 }
