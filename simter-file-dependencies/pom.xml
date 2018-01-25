@@ -32,6 +32,11 @@
       </dependency>
       <dependency>
         <groupId>tech.simter</groupId>
+        <artifactId>simter-file-data-reactive-mongo</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>tech.simter</groupId>
         <artifactId>simter-file-rest-webflux</artifactId>
         <version>${revision}</version>
       </dependency>

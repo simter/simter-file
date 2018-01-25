@@ -36,3 +36,8 @@ logging:
     #org.hibernate.engine.query.spi.HQLQueryPlan: TRACE   # TRACE for show jpql
     #org.hibernate.engine.spi.QueryParameters: TRACE      # TRACE for show jpql query parameter
     #org.hibernate.type.descriptor.converter.AttributeConverterSqlTypeDescriptorAdapter: DEBUG # DEBUG for value convert, such as 'Converted value on binding : Enabled -> 2'
+
+    #---- mongo ----#
+    org.springframework.data.mongodb.core.mapping.event.LoggingEventListener: INFO
+    #org.springframework.boot.autoconfigure.mongo: INFO
+    #de.flapdoodle.embed: DEBUG # embedded mongo

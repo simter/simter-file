@@ -152,8 +152,19 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <spring-active-profiles>dev</spring-active-profiles>
+        <spring-active-profiles>dev,db-mongo</spring-active-profiles>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>tech.simter</groupId>
+          <artifactId>simter-file-data-reactive-mongo</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>de.flapdoodle.embed</groupId>
+          <artifactId>de.flapdoodle.embed.mongo</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
     </profile>
     <profile>
       <id>prod</id>
