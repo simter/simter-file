@@ -11,5 +11,5 @@ import tech.simter.file.po.Attachment
 //@RepositoryDefinition(domainClass = Attachment::class, idClass = String::class)
 interface AttachmentJpaDao : Repository<Attachment, String> {
   /** Create a new Attachment */
-  fun <S : Attachment?> save(entity: S): S
+  fun save(entity: Attachment): Attachment
 }

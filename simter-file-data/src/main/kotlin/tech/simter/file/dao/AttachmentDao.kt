@@ -1,6 +1,7 @@
 package tech.simter.file.dao
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository
+import org.springframework.data.repository.Repository
+import reactor.core.publisher.Mono
 import tech.simter.file.po.Attachment
 
 /**
@@ -8,4 +9,12 @@ import tech.simter.file.po.Attachment
  *
  * @author cjw
  */
-interface AttachmentDao : ReactiveCrudRepository<Attachment, String>
+interface AttachmentDao : Repository<Attachment, String> {
+  /**
+   * Save a given [Attachment].
+   *
+   * @param entity the attachment to save
+   * @return [Mono] emitting the saved attachment
+   */
+  fun save(entity: Attachment): Mono<Attachment>
+}
