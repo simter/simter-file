@@ -1,5 +1,6 @@
 package tech.simter.file.po
 
+import org.springframework.data.mongodb.core.mapping.Document
 import java.time.OffsetDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -11,6 +12,7 @@ import javax.persistence.Transient
  * @author RJ
  */
 @Entity
+@Document
 data class Attachment(
   /** UUID */
   @Column(nullable = false, length = 36) @Id @org.springframework.data.annotation.Id val id: String? = null,
