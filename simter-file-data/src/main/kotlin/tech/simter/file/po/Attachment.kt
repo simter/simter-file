@@ -15,7 +15,7 @@ import javax.persistence.Transient
 @Document
 data class Attachment(
   /** UUID */
-  @Column(nullable = false, length = 36) @Id @org.springframework.data.annotation.Id val id: String? = null,
+  @Column(nullable = false, length = 36) @Id @org.springframework.data.annotation.Id val id: String,
   /** The relative path that store the actual physical file */
   @Column(nullable = false) val path: String,
   /** File name without extension */

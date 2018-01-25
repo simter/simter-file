@@ -1,12 +1,12 @@
 package tech.simter.file.dao
 
 import org.springframework.data.repository.Repository
+import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import reactor.core.publisher.Mono
 import tech.simter.file.po.Attachment
 
 /**
- * Interface for generic CRUD operations on the attachment.
- *
+ * Interface for generic CRUD operations on the attachment. See [ReactiveCrudRepository].
  * @author cjw
  */
 interface AttachmentDao : Repository<Attachment, String> {
