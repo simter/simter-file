@@ -1,0 +1,13 @@
+simter.mongodb.logging-event-listener: true
+spring:
+  data:
+    mongodb:
+      host: localhost
+      database: file
+      username: file
+      password: password
+      port: 27017
+  mongodb:
+    embedded:
+      version: @mongo-embedded.version@
+      #storage.database-dir: target/mongodb
