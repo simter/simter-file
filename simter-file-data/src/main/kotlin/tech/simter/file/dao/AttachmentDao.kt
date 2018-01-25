@@ -11,6 +11,14 @@ import tech.simter.file.po.Attachment
  */
 interface AttachmentDao : Repository<Attachment, String> {
   /**
+   *  Retrieves an [Attachment] by its id.
+   *
+   *  @param id the id for matching.
+   *  @return [Mono] emitting the [Attachment] with the given id or [Mono.empty] if none found.
+   */
+  fun findById(id: String): Mono<Attachment>
+
+  /**
    * Save a given [Attachment].
    *
    * @param entity the attachment to save
