@@ -10,6 +10,14 @@ import tech.simter.file.po.Attachment
  */
 interface AttachmentService {
   /**
+   *  Get an [Attachment] by its id.
+   *
+   *  @param id the id for matching.
+   *  @return [Mono] emitting the [Attachment] with the given id or [Mono.empty] if none found.
+   */
+  fun get(id: String): Mono<Attachment>
+
+  /**
    * Create a given attachment.
    *
    * @param attachment the attachment to save
