@@ -28,6 +28,7 @@ import java.util.*
  * The handler for upload file.
  *
  * @author JF
+ * @author RJ
  */
 @Component
 class UploadFileHandler @Autowired constructor(
@@ -35,12 +36,12 @@ class UploadFileHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
 
-  override fun handle(request: ServerRequest?): Mono<ServerResponse> {
-    val requestBody = request?.bodyToFlux(Part::class.java) ?: throw IllegalArgumentException("the request body is null")
+  override fun handle(request: ServerRequest): Mono<ServerResponse> {
+    val requestBody = request.bodyToFlux(Part::class.java)
     val contentLength = request.headers().contentLength().asLong
     val id = UUID.randomUUID().toString()
     attachmentService.create(requestBody.map { part -> saveFileToLocal(part, contentLength, id) }.blockFirst()!!)
-    return ServerResponse.noContent().location(URI.create(id)).build()
+    return ServerResponse.noContent().location(URI.create("/$id")).build()
   }
 
   private fun saveFileToLocal(part: Part, contentLength: Long, id: String): Mono<Attachment> {

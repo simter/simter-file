@@ -1,4 +1,4 @@
-package tech.simter.file.rest.webflux.sample;
+package tech.simter.file.rest.webflux.handler;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,31 +24,33 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
 
 /**
- * see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/testing.html#webtestclient">WebTestClient</a>
+ * Test UploadFileHandler.
+ *
+ * @author JF
+ * @author RJ
  */
 @SpringJUnitConfig(classes = {
   WebFluxConfiguration.class, UploadFileHandler.class
 })
 @MockBean({AttachmentService.class})
-@TestPropertySource(properties = "app.file.root=/data/files")
+@TestPropertySource(properties = "app.file.root=target/files")
 class UploadFileHandlerTest {
+  private WebTestClient client;
   @Autowired
   private UploadFileHandler handler;
-  private WebTestClient client;
-
   @Autowired
   private AttachmentService service;
-
   @Value("${app.file.root}")
   private String fileRootDir;
 
@@ -58,36 +60,61 @@ class UploadFileHandlerTest {
   }
 
   @Test
-  void test() throws IOException {
+  void upload() throws IOException {
+    // mock MultipartBody
+    String name = "Sample";
+    String ext = "png";
     MultipartBodyBuilder builder = new MultipartBodyBuilder();
-    builder.part("fileData", new FileSystemResource("src/test/resources/a.png"));
+    FileSystemResource file = new FileSystemResource("src/test/resources/" + name + "." + ext);
+    builder.part("fileData", file);
     MultiValueMap<String, HttpEntity<?>> parts = builder.build();
 
-    // mock
-    Attachment attachment = new Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
-      123, OffsetDateTime.now(), "Simter");
+    // mock service return value
+    long fileSize = file.contentLength();
+    Attachment attachment = new Attachment(UUID.randomUUID().toString(), "/data", name, ext,
+      fileSize, OffsetDateTime.now(), "Simter");
     Mono<Attachment> expected = Mono.just(attachment);
     when(service.create(expected)).thenReturn(expected);
 
-    // invoke
+    // invoke request
+    LocalDateTime now = LocalDateTime.now().truncatedTo(SECONDS);
     ExchangeResult exchangeResult = client.post().uri("/")
       .contentType(MULTIPART_FORM_DATA)
-      .contentLength(50000L)
+      .contentLength(fileSize)
       .syncBody(parts)
       .exchange()
       .expectStatus().isNoContent()
       .returnResult(String.class);
 
-    // verify
-    URI uri = exchangeResult.getResponseHeaders().getLocation();
-    assert uri != null;
-    String uuid = uri.toString();
-    String yyyyMM = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
-    String localDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm"));
-    File[] files = new File(fileRootDir + "/" + yyyyMM).listFiles();
-    assert files != null;
-    assert files[0].getName().matches(localDateTime + "\\d{2}-" + uuid + ".png");
-    assert files[0].delete();
+    // 1. verify method service.create invoked
     verify(service).create(any());
+
+    // 2. verify the saved file exists
+    URI uri = exchangeResult.getResponseHeaders().getLocation();
+    assertNotNull(uri);
+    String id = uri.toString().substring(1); // get attachment id
+    String yyyyMM = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+    //String localDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm"));
+    File[] files = new File(fileRootDir + "/" + yyyyMM).listFiles();
+    assertNotNull(files);
+    assertTrue(files.length > 0);
+    File actualFile = null;
+    for (File f : files) {
+      // extract dateTime and id from fileName: yyyyMMddTHHmmss-{id}.{ext}
+      int index = f.getName().indexOf("-");
+      LocalDateTime dateTime = LocalDateTime.parse(f.getName().substring(0, index),
+        DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"));
+      String uuid = f.getName().substring(index + 1, f.getName().lastIndexOf("."));
+      if (id.equals(uuid) && !dateTime.isBefore(now)) {
+        actualFile = f;
+        break;
+      }
+    }
+    assertNotNull(actualFile);
+
+    // 3. verify the saved file size
+    assertEquals(actualFile.length(), fileSize);
+
+    // 4. TODO verify the attachment
   }
 }
