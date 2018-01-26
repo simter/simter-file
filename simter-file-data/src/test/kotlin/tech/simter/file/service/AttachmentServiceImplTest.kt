@@ -22,6 +22,23 @@ class AttachmentServiceImplTest @Autowired constructor(
   private val service: AttachmentService
 ) {
   @Test
+  fun get() {
+    // mock
+    var id: String = UUID.randomUUID().toString()
+    val attachment = Attachment(id, "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
+    val expected = Mono.just(attachment)
+    `when`(dao.findById(id)).thenReturn(expected)
+
+    // invoke
+    val actual = service.get(id)
+
+    // verify
+    StepVerifier.create(actual)
+      .expectNext(attachment)
+      .verifyComplete()
+  }
+
+  @Test
   fun create() {
     // mock
     val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
