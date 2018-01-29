@@ -23,6 +23,14 @@
         <artifactId>de.flapdoodle.embed.mongo</artifactId>
         <version>${flapdoodle-embed-mongo.version}</version>
       </dependency>
+      <!-- spring -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-framework-bom</artifactId>
+        <version>${spring.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <!-- spring-boot -->
       <dependency>
         <groupId>org.springframework.boot</groupId>
