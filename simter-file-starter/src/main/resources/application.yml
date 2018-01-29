@@ -9,7 +9,7 @@ spring:
     username: ${db.username:file}
     password: ${db.password:password}
     continue-on-error: false
-    sql-script-encoding: UTF-8    active: @spring-active-profiles@
+    sql-script-encoding: UTF-8
 app:
   file:
     root: /data/files

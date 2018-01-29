@@ -5,23 +5,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.springframework.test.web.reactive.server.ExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Mono;
 import tech.simter.file.po.Attachment;
 import tech.simter.file.rest.webflux.WebFluxConfiguration;
-import tech.simter.file.rest.webflux.handler.UploadFileHandler;
 import tech.simter.file.service.AttachmentService;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,7 +45,7 @@ import static org.springframework.http.MediaType.MULTIPART_FORM_DATA;
 @TestPropertySource(properties = "app.file.root=target/files")
 class UploadFileHandlerTest {
   private WebTestClient client;
-  @Autowired
+  @SpyBean
   private UploadFileHandler handler;
   @Autowired
   private AttachmentService service;
@@ -62,39 +60,38 @@ class UploadFileHandlerTest {
   @Test
   void upload() throws IOException {
     // mock MultipartBody
-    String name = "Sample";
-    String ext = "png";
+    String name = "logback-test";
+    String ext = "xml";
     MultipartBodyBuilder builder = new MultipartBodyBuilder();
-    FileSystemResource file = new FileSystemResource("src/test/resources/" + name + "." + ext);
+    ClassPathResource file = new ClassPathResource(name + "." + ext);
     builder.part("fileData", file);
     MultiValueMap<String, HttpEntity<?>> parts = builder.build();
 
-    // mock service return value
+    // mock service.create return value
+    String id = UUID.randomUUID().toString();
     long fileSize = file.contentLength();
-    Attachment attachment = new Attachment(UUID.randomUUID().toString(), "/data", name, ext,
+    Attachment attachment = new Attachment(id, "/data", name, ext,
       fileSize, OffsetDateTime.now(), "Simter");
-    Mono<Attachment> expected = Mono.just(attachment);
-    when(service.create(expected)).thenReturn(expected);
+    when(service.create(any())).thenReturn(Mono.just(attachment));
+
+    // mock handler.newId return value
+    when(handler.newId()).thenReturn(id);
 
     // invoke request
     LocalDateTime now = LocalDateTime.now().truncatedTo(SECONDS);
-    ExchangeResult exchangeResult = client.post().uri("/")
+    client.post().uri("/")
       .contentType(MULTIPART_FORM_DATA)
       .contentLength(fileSize)
       .syncBody(parts)
       .exchange()
       .expectStatus().isNoContent()
-      .returnResult(String.class);
+      .expectHeader().valueEquals("Location", "/" + id);
 
-    // 1. verify method service.create invoked
+    // 1. verify service.create method invoked
     verify(service).create(any());
 
     // 2. verify the saved file exists
-    URI uri = exchangeResult.getResponseHeaders().getLocation();
-    assertNotNull(uri);
-    String id = uri.toString().substring(1); // get attachment id
     String yyyyMM = now.format(DateTimeFormatter.ofPattern("yyyyMM"));
-    //String localDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmm"));
     File[] files = new File(fileRootDir + "/" + yyyyMM).listFiles();
     assertNotNull(files);
     assertTrue(files.length > 0);

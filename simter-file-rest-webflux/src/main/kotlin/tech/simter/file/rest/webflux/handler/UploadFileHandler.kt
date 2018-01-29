@@ -18,11 +18,10 @@ import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
 import java.io.File
 import java.net.URI
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.*
+
 
 /**
  * The handler for upload file.
@@ -37,31 +36,53 @@ class UploadFileHandler @Autowired constructor(
 ) : HandlerFunction<ServerResponse> {
 
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    val requestBody = request.bodyToFlux(Part::class.java)
-    val contentLength = request.headers().contentLength().asLong
-    val id = UUID.randomUUID().toString()
-    attachmentService.create(requestBody.map { part -> saveFileToLocal(part, contentLength, id) }.blockFirst()!!)
-    return ServerResponse.noContent().location(URI.create("/$id")).build()
+    return request
+      .bodyToFlux(Part::class.java)
+      .filter({ it is FilePart })
+      .map({ it as FilePart })
+      .next() // only support upload one file by this time
+      // 1. save file to disk
+      .map({ it ->
+        // convert to Attachment instance
+        val attachment = toAttachment(it.headers().contentLength, it.filename())
+
+        // save file to disk
+        val file = File("$fileRootDir/${attachment.path}")
+        val fileDir = file.parentFile
+        if (!fileDir.exists()) {
+          if (!fileDir.mkdirs())  // create file directory if not exists
+            throw IllegalAccessException("Failed to create parents dir: ${fileDir.absolutePath}")
+        }
+        if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
+
+        // save to disk
+        it.transferTo(file).then(Mono.just(attachment))
+      })
+      // 2. save attachment
+      .flatMap({ attachmentService.create(it) })
+      // 3. return response
+      .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() })
   }
 
-  private fun saveFileToLocal(part: Part, contentLength: Long, id: String): Mono<Attachment> {
-    val fileData = part as FilePart
-    val fileNameWithExt = fileData.filename()
-    val lastIndexOfPeriod = fileNameWithExt.lastIndexOf(".")
-    val fileNameWithoutExt = fileNameWithExt.substring(0, lastIndexOfPeriod)
-    val fileExt = fileNameWithExt.substring(lastIndexOfPeriod + 1, fileNameWithExt.length)
-    val fileDir = "$fileRootDir/${YearMonth.now().format(DateTimeFormatter.ofPattern("yyyyMM"))}"
-    val fileName = "${LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$fileExt"
-    val filePath = File(fileDir, fileName)
-
-    if (!File(fileDir).exists()) File(fileDir).mkdirs()
-    if (filePath.createNewFile()) {
-      fileData.transferTo(filePath)
-    }
-    return Mono.just(
-      Attachment(id, fileName, fileNameWithoutExt, fileExt, contentLength, OffsetDateTime.now(), "Simter")
+  private fun toAttachment(fileSize: Long, filename: String): Attachment {
+    val id = newId()
+    val now = OffsetDateTime.now()
+    val lastDotIndex = filename.lastIndexOf(".")
+    val ext = filename.substring(lastDotIndex + 1)
+    val path = "${now.format(DateTimeFormatter.ofPattern("yyyyMM"))}/${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$ext"
+    return Attachment(
+      id,                                     // id
+      path,                                   // relative path
+      filename.substring(0, lastDotIndex),    // name
+      ext,                                    // ext
+      fileSize,                               // file size
+      now,                                    // upload time
+      "Simter"                                // uploader
     )
   }
+
+  /** Generate a new [Attachment] id */
+  fun newId() = UUID.randomUUID().toString()
 
   /** Default router */
   fun router(): RouterFunction<ServerResponse> {
