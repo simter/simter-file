@@ -20,6 +20,10 @@ class AttachmentDaoImpl @Autowired constructor(
   val jpaDao: AttachmentJpaDao,
   @Qualifier("jpaScheduler") val scheduler: Scheduler
 ) : AttachmentDao {
+  override fun findById(id: String): Mono<Attachment> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   private fun <T> async(callable: Callable<T>): Mono<T> {
     return Mono.fromCallable(callable).publishOn(scheduler)
   }

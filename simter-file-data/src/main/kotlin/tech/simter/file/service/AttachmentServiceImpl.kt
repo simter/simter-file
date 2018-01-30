@@ -14,6 +14,10 @@ import tech.simter.file.po.Attachment
  */
 @Component
 class AttachmentServiceImpl @Autowired constructor(val attachmentDao: AttachmentDao) : AttachmentService {
+  override fun get(id: String): Mono<Attachment> {
+    return attachmentDao.findById(id)
+  }
+
   override fun create(attachment: Mono<Attachment>): Mono<Attachment> {
     return attachmentDao.save(attachment.block() as Attachment)
   }
