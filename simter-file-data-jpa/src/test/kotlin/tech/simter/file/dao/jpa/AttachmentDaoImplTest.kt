@@ -23,7 +23,7 @@ class AttachmentDaoImplTest @Autowired constructor(
   val em: EntityManager
 ) {
   @Test
-  fun test() {
+  fun save() {
     val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
     val save = dao.save(attachment)
 
@@ -37,5 +37,23 @@ class AttachmentDaoImplTest @Autowired constructor(
       em.createQuery("select a from Attachment a where id = :id")
         .setParameter("id", attachment.id).singleResult
     ).isEqualTo(attachment)
+  }
+
+  @Test
+  fun findById() {
+    // prepare data
+    val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
+    em.persist(attachment)
+    em.flush()
+    em.clear()
+
+    // verify exists
+    StepVerifier.create(dao.findById(attachment.id))
+      .expectNext(attachment)
+      .verifyComplete()
+
+    // verify not exists
+    StepVerifier.create(dao.findById(UUID.randomUUID().toString()))
+      .verifyComplete()
   }
 }
