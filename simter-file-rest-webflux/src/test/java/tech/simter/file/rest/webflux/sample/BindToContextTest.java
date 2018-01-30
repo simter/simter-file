@@ -1,6 +1,7 @@
 package tech.simter.file.rest.webflux.sample;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.info.ProjectInfoAutoConfiguration;
@@ -16,6 +17,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 /**
  * see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/testing.html#webtestclient">WebTestClient</a>
  */
+@Disabled
 @SpringJUnitConfig(classes = {
   WebFluxConfiguration.class, RouterConfiguration.class, SystemInfoHandler.class,
   ProjectInfoAutoConfiguration.class
