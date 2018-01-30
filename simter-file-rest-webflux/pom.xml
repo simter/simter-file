@@ -39,5 +39,9 @@
       <artifactId>reactor-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.synchronoss.cloud</groupId>
+      <artifactId>nio-multipart-parser</artifactId>
+    </dependency>
   </dependencies>
 </project>
