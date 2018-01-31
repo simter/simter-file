@@ -12,6 +12,14 @@
   <version>${revision}</version>
   <packaging>jar</packaging>
   <description>Simter File Server For Data API</description>
+  <properties>
+    <db.ddl-auto>none</db.ddl-auto>
+    <db.host>localhost</db.host>
+    <db.port>0</db.port>
+    <db.name>test_file</db.name>
+    <db.username>file</db.username>
+    <db.password>password</db.password>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>tech.simter</groupId>
@@ -153,6 +161,7 @@
       </activation>
       <properties>
         <spring-active-profiles>dev,db-mongo-embed</spring-active-profiles>
+        <db.name>test_file</db.name>
       </properties>
       <dependencies>
         <dependency>
@@ -169,8 +178,34 @@
     <profile>
       <id>prod</id>
       <properties>
-        <spring-active-profiles>prod</spring-active-profiles>
+        <spring-active-profiles>prod,db-mongo</spring-active-profiles>
+        <db.name>file</db.name>
+        <db.port>27017</db.port>
+        <db.uri>mongodb://${db.username}:${db.password}@${db.host}:${db.port}/${db.name}</db.uri>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>tech.simter</groupId>
+          <artifactId>simter-file-data-reactive-mongo</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>dev-mongo</id>
+      <properties>
+        <spring-active-profiles>dev,db-mongo</spring-active-profiles>
+        <db.name>test_file</db.name>
+        <db.port>27017</db.port>
+        <db.uri>mongodb://${db.host}:${db.port}/${db.name}</db.uri>
+        <db.username/>
+        <db.password/>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>tech.simter</groupId>
+          <artifactId>simter-file-data-reactive-mongo</artifactId>
+        </dependency>
+      </dependencies>
     </profile>
     <profile>
       <!-- development environment: spring-boot + webflux + hibernate-jpa + hsql) -->
@@ -180,6 +215,8 @@
       </activation>
       <properties>
         <spring-active-profiles>dev,db-hsql</spring-active-profiles>
+        <db.ddl-auto>create-drop</db.ddl-auto>
+        <db.name>test_file</db.name>
       </properties>
       <dependencies>
         <dependency>
@@ -216,6 +253,9 @@
       </activation>
       <properties>
         <spring-active-profiles>dev,db-postgres</spring-active-profiles>
+        <db.ddl-auto>create-drop</db.ddl-auto>
+        <db.name>test_file</db.name>
+        <db.port>5432</db.port>
       </properties>
       <dependencies>
         <dependency>
@@ -252,6 +292,9 @@
       </activation>
       <properties>
         <spring-active-profiles>prod,db-postgres</spring-active-profiles>
+        <db.ddl-auto>none</db.ddl-auto>
+        <db.name>file</db.name>
+        <db.port>5432</db.port>
       </properties>
       <dependencies>
         <dependency>

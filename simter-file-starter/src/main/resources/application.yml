@@ -1,3 +1,13 @@
+app:
+  file:
+    root: /data/files
+db:
+  host: @db.host@
+  port: @db.port@
+  name: @db.name@
+  username: @db.username@
+  password: @db.password@
+  ddl-auto: @db.ddl-auto@
 server:
   contextPath: /
   port: ${port:9013}
@@ -5,11 +15,3 @@ server:
 spring:
   profiles:
     active: @spring-active-profiles@
-  datasource:
-    username: ${db.username:file}
-    password: ${db.password:password}
-    continue-on-error: false
-    sql-script-encoding: UTF-8
-app:
-  file:
-    root: /data/files

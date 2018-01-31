@@ -2,10 +2,6 @@
 spring:
   main:
     banner-mode: 'off'
-  datasource:
-    initialize: ${db.init:true} # true for use schema-{x}.sql、data-{x}.sql to initialize database
-  jpa:
-    hibernate.ddl-auto: create-drop  # none | create | create-drop | update | validate
 logging:
   file: target/app.log
   level: # one of TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
