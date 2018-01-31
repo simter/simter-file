@@ -1,0 +1,6 @@
+simter.mongodb.logging-event-listener: true
+spring:
+  mongodb:
+    embedded:
+      version: @mongo-embedded.version@
+      #storage.database-dir: target/mongodb
