@@ -56,7 +56,8 @@ class UploadFileHandler @Autowired constructor(
         if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
 
         // save to disk
-        it.transferTo(file).then(Mono.just(attachment))
+        it.transferTo(file)
+          .then(Mono.just(if (attachment.size != -1L) attachment else attachment.copy(size = file.length())))
       })
       // 2. save attachment
       .flatMap({ attachmentService.create(it) })
