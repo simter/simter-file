@@ -152,7 +152,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <spring-active-profiles>dev,db-mongo</spring-active-profiles>
+        <spring-active-profiles>dev,db-mongo-embed</spring-active-profiles>
       </properties>
       <dependencies>
         <dependency>

@@ -7,7 +7,3 @@ spring:
       username: file
       password: password
       port: 27017
-  mongodb:
-    embedded:
-      version: @mongo-embedded.version@
-      #storage.database-dir: target/mongodb
