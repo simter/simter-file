@@ -1,11 +1,11 @@
 package tech.simter.file.po
 
+import jdk.nashorn.internal.ir.annotations.Ignore
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.OffsetDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
-import javax.persistence.Transient
 
 /**
  * The meta information of the upload file.
@@ -30,7 +30,7 @@ data class Attachment(
   @Column(nullable = false) val uploader: String) {
 
   /** File name with extension */
-  @Transient
+  @Ignore
   @org.springframework.data.annotation.Transient
   val fileName = name + "." + ext
 }
