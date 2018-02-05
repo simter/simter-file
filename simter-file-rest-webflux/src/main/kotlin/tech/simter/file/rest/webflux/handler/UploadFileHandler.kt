@@ -2,6 +2,7 @@ package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.codec.multipart.Part
@@ -18,6 +19,9 @@ import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
 import java.io.File
 import java.net.URI
+import java.nio.channels.AsynchronousFileChannel
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -43,43 +47,44 @@ class UploadFileHandler @Autowired constructor(
       .next() // only support upload one file by this time
       // 1. save file to disk
       .map({ it ->
-        // convert to Attachment instance
-        val attachment = toAttachment(it.headers().contentLength, it.filename())
+        // convert
+        val id = newId()
+        val now = OffsetDateTime.now()
+        val filename = it.filename()
+        val lastDotIndex = filename.lastIndexOf(".")
+        val ext = filename.substring(lastDotIndex + 1)
+        val relativePath = "${now.format(DateTimeFormatter.ofPattern("yyyyMM"))}/${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$ext"
 
-        // save file to disk
-        val file = File("$fileRootDir/${attachment.path}")
+        val file = File("$fileRootDir/$relativePath")
         val fileDir = file.parentFile
         if (!fileDir.exists()) {
           if (!fileDir.mkdirs())  // create file directory if not exists
             throw IllegalAccessException("Failed to create parents dir: ${fileDir.absolutePath}")
         }
-        if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
+        //if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
+        val toPath = Files.createFile(file.toPath())
+        val channel = AsynchronousFileChannel.open(toPath, StandardOpenOption.WRITE)
 
-        // save to disk
-        it.transferTo(file)
-          .then(Mono.just(if (attachment.size != -1L) attachment else attachment.copy(size = file.length())))
+        DataBufferUtils
+          // save to file
+          .write(it.content(), channel, 0)
+          // release data buffer
+          .map(DataBufferUtils::release)
+          // return Attachment instance
+          .then(Mono.just(Attachment(
+            id,                                     // id
+            relativePath,                           // relative path
+            filename.substring(0, lastDotIndex),    // name
+            ext,                                    // ext
+            file.length(),                          // file size
+            now,                                    // upload time
+            "Simter"                                // uploader
+          )))
       })
       // 2. save attachment
       .flatMap({ attachmentService.create(it) })
       // 3. return response
       .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() })
-  }
-
-  private fun toAttachment(fileSize: Long, filename: String): Attachment {
-    val id = newId()
-    val now = OffsetDateTime.now()
-    val lastDotIndex = filename.lastIndexOf(".")
-    val ext = filename.substring(lastDotIndex + 1)
-    val path = "${now.format(DateTimeFormatter.ofPattern("yyyyMM"))}/${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$ext"
-    return Attachment(
-      id,                                     // id
-      path,                                   // relative path
-      filename.substring(0, lastDotIndex),    // name
-      ext,                                    // ext
-      fileSize,                               // file size
-      now,                                    // upload time
-      "Simter"                                // uploader
-    )
   }
 
   /** Generate a new [Attachment] id */

@@ -2,9 +2,13 @@ package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.stereotype.Component
 import org.springframework.util.FileCopyUtils
+import org.springframework.web.reactive.function.BodyInserter
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.HandlerFunction
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.RouterFunction
@@ -41,7 +45,8 @@ class DownloadFileHandler @Autowired constructor(
           .contentType(APPLICATION_OCTET_STREAM)
           .contentLength(it.size)
           .header("Content-Disposition", "attachment; filename=\"${String(it.fileName.toByteArray(), ISO_8859_1)}\"")
-          .body(fileToByteArray("$fileRootDir/${it.path}"), ByteArray::class.java)
+          .body(BodyInserters.fromResource(FileSystemResource("$fileRootDir/${it.path}")))
+          //.body(fileToByteArray("$fileRootDir/${it.path}"), ByteArray::class.java)
       })
   }
 
