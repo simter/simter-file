@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 /**
  * Test DownloadFileHandler.
@@ -67,7 +67,7 @@ class DownloadFileHandlerTest {
     EntityExchangeResult<byte[]> result = client.get().uri("/" + id)
       .exchange()
       .expectStatus().isOk()
-      .expectHeader().valueEquals("Content-Type", APPLICATION_OCTET_STREAM_VALUE)
+      .expectHeader().valueEquals("Content-Type", APPLICATION_XML_VALUE)
       .expectHeader().valueEquals("Content-Length", String.valueOf(fileSize))
       .expectHeader().valueEquals("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
       .expectBody().returnResult();
