@@ -1,12 +1,16 @@
 package tech.simter.file.dao.jpa
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.CrudRepository
+import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.data.jpa.repository.support.SimpleJpaRepository
 import org.springframework.data.repository.Repository
 import tech.simter.file.po.Attachment
 import java.util.*
 
 /**
- * The block JPA-DAO Repository. See [CrudRepository].
+ * The block JPA-DAO Repository. See [CrudRepository], [PagingAndSortingRepository] and [SimpleJpaRepository].
  *
  * @author RJ
  */
@@ -31,4 +35,12 @@ interface AttachmentJpaDao : Repository<Attachment, String> {
    * @return the attachment with the given id or [Optional.empty] if none found
    */
   fun findById(id: String): Optional<Attachment>
+
+  /**
+   * Returns a [Page] of attachments meeting the paging restriction provided in the `Pageable` object.
+   *
+   * @param pageable page options
+   * @return a page of attachments
+   */
+  fun findAll(pageable: Pageable): Page<Attachment>
 }
