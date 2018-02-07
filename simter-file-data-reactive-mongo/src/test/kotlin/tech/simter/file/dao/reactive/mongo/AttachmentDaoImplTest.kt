@@ -1,4 +1,4 @@
-package tech.simter.file.data.reactive.mongo
+package tech.simter.file.dao.reactive.mongo
 
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

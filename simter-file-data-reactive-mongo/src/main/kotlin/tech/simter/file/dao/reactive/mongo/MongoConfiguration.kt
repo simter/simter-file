@@ -1,4 +1,4 @@
-package tech.simter.file.data.reactive.mongo
+package tech.simter.file.dao.reactive.mongo
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
