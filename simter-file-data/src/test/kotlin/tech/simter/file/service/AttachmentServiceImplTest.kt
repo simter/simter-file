@@ -42,7 +42,7 @@ class AttachmentServiceImplTest @Autowired constructor(
   }
 
   @Test
-  fun findAll() {
+  fun find() {
     // mock
     var pageable: Pageable = PageRequest.of(1, 25).first()
     var expect: Page<Attachment> = Page.empty()
