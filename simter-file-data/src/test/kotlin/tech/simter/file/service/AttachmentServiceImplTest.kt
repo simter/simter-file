@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -35,6 +38,22 @@ class AttachmentServiceImplTest @Autowired constructor(
     // verify
     StepVerifier.create(actual)
       .expectNext(attachment)
+      .verifyComplete()
+  }
+
+  @Test
+  fun findAll() {
+    // mock
+    var pageable: Pageable = PageRequest.of(1, 25).first()
+    var expect: Page<Attachment> = Page.empty()
+    `when`(dao.findAll(pageable)).thenReturn(Mono.just(expect))
+
+    // invoke
+    var actual = service.find(pageable)
+
+    // verify
+    StepVerifier.create(actual)
+      .expectNext(expect)
       .verifyComplete()
   }
 

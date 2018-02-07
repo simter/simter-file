@@ -1,5 +1,7 @@
 package tech.simter.file.service
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Mono
 import tech.simter.file.po.Attachment
 
@@ -16,6 +18,14 @@ interface AttachmentService {
    *  @return [Mono] emitting the [Attachment] with the given id or [Mono.empty] if none found.
    */
   fun get(id: String): Mono<Attachment>
+
+  /**
+   * Returns a [Page] of [Attachment]'s meeting the paging restriction provided in the [Pageable] object.
+   *
+   * @param pageable pageable options
+   * @return [Mono] emitting a page of Attachments
+   */
+  fun find(pageable: Pageable): Mono<Page<Attachment>>
 
   /**
    * Create a given attachment.
