@@ -2,6 +2,8 @@ package tech.simter.file.dao.jpa
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Scheduler
@@ -30,5 +32,9 @@ class AttachmentDaoImpl @Autowired constructor(
 
   override fun save(entity: Attachment): Mono<Attachment> {
     return async(Callable(function = { jpaDao.save(entity) }))
+  }
+
+  override fun findAll(pageable: Pageable): Mono<Page<Attachment>> {
+    return Mono.justOrEmpty(jpaDao.findAll(pageable))
   }
 }
