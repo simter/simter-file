@@ -28,7 +28,17 @@ class FileViewHandler @Autowired constructor(
       // find Page<Attachment> by queryParam page-no, page-size
       .find(PageRequest.of(
         request.queryParam("page-no").get().toInt(),
-        request.queryParam("page-size").get().toInt()))
+        request.queryParam("page-size").get().toInt()
+      ))
+      .map({
+        // build response body
+        val fileViewData = HashMap<String, Any>()
+        fileViewData["count"] = it.totalElements
+        fileViewData["pageNo"] = it.pageable.pageNumber
+        fileViewData["pageSize"] = it.pageable.pageSize
+        fileViewData["rows"] = it.content
+        fileViewData
+      })
       .flatMap({
         // return response
         ServerResponse.ok()

@@ -50,7 +50,7 @@ class FileViewHandlerTest {
   @SuppressWarnings("unchecked")
   void fileView() throws IOException {
     // mock
-    int pageNo = 1;
+    int pageNo = 0;
     int pageSize = 25;
     String id = UUID.randomUUID().toString();
     List<Attachment> list = new ArrayList<>();
@@ -59,14 +59,15 @@ class FileViewHandlerTest {
     when(service.find(pageable)).thenReturn(Mono.just(new PageImpl(list, pageable, list.size())));
 
     // invoke
-    client.get().uri("/?page-no=1&page-size=25")
+    client.get().uri("/?page-no=0&page-size=25")
       .exchange()
       .expectStatus().isOk()
       .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
       .expectBody()
-      .jsonPath("$.pageable.pageNumber").isEqualTo(pageNo) // verify page-no
-      .jsonPath("$.pageable.pageSize").isEqualTo(pageSize) // verify page-size
-      .jsonPath("$.content[0].id").isEqualTo(id);          // verify Attachment.id
+      .jsonPath("$.count").isEqualTo(list.size()) // verify count
+      .jsonPath("$.pageNo").isEqualTo(pageNo)     // verify page-no
+      .jsonPath("$.pageSize").isEqualTo(pageSize) // verify page-size
+      .jsonPath("$.rows[0].id").isEqualTo(id);    // verify Attachment.id
 
     // verify
     verify(service).find(pageable);
