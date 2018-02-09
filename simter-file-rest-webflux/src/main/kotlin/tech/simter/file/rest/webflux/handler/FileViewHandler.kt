@@ -49,6 +49,6 @@ class FileViewHandler @Autowired constructor(
 
   /** Default router */
   fun router(): RouterFunction<ServerResponse> {
-    return route(GET("/"), this)
+    return route(GET("/attachment"), this)
   }
 }

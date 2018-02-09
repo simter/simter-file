@@ -25,10 +25,11 @@ class RouterConfiguration @Autowired constructor(
   private val fileViewHandler: FileViewHandler
 ) : RouterFunction<ServerResponse> {
   override fun route(request: ServerRequest): Mono<HandlerFunction<ServerResponse>> {
-    return RouterFunctions.route(GET("/"), fileViewHandler)   // /?page-no=:pageNo&page-size=:pageSize
+    return RouterFunctions.route(GET("/"), systemInfoHandler) // /root
       .andRoute(GET("/system-info"), systemInfoHandler)       // /system-info
       .andRoute(POST("/").and(contentType(MediaType.MULTIPART_FORM_DATA)), uploadFileHandler) // /root
-      .andRoute(GET("/{id}"), downloadFileHandler) // /{id}
+      .andRoute(GET("/attachment"), fileViewHandler) // /attachment?page-no=:pageNo&page-size=:pageSize
+      .andRoute(GET("/{id}"), downloadFileHandler)   // /{id}
       .route(request)
   }
 }

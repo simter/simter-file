@@ -59,7 +59,7 @@ class FileViewHandlerTest {
     when(service.find(pageable)).thenReturn(Mono.just(new PageImpl(list, pageable, list.size())));
 
     // invoke
-    client.get().uri("/?page-no=0&page-size=25")
+    client.get().uri("/attachment?page-no=0&page-size=25")
       .exchange()
       .expectStatus().isOk()
       .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
