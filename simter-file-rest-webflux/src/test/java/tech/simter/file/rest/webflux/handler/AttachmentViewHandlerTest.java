@@ -16,7 +16,6 @@ import tech.simter.file.po.Attachment;
 import tech.simter.file.rest.webflux.WebFluxConfiguration;
 import tech.simter.file.service.AttachmentService;
 
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,18 +25,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Test FileViewHandler.
+ * Test AttachmentViewHandler.
  *
  * @author JF
  */
 @SpringJUnitConfig(classes = {
-  WebFluxConfiguration.class, FileViewHandler.class
+  WebFluxConfiguration.class, AttachmentViewHandler.class
 })
 @MockBean(AttachmentService.class)
-class FileViewHandlerTest {
+class AttachmentViewHandlerTest {
   private WebTestClient client;
   @SpyBean
-  private FileViewHandler handler;
+  private AttachmentViewHandler handler;
   @Autowired
   private AttachmentService service;
 
@@ -48,7 +47,7 @@ class FileViewHandlerTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void fileView() throws IOException {
+  void fileView() {
     // mock
     int pageNo = 0;
     int pageSize = 25;

@@ -14,12 +14,12 @@ import reactor.core.publisher.Mono
 import tech.simter.file.service.AttachmentService
 
 /**
- * The handler for file view.
+ * The handler for attachment view.
  *
  * @author JF
  */
 @Component
-class FileViewHandler @Autowired constructor(
+class AttachmentViewHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
 
@@ -32,12 +32,12 @@ class FileViewHandler @Autowired constructor(
       ))
       .map({
         // build response body
-        val fileViewData = HashMap<String, Any>()
-        fileViewData["count"] = it.totalElements
-        fileViewData["pageNo"] = it.pageable.pageNumber
-        fileViewData["pageSize"] = it.pageable.pageSize
-        fileViewData["rows"] = it.content
-        fileViewData
+        val attachmentViewData = HashMap<String, Any>()
+        attachmentViewData["count"] = it.totalElements
+        attachmentViewData["pageNo"] = it.pageable.pageNumber
+        attachmentViewData["pageSize"] = it.pageable.pageSize
+        attachmentViewData["rows"] = it.content
+        attachmentViewData
       })
       .flatMap({
         // return response
