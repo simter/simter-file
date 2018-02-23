@@ -13,7 +13,6 @@ import tech.simter.file.po.Attachment;
 import tech.simter.file.rest.webflux.WebFluxConfiguration;
 import tech.simter.file.service.AttachmentService;
 
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -21,18 +20,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Test FileFormHandler.
+ * Test AttachmentFormHandler.
  *
  * @author JF
  */
 @SpringJUnitConfig(classes = {
-  WebFluxConfiguration.class, FileFormHandler.class
+  WebFluxConfiguration.class, AttachmentFormHandler.class
 })
 @MockBean(AttachmentService.class)
-class FileFormHandlerTest {
+class AttachmentFormHandlerTest {
   private WebTestClient client;
   @SpyBean
-  private FileFormHandler handler;
+  private AttachmentFormHandler handler;
   @Autowired
   private AttachmentService service;
 
@@ -42,7 +41,7 @@ class FileFormHandlerTest {
   }
 
   @Test
-  void fileForm() throws IOException {
+  void attachmentForm() {
     // mock
     String id = UUID.randomUUID().toString();
     Attachment attachment = new Attachment(id, "/path", "name", "ext", 100,

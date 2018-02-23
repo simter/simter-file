@@ -9,12 +9,12 @@ import reactor.core.publisher.Mono
 import tech.simter.file.service.AttachmentService
 
 /**
- * The handler for file form.
+ * The handler for attachment form.
  *
  * @author JF
  */
 @Component
-class FileFormHandler @Autowired constructor(
+class AttachmentFormHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
 
