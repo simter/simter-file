@@ -1,4 +1,4 @@
-package tech.simter.file.data.reactive.mongo
+package tech.simter.file.dao.reactive.mongo
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -19,7 +19,7 @@ import java.util.*
  * @author RJ
  */
 @Configuration
-@EnableReactiveMongoRepositories("tech.simter")
+@EnableReactiveMongoRepositories(value = "tech.simter", repositoryBaseClass = CustomReactiveMongoRepositoryImpl::class)
 class MongoConfiguration {
   @Bean
   @ConditionalOnProperty(name = ["simter.mongodb.logging-event-listener"], havingValue = "true")

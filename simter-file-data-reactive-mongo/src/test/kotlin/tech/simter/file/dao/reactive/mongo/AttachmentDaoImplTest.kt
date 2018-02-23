@@ -1,8 +1,9 @@
-package tech.simter.file.data.reactive.mongo
+package tech.simter.file.dao.reactive.mongo
 
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.createCollection
 import org.springframework.data.mongodb.core.dropCollection
@@ -40,6 +41,24 @@ class AttachmentDaoImplTest @Autowired constructor(
     // verify
     StepVerifier.create(dao.findById(id).map { it.id })
       .expectNext(id)
+      .verifyComplete()
+  }
+
+  @Test
+  fun findAll() {
+    // init
+    operations.dropCollection(Attachment::class).block()
+    operations.createCollection(Attachment::class).block()
+
+    val pageSize = 5
+    var toSaved: List<Attachment> = ArrayList()
+    for (i: Long in 1L..10L)
+      toSaved = toSaved.plus(Attachment(i.toString(), PATH, "Sample$i", "png", 123, NOW, UPLOADER))
+    operations.insertAll(toSaved).blockFirst()
+
+    //verify
+    StepVerifier.create(dao.findAll(PageRequest.of(0, pageSize)).map { it.count() })
+      .expectNext(pageSize)
       .verifyComplete()
   }
 
