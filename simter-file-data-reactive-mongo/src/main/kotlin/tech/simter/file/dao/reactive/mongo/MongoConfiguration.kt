@@ -19,7 +19,7 @@ import java.util.*
  * @author RJ
  */
 @Configuration
-@EnableReactiveMongoRepositories("tech.simter")
+@EnableReactiveMongoRepositories(value = "tech.simter", repositoryBaseClass = CustomReactiveMongoRepositoryImpl::class)
 class MongoConfiguration {
   @Bean
   @ConditionalOnProperty(name = ["simter.mongodb.logging-event-listener"], havingValue = "true")
