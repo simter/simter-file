@@ -65,13 +65,15 @@ class UploadFileHandlerTest {
     MultipartBodyBuilder builder = new MultipartBodyBuilder();
     ClassPathResource file = new ClassPathResource(name + "." + ext);
     builder.part("fileData", file);
+    builder.part("puid", "puid");
+    builder.part("subgroup", "1");
     MultiValueMap<String, HttpEntity<?>> parts = builder.build();
 
     // mock service.create return value
     String id = UUID.randomUUID().toString();
     long fileSize = file.contentLength();
     Attachment attachment = new Attachment(id, "/data", name, ext,
-      fileSize, OffsetDateTime.now(), "Simter");
+      fileSize, OffsetDateTime.now(), "Simter", "puid", new Short("1"));
     when(service.create(any())).thenReturn(Mono.just(attachment));
 
     // mock handler.newId return value

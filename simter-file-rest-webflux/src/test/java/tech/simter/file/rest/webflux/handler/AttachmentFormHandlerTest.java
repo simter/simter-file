@@ -45,7 +45,7 @@ class AttachmentFormHandlerTest {
     // mock
     String id = UUID.randomUUID().toString();
     Attachment attachment = new Attachment(id, "/path", "name", "ext", 100,
-      OffsetDateTime.now(), "Simter");
+      OffsetDateTime.now(), "Simter", "0", new Short("0"));
     when(service.get(id)).thenReturn(Mono.just(attachment));
 
     // invoke

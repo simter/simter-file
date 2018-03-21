@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
+import org.springframework.http.codec.multipart.FormFieldPart
 import org.springframework.http.codec.multipart.Part
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
@@ -21,6 +22,7 @@ import java.net.URI
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.HashMap
 
 
 /**
@@ -38,15 +40,30 @@ class UploadFileHandler @Autowired constructor(
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return request
       .bodyToFlux(Part::class.java)
-      .filter({ it is FilePart })
-      .map({ it as FilePart })
-      .next() // only support upload one file by this time
-      // 1. save file to disk
-      .map({ it ->
+      .filter({ it is FilePart || it is FormFieldPart })
+      .collectList()
+      // 1. extract data in request body
+      .map({
+        // build Map by data in list
+        val formDataMap = HashMap<String, Any>()
+        for (part in it) {
+          if (part is FormFieldPart && "puid" == part.name()) {
+            formDataMap["puid"] = if (part.value() != "") part.value() else "0"
+          }
+          if (part is FormFieldPart && "subgroup" == part.name()) {
+            formDataMap["subgroup"] = if (part.value().matches(Regex("\\d+"))) part.value().toShort() else 0
+          }
+          if (part is FilePart) formDataMap["fileData"] = part
+        }
+        formDataMap
+      })
+      // 2. save file to disk
+      .map({
+        // get the FilePart by the Map
+        val fileData = it["fileData"] as FilePart
         // convert to Attachment instance
-        val attachment = toAttachment(it.headers().contentLength, it.filename())
+        val attachment = toAttachment(fileData.headers().contentLength, fileData.filename(), it["puid"] as String, it["subgroup"] as Short)
 
-        // save file to disk
         val file = File("$fileRootDir/${attachment.path}")
         val fileDir = file.parentFile
         if (!fileDir.exists()) {
@@ -56,16 +73,16 @@ class UploadFileHandler @Autowired constructor(
         if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
 
         // save to disk
-        it.transferTo(file)
+        fileData.transferTo(file)
           .then(Mono.just(if (attachment.size != -1L) attachment else attachment.copy(size = file.length())))
       })
-      // 2. save attachment
+      // 3. save attachment
       .flatMap({ attachmentService.create(it) })
-      // 3. return response
+      // 4. return response
       .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() })
   }
 
-  private fun toAttachment(fileSize: Long, filename: String): Attachment {
+  private fun toAttachment(fileSize: Long, filename: String, puid: String, subgroup: Short): Attachment {
     val id = newId()
     val now = OffsetDateTime.now()
     val lastDotIndex = filename.lastIndexOf(".")
@@ -78,7 +95,9 @@ class UploadFileHandler @Autowired constructor(
       ext,                                    // ext
       fileSize,                               // file size
       now,                                    // upload time
-      "Simter"                                // uploader
+      "Simter",                               // uploader
+      puid,                                   // puid
+      subgroup                                // subgroup
     )
   }
 
