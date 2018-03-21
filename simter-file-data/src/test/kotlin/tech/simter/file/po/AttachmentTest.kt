@@ -20,5 +20,7 @@ class AttachmentTest {
     assertEquals(attachment1.fileName, "Sample.png")
     assertEquals(attachment1, attachment1.copy())
     assertNotEquals(attachment1, attachment1.copy(name = "OtherName"))
+    assertEquals(attachment1.subgroup, 0)
+    assertEquals(attachment1.puid, "0")
   }
 }

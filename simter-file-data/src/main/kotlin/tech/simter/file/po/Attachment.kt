@@ -10,6 +10,7 @@ import javax.persistence.Id
 /**
  * The meta information of the upload file.
  * @author RJ
+ * @author JF
  */
 @Entity
 @Document
@@ -27,7 +28,11 @@ data class Attachment(
   /** Upload time */
   @Column(nullable = false) val uploadOn: OffsetDateTime,
   /** The account do the upload */
-  @Column(nullable = false) val uploader: String) {
+  @Column(nullable = false) val uploader: String,
+  /** The unique id of the parent module */
+  @Column(nullable = false, length = 36) val puid: String = "0",
+  /** The subgroup of the parent module */
+  @Column(nullable = false) val subgroup: Short = 0) {
 
   /** File name with extension */
   @Ignore
