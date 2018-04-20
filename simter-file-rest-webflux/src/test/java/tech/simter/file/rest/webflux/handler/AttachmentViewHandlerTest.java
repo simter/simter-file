@@ -53,7 +53,7 @@ class AttachmentViewHandlerTest {
     int pageSize = 25;
     String id = UUID.randomUUID().toString();
     List<Attachment> list = new ArrayList<>();
-    list.add(new Attachment(id, "/path", "name", "ext", 100, OffsetDateTime.now(), "Simter"));
+    list.add(new Attachment(id, "/path", "name", "ext", 100, OffsetDateTime.now(), "Simter","0", new Short("0")));
     Pageable pageable = PageRequest.of(pageNo, pageSize);
     when(service.find(pageable)).thenReturn(Mono.just(new PageImpl(list, pageable, list.size())));
 

@@ -59,7 +59,7 @@ class DownloadFileHandlerTest {
     String id = UUID.randomUUID().toString();
     long fileSize = new FileSystemResource(fileRootDir + "/resources/" + fileName).contentLength();
     Attachment attachment = new Attachment(id, "resources/" + name + "." + ext, name, ext, fileSize,
-      OffsetDateTime.now(), "Simter");
+      OffsetDateTime.now(), "Simter", "0", new Short("0"));
     Mono<Attachment> expected = Mono.just(attachment);
     when(service.get(id)).thenReturn(expected);
 
