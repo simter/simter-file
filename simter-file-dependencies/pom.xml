@@ -23,27 +23,27 @@
       <dependency>
         <groupId>tech.simter</groupId>
         <artifactId>simter-file-data</artifactId>
-        <version>${revision}</version>
+        <version>${simter-file.version}</version>
       </dependency>
       <dependency>
         <groupId>tech.simter</groupId>
         <artifactId>simter-file-data-jpa</artifactId>
-        <version>${revision}</version>
+        <version>${simter-file.version}</version>
       </dependency>
       <dependency>
         <groupId>tech.simter</groupId>
         <artifactId>simter-file-data-reactive-mongo</artifactId>
-        <version>${revision}</version>
+        <version>${simter-file.version}</version>
       </dependency>
       <dependency>
         <groupId>tech.simter</groupId>
         <artifactId>simter-file-rest-webflux</artifactId>
-        <version>${revision}</version>
+        <version>${simter-file.version}</version>
       </dependency>
       <dependency>
         <groupId>tech.simter</groupId>
         <artifactId>simter-file-starter</artifactId>
-        <version>${revision}</version>
+        <version>${simter-file.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
