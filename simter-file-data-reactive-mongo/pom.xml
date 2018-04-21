@@ -9,7 +9,7 @@
   </parent>
   <artifactId>simter-file-data-reactive-mongo</artifactId>
   <packaging>jar</packaging>
-  <description>Simter Data API Implements By Reactive MongoDB</description>
+  <description>Dao Implementation By Reactive MongoDB</description>
   <developers>
     <developer>
       <name>RJ.Hwang</name>

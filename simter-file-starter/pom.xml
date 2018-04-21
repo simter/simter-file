@@ -11,7 +11,7 @@
   <artifactId>simter-file-starter</artifactId>
   <version>${revision}</version>
   <packaging>jar</packaging>
-  <description>Simter File Server For Data API</description>
+  <description>Microservice Starter</description>
   <properties>
     <db.ddl-auto>none</db.ddl-auto>
     <db.host>localhost</db.host>

@@ -12,7 +12,7 @@
   <artifactId>simter-file-build</artifactId>
   <version>${revision}</version>
   <packaging>pom</packaging>
-  <description>Simter File Build</description>
+  <description>Builder</description>
   <properties>
     <revision>0.5.0-SNAPSHOT</revision>
     <simter-file.version>0.5.0-SNAPSHOT</simter-file.version>

@@ -9,7 +9,7 @@
   </parent>
   <artifactId>simter-file-parent</artifactId>
   <packaging>pom</packaging>
-  <description>Simter File Parent</description>
+  <description>Parent</description>
   <developers>
     <developer>
       <name>RJ.Hwang</name>

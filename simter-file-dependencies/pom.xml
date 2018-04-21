@@ -9,15 +9,13 @@
   </parent>
   <artifactId>simter-file-dependencies</artifactId>
   <packaging>pom</packaging>
-  <description>Simter File Dependencies</description>
+  <description>Dependencies</description>
   <developers>
     <developer>
       <name>RJ.Hwang</name>
       <email>rongjihuang@gmail.com</email>
     </developer>
   </developers>
-  <properties>
-  </properties>
   <dependencyManagement>
     <dependencies>
       <dependency>
