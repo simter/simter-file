@@ -28,7 +28,7 @@ class SystemInfoHandler @Autowired constructor(
 
   private var systemInfo = linkedMapOf(
     "gitBranch" to gitProperties?.branch,
-    "gitCommitTime" to if (gitProperties != null) OffsetDateTime.ofInstant(gitProperties.commitTime.toInstant(), ZoneId.systemDefault()).toString() else null,
+    "gitCommitTime" to if (gitProperties != null) OffsetDateTime.ofInstant(gitProperties.commitTime, ZoneId.systemDefault()).toString() else null,
     "gitCommitId" to gitProperties?.commitId,
     "gitShortCommitId" to gitProperties?.shortCommitId,
     "gitDirty" to if (gitProperties != null) java.lang.Boolean(gitProperties.get("dirty")) else null,
@@ -42,7 +42,7 @@ class SystemInfoHandler @Autowired constructor(
     "projectSimterVersion" to buildProperties?.get("simter.version"),
     "projectJavaTarget" to buildProperties?.get("java.target"),
 
-    "projectBuildTime" to if (buildProperties != null) OffsetDateTime.ofInstant(buildProperties.time.toInstant(), ZoneId.systemDefault()).toString() else null,
+    "projectBuildTime" to if (buildProperties != null) OffsetDateTime.ofInstant(buildProperties.time, ZoneId.systemDefault()).toString() else null,
     "projectStartTime" to OffsetDateTime.now().toString()
   )
 

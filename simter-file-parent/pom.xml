@@ -53,21 +53,6 @@
       <!-- simter base modules -->
       <dependency>
         <groupId>tech.simter</groupId>
-        <artifactId>simter-test</artifactId>
-        <version>${simter.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>tech.simter</groupId>
-            <artifactId>simter-rest-jaxrs</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>tech.simter</groupId>
-            <artifactId>simter-rest-jaxrs-jersey</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>tech.simter</groupId>
         <artifactId>simter-dependencies</artifactId>
         <version>${simter.version}</version>
         <type>pom</type>
@@ -121,19 +106,19 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit.jupiter.version}</version>
+      <version>${junit5.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit.jupiter.version}</version>
+      <version>${junit5.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.platform</groupId>
       <artifactId>junit-platform-runner</artifactId>
-      <version>${junit.platform.version}</version>
+      <version>${junit5.platform.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -171,18 +156,6 @@
     </dependency>
   </dependencies>
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <filtering>true</filtering>
-      </testResource>
-    </testResources>
     <plugins>
       <plugin>
         <groupId>org.jetbrains.kotlin</groupId>
@@ -190,31 +163,11 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <dependencies>
-          <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-surefire-provider</artifactId>
-            <version>${junit.platform.version}</version>
-          </dependency>
-          <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
-          </dependency>
-        </dependencies>
+        <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -234,12 +187,14 @@
               <updatePomFile>true</updatePomFile>
               <flattenMode>clean</flattenMode>
               <pomElements>
+                <parent>resolve</parent>
                 <name>keep</name>
                 <description>keep</description>
-                <parent>expand</parent>
-                <dependencyManagement>interpolate</dependencyManagement>
-                <dependencies>interpolate</dependencies>
+                <dependencyManagement>keep</dependencyManagement>
+                <dependencies>keep</dependencies>
+                <pluginManagement>keep</pluginManagement>
                 <developers>keep</developers>
+                <properties>interpolate</properties>
               </pomElements>
             </configuration>
           </execution>
