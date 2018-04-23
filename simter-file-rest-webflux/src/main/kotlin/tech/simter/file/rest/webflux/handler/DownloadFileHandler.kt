@@ -7,9 +7,8 @@ import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.HandlerFunction
+import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
-import org.springframework.web.reactive.function.server.RouterFunction
-import org.springframework.web.reactive.function.server.RouterFunctions.route
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
@@ -25,7 +24,7 @@ import kotlin.text.Charsets.ISO_8859_1
  */
 @Component
 class DownloadFileHandler @Autowired constructor(
-  @Value("\${app.file.root}") private val fileRootDir: String,
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
 
@@ -45,8 +44,8 @@ class DownloadFileHandler @Autowired constructor(
       })
   }
 
-  /** Default router */
-  fun router(): RouterFunction<ServerResponse> {
-    return route(GET("/{id}"), this)
+  companion object {
+    /** The default [RequestPredicate] */
+    val REQUEST_PREDICATE: RequestPredicate = GET("/{id}")
   }
 }
