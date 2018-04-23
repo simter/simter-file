@@ -1,4 +1,4 @@
-package tech.simter.file.rest.webflux.handler
+package tech.simter.file.starter.webflux
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.info.BuildProperties
@@ -6,11 +6,11 @@ import org.springframework.boot.info.GitProperties
 import org.springframework.http.MediaType.APPLICATION_JSON_UTF8
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
+import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
-import org.springframework.web.reactive.function.server.RouterFunction
-import org.springframework.web.reactive.function.server.RouterFunctions.route
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -47,11 +47,11 @@ class SystemInfoHandler @Autowired constructor(
   )
 
   override fun handle(request: ServerRequest?): Mono<ServerResponse> {
-    return ServerResponse.ok().contentType(APPLICATION_JSON_UTF8).syncBody(systemInfo)
+    return ok().contentType(APPLICATION_JSON_UTF8).syncBody(systemInfo)
   }
 
-  /** Default router */
-  fun router(): RouterFunction<ServerResponse> {
-    return route(GET("/"), this)
+  companion object {
+    /** The default [RequestPredicate] */
+    val REQUEST_PREDICATE: RequestPredicate = GET("/system-info")
   }
 }

@@ -3,8 +3,11 @@ package tech.simter.file.rest.webflux.handler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.*
+import org.springframework.web.reactive.function.server.HandlerFunction
+import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
+import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import tech.simter.file.service.AttachmentService
 
@@ -30,8 +33,8 @@ class AttachmentFormHandler @Autowired constructor(
       })
   }
 
-  /** Default router */
-  fun router(): RouterFunction<ServerResponse> {
-    return RouterFunctions.route(GET("/attachment/{id}"), this)
+  companion object {
+    /** The default [RequestPredicate] */
+    val REQUEST_PREDICATE: RequestPredicate = GET("/attachment/{id}")
   }
 }

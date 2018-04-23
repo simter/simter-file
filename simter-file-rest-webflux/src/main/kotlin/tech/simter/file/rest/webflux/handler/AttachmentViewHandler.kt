@@ -5,9 +5,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
+import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
-import org.springframework.web.reactive.function.server.RouterFunction
-import org.springframework.web.reactive.function.server.RouterFunctions.route
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
@@ -47,8 +46,8 @@ class AttachmentViewHandler @Autowired constructor(
       })
   }
 
-  /** Default router */
-  fun router(): RouterFunction<ServerResponse> {
-    return route(GET("/attachment"), this)
+  companion object {
+    /** The default [RequestPredicate] */
+    val REQUEST_PREDICATE: RequestPredicate = GET("/attachment")
   }
 }

@@ -8,10 +8,9 @@ import org.springframework.http.codec.multipart.FormFieldPart
 import org.springframework.http.codec.multipart.Part
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
+import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.POST
 import org.springframework.web.reactive.function.server.RequestPredicates.contentType
-import org.springframework.web.reactive.function.server.RouterFunction
-import org.springframework.web.reactive.function.server.RouterFunctions.route
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
@@ -104,8 +103,8 @@ class UploadFileHandler @Autowired constructor(
   /** Generate a new [Attachment] id */
   fun newId() = UUID.randomUUID().toString()
 
-  /** Default router */
-  fun router(): RouterFunction<ServerResponse> {
-    return route(POST("/").and(contentType(MediaType.MULTIPART_FORM_DATA)), this)
+  companion object {
+    /** The default [RequestPredicate] */
+    val REQUEST_PREDICATE: RequestPredicate = POST("/").and(contentType(MediaType.MULTIPART_FORM_DATA))
   }
 }

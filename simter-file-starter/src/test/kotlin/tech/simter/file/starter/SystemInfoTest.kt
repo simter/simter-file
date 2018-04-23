@@ -1,4 +1,4 @@
-package tech.simter.file
+package tech.simter.file.starter
 
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,9 +8,6 @@ import org.springframework.boot.info.GitProperties
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.support.PropertiesLoaderUtils
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
-import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import kotlin.test.assertEquals
 
 @SpringJUnitConfig(classes = [ProjectInfoAutoConfiguration::class])
