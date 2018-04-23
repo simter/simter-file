@@ -1,4 +1,3 @@
-#simter.mongodb.logging-event-listener: true
 spring:
   mongodb:
     embedded:
@@ -8,9 +7,11 @@ logging:
   #file: target/test.log
   level:                               # one of TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF
     root: ERROR
-    #org.springframework: WARN
+    org.springframework: WARN
 
     #---- mongo ----#
-    #org.springframework.data.mongodb.core.mapping.event.LoggingEventListener: INFO
     #org.springframework.boot.autoconfigure.mongo: INFO
+    #org.springframework.data.mongodb: DEBUG
+    #org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG # debug to show query
+    #org.springframework.data.mongodb.core.mapping.event.LoggingEventListener: INFO # use with LoggingEventListener bean
     #de.flapdoodle.embed: DEBUG # embedded mongo

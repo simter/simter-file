@@ -4,5 +4,5 @@
   <!-- trace < debug < info < warn < error -->
   <root level="error"/>
 
-  <logger name="tech.simter.file" level="warn"/>
+  <logger name="tech.simter.file.dao.reactive.mongo" level="warn"/>
 </configuration>
