@@ -6,6 +6,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 /**
+ * See [Data mapping and type conversion](https://docs.spring.io/spring-data/mongodb/docs/current/reference/html/#mapping-conversion)
  * @author cjw
  */
 class DocumentToOffsetDateTimeConverter : Converter<Document, OffsetDateTime> {
