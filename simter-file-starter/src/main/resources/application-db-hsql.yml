@@ -1,10 +1,5 @@
 spring:
   datasource:
-    initialize: ${db.init:false} # true for use schema-{x}.sql、data-{x}.sql to initialize database
     url: ~
     username: ${db.username}
     password: ${db.password}
-    continue-on-error: false
-    sql-script-encoding: UTF-8
-  jpa:
-    hibernate.ddl-auto: ${db.ddl-auto:none}  # none | create | create-drop | update | validate

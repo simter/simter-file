@@ -1,4 +1,4 @@
-simter.mongodb.logging-event-listener: true
+simter.mongodb.enabled-logging-event-listener: ${debug:true}
 spring:
   mongodb:
     embedded:

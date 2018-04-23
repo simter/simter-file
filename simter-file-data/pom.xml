@@ -9,7 +9,7 @@
   </parent>
   <artifactId>simter-file-data</artifactId>
   <packaging>jar</packaging>
-  <description>Simter File Data</description>
+  <description>Data API</description>
   <developers>
     <developer>
       <name>RJ.Hwang</name>

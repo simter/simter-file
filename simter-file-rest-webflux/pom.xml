@@ -9,7 +9,7 @@
   </parent>
   <artifactId>simter-file-rest-webflux</artifactId>
   <packaging>jar</packaging>
-  <description>Simter File Rest API By WebFlux</description>
+  <description>Rest API By WebFlux</description>
   <developers>
     <developer>
       <name>RJ.Hwang</name>
