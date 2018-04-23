@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 import java.time.OffsetDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
-import javax.persistence.Id
+import javax.persistence.Table
 
 /**
  * The meta information of the upload file.
@@ -13,10 +13,14 @@ import javax.persistence.Id
  * @author JF
  */
 @Entity
-@Document
+@Table(name = "st_attachment")
+@Document(collection = "st_attachment")
 data class Attachment(
   /** UUID */
-  @Column(nullable = false, length = 36) @Id @org.springframework.data.annotation.Id val id: String,
+  @javax.persistence.Id
+  @org.springframework.data.annotation.Id
+  @Column(nullable = false, length = 36)
+  val id: String,
   /** The relative path that store the actual physical file */
   @Column(nullable = false) val path: String,
   /** File name without extension */
@@ -36,6 +40,7 @@ data class Attachment(
 
   /** File name with extension */
   @Ignore
+  @javax.persistence.Transient
   @org.springframework.data.annotation.Transient
-  val fileName = name + "." + ext
+  val fileName = "$name.$ext"
 }
