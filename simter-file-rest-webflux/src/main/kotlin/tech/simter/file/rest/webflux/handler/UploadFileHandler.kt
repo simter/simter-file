@@ -32,7 +32,7 @@ import kotlin.collections.HashMap
  */
 @Component
 class UploadFileHandler @Autowired constructor(
-  @Value("\${app.file.root}") private val fileRootDir: String,
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
 

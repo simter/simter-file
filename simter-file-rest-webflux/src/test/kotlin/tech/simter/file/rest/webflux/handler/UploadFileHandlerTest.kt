@@ -39,10 +39,10 @@ import java.util.*
 @EnableWebFlux
 @MockBean(AttachmentService::class)
 @SpyBean(UploadFileHandler::class)
-@TestPropertySource(properties = ["app.file.root=target/files"])
+@TestPropertySource(properties = ["simter.file.root=target/files"])
 internal class UploadFileHandlerTest @Autowired constructor(
   private val service: AttachmentService,
-  @Value("\${app.file.root}") private val fileRootDir: String,
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val handler: UploadFileHandler
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()

@@ -24,7 +24,7 @@ import kotlin.text.Charsets.ISO_8859_1
  */
 @Component
 class DownloadFileHandler @Autowired constructor(
-  @Value("\${app.file.root}") private val fileRootDir: String,
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
 

@@ -1,6 +1,4 @@
-app:
-  file:
-    root: /data/files
+simter.file.root: /data/files # the place to store physical file
 db:
   platform: @db.platform@
   init-mode: @db.init-mode@

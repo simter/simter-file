@@ -31,10 +31,10 @@ import java.util.*
 @SpringJUnitConfig(DownloadFileHandler::class)
 @EnableWebFlux
 @MockBean(AttachmentService::class)
-@TestPropertySource(properties = ["app.file.root=src/test"])
+@TestPropertySource(properties = ["simter.file.root=src/test"])
 internal class DownloadFileHandlerTest @Autowired constructor(
   private val service: AttachmentService,
-  @Value("\${app.file.root}") private val fileRootDir: String,
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   handler: DownloadFileHandler
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
