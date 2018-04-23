@@ -1,4 +1,4 @@
-package tech.simter.file.po.converter
+package tech.simter.file.dao.reactive.mongo
 
 import org.bson.Document
 import org.springframework.core.convert.converter.Converter
@@ -8,7 +8,7 @@ import java.time.ZoneOffset
 /**
  * @author cjw
  */
-class MongoDocumentToOffsetDateTimeConverter : Converter<Document, OffsetDateTime> {
+class DocumentToOffsetDateTimeConverter : Converter<Document, OffsetDateTime> {
   override fun convert(source: Document): OffsetDateTime {
     var dateTime = source.getDate("dateTime").toInstant()
     var timeZone = ZoneOffset.of(source.getString("offset"))
