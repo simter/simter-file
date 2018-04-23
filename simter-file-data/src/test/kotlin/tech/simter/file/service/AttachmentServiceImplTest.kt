@@ -2,6 +2,7 @@ package tech.simter.file.service
 
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.Page
@@ -18,7 +19,7 @@ import java.util.*
 /**
  * @author RJ
  */
-@SpringJUnitConfig(classes = [(AttachmentServiceImpl::class)])
+@SpringJUnitConfig(AttachmentServiceImpl::class)
 @MockBean(AttachmentDao::class)
 class AttachmentServiceImplTest @Autowired constructor(
   private val dao: AttachmentDao,
@@ -27,49 +28,45 @@ class AttachmentServiceImplTest @Autowired constructor(
   @Test
   fun get() {
     // mock
-    var id: String = UUID.randomUUID().toString()
+    val id: String = UUID.randomUUID().toString()
     val attachment = Attachment(id, "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
     val expected = Mono.just(attachment)
-    `when`(dao.findById(id)).thenReturn(expected)
+    `when`(dao.get(id)).thenReturn(expected)
 
     // invoke
     val actual = service.get(id)
 
     // verify
-    StepVerifier.create(actual)
-      .expectNext(attachment)
-      .verifyComplete()
+    StepVerifier.create(actual).expectNext(attachment).verifyComplete()
+    verify(dao).get(id)
   }
 
   @Test
   fun find() {
     // mock
-    var pageable: Pageable = PageRequest.of(1, 25).first()
-    var expect: Page<Attachment> = Page.empty()
-    `when`(dao.findAll(pageable)).thenReturn(Mono.just(expect))
+    val pageable: Pageable = PageRequest.of(1, 25).first()
+    val expect: Page<Attachment> = Page.empty()
+    `when`(dao.find(pageable)).thenReturn(Mono.just(expect))
 
     // invoke
-    var actual = service.find(pageable)
+    val actual = service.find(pageable)
 
     // verify
-    StepVerifier.create(actual)
-      .expectNext(expect)
-      .verifyComplete()
+    StepVerifier.create(actual).expectNext(expect).verifyComplete()
+    verify(dao).find(pageable)
   }
 
   @Test
-  fun create() {
+  fun save() {
     // mock
     val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
-    val expected = Mono.just(attachment)
-    `when`(dao.save(attachment)).thenReturn(expected)
+    `when`(dao.save(attachment)).thenReturn(Mono.empty())
 
     // invoke
-    val actual = service.create(expected)
+    val actual = service.save(attachment)
 
     // verify
-    StepVerifier.create(actual)
-      .expectNext(attachment)
-      .verifyComplete()
+    StepVerifier.create(actual).expectNext().verifyComplete()
+    verify(dao).save(attachment)
   }
 }

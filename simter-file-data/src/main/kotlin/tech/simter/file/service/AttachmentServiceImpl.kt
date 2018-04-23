@@ -17,14 +17,18 @@ import tech.simter.file.po.Attachment
 @Component
 class AttachmentServiceImpl @Autowired constructor(val attachmentDao: AttachmentDao) : AttachmentService {
   override fun get(id: String): Mono<Attachment> {
-    return attachmentDao.findById(id)
+    return attachmentDao.get(id)
   }
 
   override fun find(pageable: Pageable): Mono<Page<Attachment>> {
-    return attachmentDao.findAll(pageable)
+    return attachmentDao.find(pageable)
   }
 
-  override fun create(attachment: Mono<Attachment>): Mono<Attachment> {
-    return attachmentDao.save(attachment.block() as Attachment)
+  override fun save(vararg attachments: Attachment): Mono<Void> {
+    return attachmentDao.save(*attachments)
+  }
+
+  override fun delete(vararg ids: String): Mono<Void> {
+    return attachmentDao.delete(*ids)
   }
 }
