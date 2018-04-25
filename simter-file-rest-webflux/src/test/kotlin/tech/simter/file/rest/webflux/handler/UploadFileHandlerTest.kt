@@ -18,13 +18,11 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
-import tech.simter.file.po.Attachment
 import tech.simter.file.rest.webflux.handler.UploadFileHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.io.File
 import java.io.IOException
 import java.time.LocalDateTime
-import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
@@ -63,9 +61,7 @@ internal class UploadFileHandlerTest @Autowired constructor(
     // mock service.create return value
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    val attachment = Attachment(id, "/data", name, ext,
-      fileSize, OffsetDateTime.now(), "Simter", "puid", 1)
-    `when`(service.create(any())).thenReturn(Mono.just(attachment))
+    `when`(service.save(any())).thenReturn(Mono.empty())
 
     // mock handler.newId return value
     `when`(handler.newId()).thenReturn(id)
@@ -80,8 +76,8 @@ internal class UploadFileHandlerTest @Autowired constructor(
       .expectStatus().isNoContent
       .expectHeader().valueEquals("Location", "/$id")
 
-    // 1. verify service.create method invoked
-    verify(service).create(any())
+    // 1. verify service.save method invoked
+    verify(service).save(any())
 
     // 2. verify the saved file exists
     val yyyyMM = now.format(DateTimeFormatter.ofPattern("yyyyMM"))

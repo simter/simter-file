@@ -14,6 +14,8 @@ import tech.simter.file.rest.webflux.handler.AttachmentViewHandler
 import tech.simter.file.rest.webflux.handler.DownloadFileHandler
 import tech.simter.file.rest.webflux.handler.UploadFileHandler
 
+private const val MODULE_PACKAGE = "tech.simter.file.rest.webflux"
+
 /**
  * All configuration for this module.
  *
@@ -22,8 +24,8 @@ import tech.simter.file.rest.webflux.handler.UploadFileHandler
  *
  * @author RJ
  */
-@Configuration("tech.simter.file.rest.webflux.ModuleConfiguration")
-@ComponentScan("tech.simter.file.rest.webflux")
+@Configuration("$MODULE_PACKAGE.ModuleConfiguration")
+@ComponentScan(MODULE_PACKAGE)
 @EnableWebFlux
 class ModuleConfiguration @Autowired constructor(
   @Value("\${simter.rest.context-path.file:/}") private val contextPath: String,

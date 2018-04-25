@@ -1,77 +1,93 @@
 package tech.simter.file.dao.reactive.mongo
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
-import org.springframework.data.mongodb.core.createCollection
-import org.springframework.data.mongodb.core.dropCollection
-import org.springframework.data.mongodb.repository.support.SimpleReactiveMongoRepository
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
+import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
 import java.time.OffsetDateTime
+import java.util.*
 
 /**
- * See [SimpleReactiveMongoRepository] implementation.
+ * @author cjw
  * @author RJ
  */
-@SpringJUnitConfig(classes = [MongoConfiguration::class])
+@SpringJUnitConfig(ModuleConfiguration::class)
 @DataMongoTest
 class AttachmentDaoImplTest @Autowired constructor(
   private val dao: AttachmentDao,
   private val operations: ReactiveMongoOperations
 ) {
-  private val PATH = "/data"              // file save path
-  private val UPLOADER = "Simter"         // file uploader
-  private val NOW = OffsetDateTime.now()  // instance current date time by OffsetDateTime
+  private val path = "/data"
+  private val uploader = "Simter"
+  private val now = OffsetDateTime.now()
+
+  @BeforeEach
+  fun setup() {
+    // drop and create a new collection
+    StepVerifier.create(
+      operations.collectionExists(Attachment::class.java)
+        .flatMap { if (it) operations.dropCollection(Attachment::class.java) else Mono.just(it) }
+        .then(operations.createCollection(Attachment::class.java))
+    ).expectNextCount(1).verifyComplete()
+  }
 
   @Test
   fun get() {
-    // init
-    operations.dropCollection(Attachment::class).block()
-    operations.createCollection(Attachment::class).block()
+    // verify not exists
+    val id = UUID.randomUUID().toString()
+    StepVerifier.create(dao.get(id)).expectNextCount(0L).verifyComplete()
 
-    val id = "1111"
-    val po = Attachment(id, PATH, "Sample", "png", 123, NOW, UPLOADER)
-    operations.save(po).block()
+    // prepare data
+    val po = Attachment(id, path, "Sample", "png", 123, now, uploader)
+    StepVerifier.create(operations.insert(po)).expectNextCount(1).verifyComplete()
 
-    // verify
-    StepVerifier.create(dao.findById(id).map { it.id })
-      .expectNext(id)
+    // verify exists
+    StepVerifier.create(dao.get(id)).expectNext(po).verifyComplete()
+  }
+
+  @Test
+  fun find() {
+    val pageable = PageRequest.of(0, 25)
+
+    // 1. not found
+    StepVerifier.create(dao.find(pageable))
+      .expectNext(Page.empty<Attachment>(pageable))
+      .verifyComplete()
+
+    // 2. found
+    // 2.1 prepare data
+    val pos = (1..3).map { Attachment(it.toString(), path, "Sample$it", "png", 123, now, uploader) }
+    StepVerifier.create(operations.insertAll(pos)).expectNextCount(pos.size.toLong()).verifyComplete()
+
+    // 2.2 invoke
+    val actual = dao.find(pageable)
+
+    // 2.3 verify
+    StepVerifier.create(actual)
+      .consumeNextWith { page -> assertEquals(pos.size, page.content.size) }
       .verifyComplete()
   }
 
   @Test
-  fun findAll() {
-    // init
-    operations.dropCollection(Attachment::class).block()
-    operations.createCollection(Attachment::class).block()
+  fun saveOne() {
+    val po = Attachment(UUID.randomUUID().toString(), path, "Sample", "png", 123, now, uploader)
+    val actual = dao.save(po)
 
-    val pageSize = 5
-    var toSaved: List<Attachment> = ArrayList()
-    for (i: Long in 1L..10L)
-      toSaved = toSaved.plus(Attachment(i.toString(), PATH, "Sample$i", "png", 123, NOW, UPLOADER))
-    operations.insertAll(toSaved).blockFirst()
+    // verify result
+    StepVerifier.create(actual).expectNextCount(0L).verifyComplete()
 
-    //verify
-    StepVerifier.create(dao.findAll(PageRequest.of(0, pageSize)).map { it.count() })
-      .expectNext(pageSize)
-      .verifyComplete()
-  }
-
-  @Test
-  fun save() {
-    // init
-    operations.dropCollection(Attachment::class).block()
-    operations.createCollection(Attachment::class).block()
-    val attachment = Attachment("1111", PATH, "Sample", "png", 123, NOW, UPLOADER)
-
-    // verify
-    StepVerifier.create(dao.save(attachment))
-      .expectNext(attachment)
+    // verify saved
+    StepVerifier.create(operations.findById(po.id, Attachment::class.java))
+      .expectNext(po)
       .verifyComplete()
   }
 }

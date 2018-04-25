@@ -57,7 +57,7 @@ class UploadFileHandler @Autowired constructor(
         formDataMap
       })
       // 2. save file to disk
-      .map({
+      .flatMap({
         // get the FilePart by the Map
         val fileData = it["fileData"] as FilePart
         // convert to Attachment instance
@@ -76,7 +76,7 @@ class UploadFileHandler @Autowired constructor(
           .then(Mono.just(if (attachment.size != -1L) attachment else attachment.copy(size = file.length())))
       })
       // 3. save attachment
-      .flatMap({ attachmentService.create(it) })
+      .flatMap({ attachmentService.save(it).thenReturn(it) })
       // 4. return response
       .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() })
   }
