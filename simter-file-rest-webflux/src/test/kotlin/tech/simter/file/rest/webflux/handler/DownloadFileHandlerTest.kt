@@ -19,7 +19,6 @@ import reactor.core.publisher.Mono
 import tech.simter.file.po.Attachment
 import tech.simter.file.rest.webflux.handler.DownloadFileHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
-import java.io.IOException
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -27,6 +26,7 @@ import java.util.*
  * Test DownloadFileHandler.
  *
  * @author JF
+ * @author RJ
  */
 @SpringJUnitConfig(DownloadFileHandler::class)
 @EnableWebFlux
@@ -40,8 +40,7 @@ internal class DownloadFileHandlerTest @Autowired constructor(
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
 
   @Test
-  @Throws(IOException::class)
-  fun download() {
+  fun found() {
     // mock service return value
     val name = "logback-test"
     val ext = "xml"
@@ -67,6 +66,19 @@ internal class DownloadFileHandlerTest @Autowired constructor(
     assertEquals(result.responseBody!!.size.toLong(), fileSize)
 
     // verify method service.get invoked
+    verify(service).get(id)
+  }
+
+  @Test
+  fun notFound() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(service.get(id)).thenReturn(Mono.empty())
+
+    // invoke
+    client.get().uri("/$id").exchange().expectStatus().isNotFound
+
+    // verify
     verify(service).get(id)
   }
 }
