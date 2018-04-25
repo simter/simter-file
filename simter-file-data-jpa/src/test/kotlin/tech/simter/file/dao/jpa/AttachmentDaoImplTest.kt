@@ -1,10 +1,9 @@
 package tech.simter.file.dao.jpa
 
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -16,80 +15,146 @@ import tech.simter.file.po.Attachment
 import java.time.OffsetDateTime
 import java.util.*
 import javax.persistence.EntityManager
+import javax.persistence.PersistenceContext
 
 /**
  * @author RJ
  */
-@SpringJUnitConfig(classes = [JpaConfiguration::class])
+@SpringJUnitConfig(ModuleConfiguration::class)
 @DataJpaTest
 class AttachmentDaoImplTest @Autowired constructor(
-  @Qualifier("attachmentDaoImpl") val dao: AttachmentDao,
-  val em: EntityManager
+  @PersistenceContext val em: EntityManager,
+  val dao: AttachmentDao
 ) {
   @Test
-  fun save() {
-    val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
-    val save = dao.save(attachment)
-
-    // verify return value
-    StepVerifier.create(save)
-      .expectNext(attachment)
+  fun get() {
+    // verify not exists
+    StepVerifier.create(dao.get(UUID.randomUUID().toString()))
+      .expectNextCount(0L)
       .verifyComplete()
 
-    // verify persistence
-    assertThat(
-      em.createQuery("select a from Attachment a where id = :id")
-        .setParameter("id", attachment.id).singleResult
-    ).isEqualTo(attachment)
-  }
-
-  @Test
-  fun findById() {
     // prepare data
-    val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
-    em.persist(attachment)
+    val po = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
+    em.persist(po)
     em.flush()
     em.clear()
 
     // verify exists
-    StepVerifier.create(dao.findById(attachment.id))
-      .expectNext(attachment)
-      .verifyComplete()
-
-    // verify not exists
-    StepVerifier.create(dao.findById(UUID.randomUUID().toString()))
+    StepVerifier.create(dao.get(po.id))
+      .expectNext(po)
       .verifyComplete()
   }
 
   @Test
-  fun findAll() {
-    // verify empty page
-    var page = dao.findAll(PageRequest.of(0, 25)).block()
-    assertNotNull(page)
-    assertTrue(page!!.content.isEmpty())
-    assertEquals(0, page.number)
-    assertEquals(25, page.size)
-    assertEquals(0, page.totalPages)
-    assertEquals(0, page.totalElements)
+  fun find() {
+    // 1. not found: empty page
+    StepVerifier.create(dao.find(PageRequest.of(0, 25)))
+      .consumeNextWith { page ->
+        assertTrue(page.content.isEmpty())
+        assertEquals(0, page.number)
+        assertEquals(25, page.size)
+        assertEquals(0, page.totalPages)
+        assertEquals(0, page.totalElements)
+      }
+      .verifyComplete()
 
-    // prepare data
+    // 2. found: page with content
+    // 2.1 prepare data
     val now = OffsetDateTime.now()
-    val attachment1 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, now.minusDays(1), "Simter")
-    val attachment2 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, now, "Simter")
-    em.persist(attachment1)
-    em.persist(attachment2)
+    val po1 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, now.minusDays(1), "Simter")
+    val po2 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, now, "Simter")
+    em.persist(po1)
+    em.persist(po2)
     em.flush()
     em.clear()
 
-    // verify page with items
-    page = dao.findAll(PageRequest.of(0, 25, Sort.by(DESC, "uploadOn"))).block()
-    assertNotNull(page)
-    assertEquals(0, page!!.number)
-    assertEquals(25, page.size)
-    assertEquals(1, page.totalPages)
-    assertEquals(2L, page.totalElements)
-    assertEquals(2, page.content.size)
-    assertEquals(attachment2, page.content[0])
-    assertEquals(attachment1, page.content[1])
+    // 2.2 invoke
+    val actual = dao.find(PageRequest.of(0, 25, Sort.by(DESC, "uploadOn")))
+
+    // 2.3 verify
+    StepVerifier.create(actual)
+      .consumeNextWith { page ->
+        assertEquals(0, page.number)
+        assertEquals(25, page.size)
+        assertEquals(1, page.totalPages)
+        assertEquals(2L, page.totalElements)
+        assertEquals(2, page.content.size)
+        assertEquals(po2, page.content[0])
+        assertEquals(po1, page.content[1])
+      }
+      .verifyComplete()
+  }
+
+  @Test
+  fun saveNone() {
+    StepVerifier.create(dao.save()).expectNextCount(0L).verifyComplete()
+  }
+
+  @Test
+  fun saveOne() {
+    // invoke
+    val po = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
+    val actual = dao.save(po)
+
+    // verify result
+    StepVerifier.create(actual).expectNextCount(0L).verifyComplete()
+
+    // verify saved
+    assertEquals(
+      po,
+      em.createQuery("select a from Attachment a where id = :id").setParameter("id", po.id).singleResult
+    )
+  }
+
+  @Test
+  fun saveMulti() {
+    val pos = (1..3).map {
+      Attachment(UUID.randomUUID().toString(), "/data", "Sample-$it", "png", 123, OffsetDateTime.now(), "Simter")
+    }
+    val actual = dao.save(*pos.toTypedArray())
+
+    // verify result
+    StepVerifier.create(actual).expectNextCount(0L).verifyComplete()
+
+    // verify saved
+    pos.forEach {
+      assertEquals(
+        it,
+        em.createQuery("select a from Attachment a where id = :id", Attachment::class.java)
+          .setParameter("id", it.id).singleResult
+      )
+    }
+  }
+
+  @Test
+  fun delete() {
+    // 1. none
+    StepVerifier.create(dao.delete()).expectNextCount(0L).verifyComplete()
+
+    // 2. delete not exists id
+    StepVerifier.create(dao.delete(UUID.randomUUID().toString())).expectNextCount(0L).verifyComplete()
+
+    // 3. delete exists id
+    // 3.1 prepare data
+    val pos = (1..3).map {
+      Attachment(UUID.randomUUID().toString(), "/data", "Sample-$it", "png", 123, OffsetDateTime.now(), "Simter")
+    }
+    pos.forEach { em.persist(it) }
+    em.flush()
+    em.clear()
+
+    // 3.2 invoke
+    val ids = pos.map { it.id }
+    val actual = dao.delete(*ids.toTypedArray())
+
+    // 3.3 verify empty result
+    StepVerifier.create(actual).expectNextCount(0L).verifyComplete()
+
+    // 3.4 verify deleted
+    assertEquals(
+      0L,
+      em.createQuery("select count(id) from Attachment where id in (:ids)")
+        .setParameter("ids", ids).singleResult
+    )
   }
 }
