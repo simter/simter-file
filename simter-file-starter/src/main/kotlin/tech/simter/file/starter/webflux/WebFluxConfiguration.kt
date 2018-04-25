@@ -1,11 +1,12 @@
 package tech.simter.file.starter.webflux
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.web.reactive.config.CorsRegistry
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.config.WebFluxConfigurer
+import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.router
 
 /**
@@ -17,9 +18,7 @@ import org.springframework.web.reactive.function.server.router
  */
 @Configuration("tech.simter.kv.starter.WebFluxConfiguration")
 @EnableWebFlux
-class WebFluxConfiguration @Autowired constructor(
-  private val systemInfoHandler: SystemInfoHandler
-) : WebFluxConfigurer {
+class WebFluxConfiguration : WebFluxConfigurer {
   /**
    * CORS config.
    *
@@ -41,7 +40,9 @@ class WebFluxConfiguration @Autowired constructor(
    * Other application routes.
    */
   @Bean
-  fun systemInfoRoutes() = router {
-    SystemInfoHandler.REQUEST_PREDICATE.invoke(systemInfoHandler::handle)
+  fun testRoutes() = router {
+    "/test".nest {
+      GET("/", { ok().contentType(TEXT_PLAIN).syncBody("test") })
+    }
   }
 }

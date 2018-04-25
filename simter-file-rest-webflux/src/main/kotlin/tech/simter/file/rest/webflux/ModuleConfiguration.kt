@@ -7,7 +7,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.web.reactive.config.EnableWebFlux
+import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.router
 import tech.simter.file.rest.webflux.handler.AttachmentFormHandler
 import tech.simter.file.rest.webflux.handler.AttachmentViewHandler
@@ -53,16 +55,8 @@ class ModuleConfiguration @Autowired constructor(
       AttachmentFormHandler.REQUEST_PREDICATE.invoke(attachmentFormHandler::handle)
       // GET /{id}
       DownloadFileHandler.REQUEST_PREDICATE.invoke(downloadFileHandler::handle)
+      // GET /
+      GET("/", { ok().contentType(TEXT_PLAIN).syncBody("simter-file module") })
     }
   }
-
-//  fun route(request: ServerRequest): Mono<HandlerFunction<ServerResponse>> {
-//    return RouterFunctions.route(GET("/"), systemInfoHandler) // /root
-//      .andRoute(GET("/system-info"), systemInfoHandler)       // /system-info
-//      .andRoute(POST("/").and(contentType(MediaType.MULTIPART_FORM_DATA)), uploadFileHandler) // /root
-//      .andRoute(GET("/attachment"), attachmentViewHandler)      // /attachment?page-no=:pageNo&page-size=:pageSize
-//      .andRoute(GET("/attachment/{id}"), attachmentFormHandler) // /attachment/{id}
-//      .andRoute(GET("/{id}"), downloadFileHandler)   // /{id}
-//      .route(request)
-//  }
 }
