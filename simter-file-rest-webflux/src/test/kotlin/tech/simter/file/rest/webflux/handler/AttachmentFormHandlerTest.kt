@@ -21,6 +21,7 @@ import java.util.*
  * Test AttachmentFormHandler.
  *
  * @author JF
+ * @author RJ
  */
 @SpringJUnitConfig(AttachmentFormHandler::class)
 @EnableWebFlux
@@ -32,7 +33,7 @@ internal class AttachmentFormHandlerTest @Autowired constructor(
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
 
   @Test
-  fun attachmentForm() {
+  fun found() {
     // mock
     val id = UUID.randomUUID().toString()
     val attachment = Attachment(id, "/path", "name", "ext", 100, OffsetDateTime.now(), "Simter", "0", 0)
@@ -44,6 +45,19 @@ internal class AttachmentFormHandlerTest @Autowired constructor(
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
       .expectBody().jsonPath("$.id").isEqualTo(id)
+
+    // verify
+    verify(service).get(id)
+  }
+
+  @Test
+  fun notFound() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(service.get(id)).thenReturn(Mono.empty())
+
+    // invoke
+    client.get().uri("/attachment/$id").exchange().expectStatus().isNotFound
 
     // verify
     verify(service).get(id)

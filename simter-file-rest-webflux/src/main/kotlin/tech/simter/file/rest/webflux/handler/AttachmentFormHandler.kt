@@ -8,6 +8,8 @@ import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.ServerResponse.notFound
+import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
 import tech.simter.file.service.AttachmentService
 
@@ -15,6 +17,7 @@ import tech.simter.file.service.AttachmentService
  * The handler for attachment form.
  *
  * @author JF
+ * @author RJ
  */
 @Component
 class AttachmentFormHandler @Autowired constructor(
@@ -22,15 +25,9 @@ class AttachmentFormHandler @Autowired constructor(
 ) : HandlerFunction<ServerResponse> {
 
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    return attachmentService
-      // get Attachment by path variable id
-      .get(request.pathVariable("id"))
-      .flatMap({
-        // return response
-        ServerResponse.ok()
-          .contentType(MediaType.APPLICATION_JSON_UTF8)
-          .syncBody(it)
-      })
+    return attachmentService.get(request.pathVariable("id"))
+      .flatMap({ ok().contentType(MediaType.APPLICATION_JSON_UTF8).syncBody(it) }) // found
+      .switchIfEmpty(notFound().build())                                           // not found
   }
 
   companion object {
