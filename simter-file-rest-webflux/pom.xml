@@ -30,18 +30,28 @@
       <artifactId>spring-boot-autoconfigure</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-kotlin</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.projectreactor</groupId>
-      <artifactId>reactor-test</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.synchronoss.cloud</groupId>
       <artifactId>nio-multipart-parser</artifactId>
     </dependency>
   </dependencies>
+  <profiles>
+    <profile>
+      <id>test</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>com.fasterxml.jackson.module</groupId>
+          <artifactId>jackson-module-kotlin</artifactId>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.projectreactor</groupId>
+          <artifactId>reactor-test</artifactId>
+          <scope>test</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 </project>
