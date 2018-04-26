@@ -10,10 +10,31 @@ import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
+import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
 
 /**
- * The handler for attachment view.
+ * The [HandlerFunction] for find multiple [Attachment] info.
+ *
+ * Request:
+ *
+ * ```
+ * GET {context-path}/attachment?page-no=:pageNo&page-size=:pageSize
+ * ```
+ *
+ * Response:
+ *
+ * ```
+ * 200 OK
+ * Content-Type: application/json;charset=UTF-8
+ *
+ * {
+ *   count, pageNo, pageSize,
+ *   rows: [{id, path, name, ext, size, uploadOn, uploader, fileName, puid, subgroup}, ...]
+ * }
+ * ```
+ *
+ * [More](https://github.com/simter/simter-file/wiki/Attachment-View)
  *
  * @author JF
  */

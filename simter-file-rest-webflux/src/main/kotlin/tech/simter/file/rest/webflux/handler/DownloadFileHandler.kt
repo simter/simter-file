@@ -18,9 +18,33 @@ import reactor.core.scheduler.Schedulers
 import tech.simter.file.service.AttachmentService
 import kotlin.text.Charsets.ISO_8859_1
 
-
 /**
- * The handler for download file.
+ * The [HandlerFunction] for download file.
+ *
+ * Request:
+ *
+ * ```
+ * GET {context-path}/{id}
+ * ```
+ *
+ * Response: (if found)
+ *
+ * ```
+ * 200 OK
+ * Content-Type        : application/octet-stream
+ * Content-Length      : {len}
+ * Content-Disposition : attachment; filename="{file-name}.{ext}"
+ *
+ * :FILE-DATA
+ * ```
+ *
+ * Response: (if not found)
+ *
+ * ```
+ * 404 Not Found
+ * ```
+ *
+ * [More](https://github.com/simter/simter-file/wiki/Download-One-File)
  *
  * @author JF
  * @author RJ

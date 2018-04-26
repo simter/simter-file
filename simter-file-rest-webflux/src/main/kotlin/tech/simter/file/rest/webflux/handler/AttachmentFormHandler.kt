@@ -11,10 +11,34 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.notFound
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
+import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
 
 /**
- * The handler for attachment form.
+ * The [HandlerFunction] for find single [Attachment] info.
+ *
+ * Request:
+ *
+ * ```
+ * GET {context-path}/attachment/{id}
+ * ```
+ *
+ * Response: (if found)
+ *
+ * ```
+ * 200 OK
+ * Content-Type: application/json;charset=UTF-8
+ *
+ * {id, path, name, ext, size, uploadOn, uploader, fileName, puid, subgroup}
+ * ```
+ *
+ * Response: (if not found)
+ *
+ * ```
+ * 404 Not Found
+ * ```
+ *
+ * [More](https://github.com/simter/simter-file/wiki/Attachment-Form)
  *
  * @author JF
  * @author RJ

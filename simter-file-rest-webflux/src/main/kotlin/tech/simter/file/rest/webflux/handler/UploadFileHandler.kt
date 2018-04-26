@@ -25,7 +25,39 @@ import kotlin.collections.HashMap
 
 
 /**
- * The handler for upload file.
+ * The [HandlerFunction] for upload file.
+ *
+ * Request: (form submit with <input type="file">)
+ *
+ * ```
+ * POST {context-path}/
+ * Content-Type        : multipart/form-data; boundary=----{boundary}
+ * Content-Length      : {len}
+ *
+ * ------{boundary}
+ * Content-Disposition: form-data; name="{input-name}"; filename="{file-name}.{ext}"
+ * Content-Type: {media-type}
+ *
+ * {file-data}
+ * ------{boundary}
+ * Content-Disposition: form-data; name="puid"
+ *
+ * {puid}
+ * ------{boundary}
+ * Content-Disposition: form-data; name="subgroup"
+ *
+ * {subgroup}
+ * ------{boundary}--
+ * ```
+ *
+ * Response:
+ *
+ * ```
+ * 204 No Content
+ * Location : {context-path}/{id}
+ * ```
+ *
+ * [More](https://github.com/simter/simter-file/wiki/Upload-One-File)
  *
  * @author JF
  * @author RJ
