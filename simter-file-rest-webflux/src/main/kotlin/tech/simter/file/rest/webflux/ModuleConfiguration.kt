@@ -16,7 +16,7 @@ import tech.simter.file.rest.webflux.handler.AttachmentViewHandler
 import tech.simter.file.rest.webflux.handler.DownloadFileHandler
 import tech.simter.file.rest.webflux.handler.UploadFileHandler
 
-private const val MODULE_PACKAGE = "tech.simter.file.rest.webflux"
+private const val MODULE = "tech.simter.file.rest.webflux"
 
 /**
  * All configuration for this module.
@@ -26,8 +26,8 @@ private const val MODULE_PACKAGE = "tech.simter.file.rest.webflux"
  *
  * @author RJ
  */
-@Configuration("$MODULE_PACKAGE.ModuleConfiguration")
-@ComponentScan(MODULE_PACKAGE)
+@Configuration("$MODULE.ModuleConfiguration")
+@ComponentScan(MODULE)
 @EnableWebFlux
 class ModuleConfiguration @Autowired constructor(
   @Value("\${simter.rest.context-path.file:/}") private val contextPath: String,
@@ -43,8 +43,8 @@ class ModuleConfiguration @Autowired constructor(
   }
 
   /** Register a `RouterFunction<ServerResponse>` with all routers for this module */
-  @Bean("tech.simter.file.rest.webflux.Routes")
-  @ConditionalOnMissingBean(name = ["tech.simter.file.rest.webflux.Routes"])
+  @Bean("$MODULE.Routes")
+  @ConditionalOnMissingBean(name = ["$MODULE.Routes"])
   fun fileRoutes() = router {
     contextPath.nest {
       // POST /

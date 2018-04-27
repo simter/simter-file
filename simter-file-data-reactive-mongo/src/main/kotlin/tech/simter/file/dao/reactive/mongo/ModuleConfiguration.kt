@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories
 
-private const val MODULE_PACKAGE = "tech.simter.file.dao.reactive.mongo"
+private const val MODULE = "tech.simter.file"
 
 /**
  * All configuration for this module.
@@ -14,8 +14,8 @@ private const val MODULE_PACKAGE = "tech.simter.file.dao.reactive.mongo"
  * @author RJ
  */
 @Import(tech.simter.mongo.ModuleConfiguration::class) // auto register converters
-@Configuration("$MODULE_PACKAGE.ModuleConfiguration")
-@EnableReactiveMongoRepositories(MODULE_PACKAGE)
-@ComponentScan(MODULE_PACKAGE)
-@EntityScan(basePackages = ["tech.simter.file.po"])
+@Configuration("$MODULE.dao.reactive.mongo.ModuleConfiguration")
+@EnableReactiveMongoRepositories("$MODULE.dao.reactive.mongo")
+@ComponentScan("$MODULE.dao.reactive.mongo")
+@EntityScan("$MODULE.po")
 class ModuleConfiguration
