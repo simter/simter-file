@@ -18,7 +18,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
-import tech.simter.file.rest.webflux.handler.UploadFileHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.rest.webflux.handler.UploadFileByFormHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.io.File
 import java.io.IOException
@@ -28,22 +28,22 @@ import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
 
 /**
- * Test UploadFileHandler.
+ * Test UploadFileByFormHandler.
  *
  * @author JF
  * @author RJ
  */
-@SpringJUnitConfig(UploadFileHandler::class)
+@SpringJUnitConfig(UploadFileByFormHandler::class)
 @EnableWebFlux
 @MockBean(AttachmentService::class)
-@SpyBean(UploadFileHandler::class)
+@SpyBean(UploadFileByFormHandler::class)
 @TestPropertySource(properties = ["simter.file.root=target/files"])
-internal class UploadFileHandlerTest @Autowired constructor(
+internal class UploadFileByFormHandlerTest @Autowired constructor(
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String,
-  private val handler: UploadFileHandler
+  private val byFormHandler: UploadFileByFormHandler
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
+  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, byFormHandler)).build()
 
   @Test
   @Throws(IOException::class)
@@ -63,8 +63,8 @@ internal class UploadFileHandlerTest @Autowired constructor(
     val fileSize = file.contentLength()
     `when`(service.save(any())).thenReturn(Mono.empty())
 
-    // mock handler.newId return value
-    `when`(handler.newId()).thenReturn(id)
+    // mock byFormHandler.newId return value
+    `when`(byFormHandler.newId()).thenReturn(id)
 
     // invoke request
     val now = LocalDateTime.now().truncatedTo(SECONDS)

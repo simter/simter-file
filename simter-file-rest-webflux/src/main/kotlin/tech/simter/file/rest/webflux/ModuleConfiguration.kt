@@ -33,7 +33,7 @@ class ModuleConfiguration @Autowired constructor(
   @Value("\${simter.rest.context-path.file:/}") private val contextPath: String,
   private val attachmentFormHandler: AttachmentFormHandler,
   private val attachmentViewHandler: AttachmentViewHandler,
-  private val uploadFileHandler: UploadFileHandler,
+  private val uploadFileByFormHandler: UploadFileByFormHandler,
   private val downloadFileHandler: DownloadFileHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
@@ -48,7 +48,7 @@ class ModuleConfiguration @Autowired constructor(
   fun fileRoutes() = router {
     contextPath.nest {
       // POST /
-      UploadFileHandler.REQUEST_PREDICATE.invoke(uploadFileHandler::handle)
+      UploadFileByFormHandler.REQUEST_PREDICATE.invoke(uploadFileByFormHandler::handle)
       // GET /attachment?page-no=:pageNo&page-size=:pageSize
       AttachmentViewHandler.REQUEST_PREDICATE.invoke(attachmentViewHandler::handle)
       // GET /attachment/{id}

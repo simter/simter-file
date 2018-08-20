@@ -25,7 +25,7 @@ import kotlin.collections.HashMap
 
 
 /**
- * The [HandlerFunction] for upload file.
+ * The [HandlerFunction] for upload file by from.
  *
  * Request: (form submit with <input type="file">)
  *
@@ -57,18 +57,19 @@ import kotlin.collections.HashMap
  * Location : {context-path}/{id}
  * ```
  *
- * [More](https://github.com/simter/simter-file/wiki/Upload-One-File)
+ * [More](https://github.com/simter/simter-file/wiki/Upload-One-File-By-Form)
  *
  * @author JF
  * @author RJ
  */
 @Component
-class UploadFileHandler @Autowired constructor(
+class UploadFileByFormHandler @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
 
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
+    val a = request.bodyToFlux(Part::class.java)
     return request
       .bodyToFlux(Part::class.java)
       .filter({ it is FilePart || it is FormFieldPart })
