@@ -10,15 +10,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.core.io.ClassPathResource
-import org.springframework.http.MediaType.MULTIPART_FORM_DATA
-import org.springframework.http.client.MultipartBodyBuilder
+import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
-import tech.simter.file.rest.webflux.handler.UploadFileHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.rest.webflux.handler.UploadFileByStreamHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.io.File
 import java.io.IOException
@@ -28,22 +27,21 @@ import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
 
 /**
- * Test UploadFileHandler.
+ * Test UploadFileByStreamHandler.
  *
- * @author JF
- * @author RJ
+ * @author JW
  */
-@SpringJUnitConfig(UploadFileHandler::class)
+@SpringJUnitConfig(UploadFileByStreamHandler::class)
 @EnableWebFlux
 @MockBean(AttachmentService::class)
-@SpyBean(UploadFileHandler::class)
+@SpyBean(UploadFileByStreamHandler::class)
 @TestPropertySource(properties = ["simter.file.root=target/files"])
-internal class UploadFileHandlerTest @Autowired constructor(
+internal class UploadFileByStreamHandlerTest @Autowired constructor(
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String,
-  private val handler: UploadFileHandler
+  private val uploadFileByStreamHandler: UploadFileByStreamHandler
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
+  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, uploadFileByStreamHandler)).build()
 
   @Test
   @Throws(IOException::class)
@@ -51,27 +49,23 @@ internal class UploadFileHandlerTest @Autowired constructor(
     // mock MultipartBody
     val name = "logback-test"
     val ext = "xml"
-    val builder = MultipartBodyBuilder()
     val file = ClassPathResource("$name.$ext")
-    builder.part("fileData", file)
-    builder.part("puid", "puid")
-    builder.part("subgroup", "1")
-    val parts = builder.build()
 
     // mock service.create return value
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
     `when`(service.save(any())).thenReturn(Mono.empty())
 
-    // mock handler.newId return value
-    `when`(handler.newId()).thenReturn(id)
+    // mock uploadFileByStreamHandler.newId return value
+    `when`(uploadFileByStreamHandler.newId()).thenReturn(id)
 
     // invoke request
     val now = LocalDateTime.now().truncatedTo(SECONDS)
-    client.post().uri("/")
-      .contentType(MULTIPART_FORM_DATA)
+    client.post().uri("/?puid=puid1&subgroup=1")
+      .header("Content-Disposition","$name.$ext")
+      .contentType(MediaType.APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(parts)
+      .syncBody(file.file.readBytes())
       .exchange()
       .expectStatus().isNoContent
       .expectHeader().valueEquals("Location", "/$id")

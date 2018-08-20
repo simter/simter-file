@@ -9,12 +9,10 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.web.reactive.config.EnableWebFlux
+import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.router
-import tech.simter.file.rest.webflux.handler.AttachmentFormHandler
-import tech.simter.file.rest.webflux.handler.AttachmentViewHandler
-import tech.simter.file.rest.webflux.handler.DownloadFileHandler
-import tech.simter.file.rest.webflux.handler.UploadFileHandler
+import tech.simter.file.rest.webflux.handler.*
 
 private const val MODULE = "tech.simter.file.rest.webflux"
 
@@ -33,7 +31,8 @@ class ModuleConfiguration @Autowired constructor(
   @Value("\${simter.rest.context-path.file:/}") private val contextPath: String,
   private val attachmentFormHandler: AttachmentFormHandler,
   private val attachmentViewHandler: AttachmentViewHandler,
-  private val uploadFileHandler: UploadFileHandler,
+  private val uploadFileByFormHandler: UploadFileByFormHandler,
+  private val uploadFileByStreamHandler: UploadFileByStreamHandler,
   private val downloadFileHandler: DownloadFileHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
@@ -48,7 +47,9 @@ class ModuleConfiguration @Autowired constructor(
   fun fileRoutes() = router {
     contextPath.nest {
       // POST /
-      UploadFileHandler.REQUEST_PREDICATE.invoke(uploadFileHandler::handle)
+      UploadFileByFormHandler.REQUEST_PREDICATE.invoke(uploadFileByFormHandler::handle)
+      // POST /
+      UploadFileByStreamHandler.REQUEST_PREDICATE.invoke(uploadFileByStreamHandler::handle)
       // GET /attachment?page-no=:pageNo&page-size=:pageSize
       AttachmentViewHandler.REQUEST_PREDICATE.invoke(attachmentViewHandler::handle)
       // GET /attachment/{id}
