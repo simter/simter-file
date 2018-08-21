@@ -12,7 +12,6 @@ import org.springframework.web.reactive.function.server.RequestPredicates.conten
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
 import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
 import java.io.File
@@ -56,12 +55,12 @@ class UploadFileByStreamHandler @Autowired constructor(
 
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return request
-      .bodyToFlux(ByteArray::class.java)
+      .bodyToMono(ByteArray::class.java)
       // 1. extract data in request body
       .map({
         // build Map by data in list
         val formDataMap = HashMap<String, Any>()
-        formDataMap["filename"] = request.headers().header("Content-Disposition")[0]
+        formDataMap["filename"] = getFileName(request.headers().header("Content-Disposition"))
         formDataMap["puid"] = request.queryParam("puid")
           .orElseThrow { NullPointerException("Parameter \"puid\" mustn't be null!") }
         formDataMap["subgroup"] = request.queryParam("subgroup")
@@ -91,7 +90,7 @@ class UploadFileByStreamHandler @Autowired constructor(
       // 3. save attachment
       .flatMap({ attachmentService.save(it).thenReturn(it) })
       // 4. return response
-      .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() }).toMono()
+      .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() })
   }
 
   private fun toAttachment(fileSize: Long, filename: String, puid: String, subgroup: Short): Attachment {
@@ -115,6 +114,14 @@ class UploadFileByStreamHandler @Autowired constructor(
 
   /** Generate a new [Attachment] id */
   fun newId() = UUID.randomUUID().toString()
+
+  /** Get file name from content disposition */
+  private fun getFileName(contentDisposition: List<String>): String {
+    val disposition = contentDisposition[0]
+    val filenameIndex = disposition.indexOf("filename=\"").plus("filename=\"".length)
+    val str = disposition.substring(filenameIndex, disposition.indexOf("\"", filenameIndex))
+    return disposition.substring(filenameIndex, disposition.indexOf("\"", filenameIndex))
+  }
 
   companion object {
     /** The default [RequestPredicate] */
