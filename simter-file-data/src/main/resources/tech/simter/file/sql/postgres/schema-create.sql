@@ -8,7 +8,7 @@ create table st_attachment (
   name varchar(255) not null,
   ext varchar(10) not null,
   size integer not null,
-  uploadOn timestampz not null,
+  upload_on timestamp not null,
   uploader varchar(255) not null,
   puid varchar(36) not null default '0',
   subgroup integer not null default 0
