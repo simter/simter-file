@@ -58,6 +58,8 @@ class ModuleConfiguration @Autowired constructor(
       DownloadFileHandler.REQUEST_PREDICATE.invoke(downloadFileHandler::handle)
       // GET /
       GET("/", { ok().contentType(TEXT_PLAIN).syncBody("simter-file module") })
+      // OPTIONS /*
+      OPTIONS("/**", { ServerResponse.noContent().build() })
     }
   }
 }
