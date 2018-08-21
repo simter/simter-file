@@ -62,7 +62,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     // invoke request
     val now = LocalDateTime.now().truncatedTo(SECONDS)
     client.post().uri("/?puid=puid1&subgroup=1")
-      .header("Content-Disposition","$name.$ext")
+      .header("Content-Disposition","attachment; name=\"filedata\"; filename=\"$$name.$ext\"")
       .contentType(MediaType.APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
       .syncBody(file.file.readBytes())
