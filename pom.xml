@@ -5,7 +5,7 @@
   <parent>
     <groupId>tech.simter</groupId>
     <artifactId>simter-build</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.6-SNAPSHOT</version>
     <!-- lookup parent from repository -->
     <relativePath/>
   </parent>
@@ -14,8 +14,9 @@
   <packaging>pom</packaging>
   <description>Builder</description>
   <properties>
-    <revision>0.5.0-SNAPSHOT</revision>
-    <simter-file.version>0.5.0-SNAPSHOT</simter-file.version>
+    <revision>0.1-SNAPSHOT</revision>
+    <simter-file.version>${revision}</simter-file.version>
+    <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
   </properties>
   <modules>
     <module>simter-file-dependencies</module>
