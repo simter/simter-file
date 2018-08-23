@@ -119,7 +119,6 @@ class UploadFileByStreamHandler @Autowired constructor(
   private fun getFileName(contentDisposition: List<String>): String {
     val disposition = contentDisposition[0]
     val filenameIndex = disposition.indexOf("filename=\"").plus("filename=\"".length)
-    val str = disposition.substring(filenameIndex, disposition.indexOf("\"", filenameIndex))
     return disposition.substring(filenameIndex, disposition.indexOf("\"", filenameIndex))
   }
 
