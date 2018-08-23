@@ -31,6 +31,7 @@ class WebFluxConfiguration : WebFluxConfigurer {
       .allowedOrigins("*")
       .allowedMethods("*")
       .allowedHeaders("Authorization", "Content-Type", "Content-Disposition")
+      .exposedHeaders("Location")
       //.exposedHeaders("header1")
       .allowCredentials(false)
       .maxAge(1800) // seconds
