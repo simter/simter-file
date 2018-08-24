@@ -5,8 +5,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
@@ -33,6 +35,12 @@ class AttachmentDaoImpl @Autowired constructor(
       { content, total -> PageImpl(content, pageable, total) }
     )
     return zip.defaultIfEmpty(Page.empty<Attachment>(pageable))
+  }
+
+  override fun find(puid: String, subgroup: Short?): Flux<Attachment> {
+    val condition = Criteria.where("puid").`is`(puid)
+    if (null != subgroup) condition.and("subgroup").`is`(subgroup)
+    return operations.find(Query.query(condition), Attachment::class.java)
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {
