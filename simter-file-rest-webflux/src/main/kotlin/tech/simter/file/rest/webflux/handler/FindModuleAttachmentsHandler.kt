@@ -42,8 +42,15 @@ class FindModuleAttachmentsHandler @Autowired constructor(
 ) : HandlerFunction<ServerResponse> {
 
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    // todo
-    return Mono.empty()
+    return attachmentService.find(
+      request.pathVariable("puid"),
+      request.pathVariable("subgroup").toShort()
+    ).collectList()// response
+      .flatMap { ServerResponse.ok().contentType(MediaType.APPLICATION_JSON_UTF8).syncBody(it) }
+      // error mapping
+      .onErrorResume(PermissionDeniedException::class.java, {
+        ServerResponse.status(HttpStatus.FORBIDDEN).contentType(MediaType.TEXT_PLAIN).syncBody(it.message ?: "")
+      })
   }
 
   companion object {
