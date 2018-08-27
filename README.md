@@ -13,7 +13,7 @@
 
 Sn | Name                              | Parent                        | Remark
 ---|-----------------------------------|-------------------------------|--------
-1  | [simter-file-build]               | [simter-build:0.5.0-SNAPSHOT] | Build modules and define global properties and pluginManagement
+1  | [simter-file-build]               | [simter-build:0.6-SNAPSHOT]   | Build modules and define global properties and pluginManagement
 2  | [simter-file-dependencies]        | simter-file-build             | Define global dependencyManagement
 3  | [simter-file-parent]              | simter-file-dependencies      | All sub modules parent module, Define global dependencies and plugins
 4  | [simter-file-data]                | simter-file-parent            | Define Service and Dao Interfaces
@@ -24,7 +24,7 @@ Sn | Name                              | Parent                        | Remark
      
 Remark : Module 1, 2, 3 all has maven-enforcer-plugin and flatten-maven-plugin config. Other modules must not configure them.
 
-[simter-build:0.5.0-SNAPSHOT]: https://github.com/simter/simter-build/tree/master
+[simter-build:0.6-SNAPSHOT]: https://github.com/simter/simter-build/tree/master
 [simter-file-build]: https://github.com/simter/simter-file
 [simter-file-dependencies]: https://github.com/simter/simter-file/tree/master/simter-file-dependencies
 [simter-file-parent]: https://github.com/simter/simter-file/tree/master/simter-file-parent
