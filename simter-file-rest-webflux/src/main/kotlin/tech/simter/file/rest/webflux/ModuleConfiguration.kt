@@ -34,7 +34,8 @@ class ModuleConfiguration @Autowired constructor(
   private val findModuleAttachmentsHandler: FindModuleAttachmentsHandler,
   private val uploadFileByFormHandler: UploadFileByFormHandler,
   private val uploadFileByStreamHandler: UploadFileByStreamHandler,
-  private val downloadFileHandler: DownloadFileHandler
+  private val downloadFileHandler: DownloadFileHandler,
+  private val inlineFileHandler: InlineFileHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
 
@@ -59,6 +60,8 @@ class ModuleConfiguration @Autowired constructor(
       FindModuleAttachmentsHandler.REQUEST_PREDICATE.invoke(findModuleAttachmentsHandler::handle)
       // GET /{id}
       DownloadFileHandler.REQUEST_PREDICATE.invoke(downloadFileHandler::handle)
+      // GET /inline/{id}
+      InlineFileHandler.REQUEST_PREDICATE.invoke(inlineFileHandler::handle)
       // GET /
       GET("/", { ok().contentType(TEXT_PLAIN).syncBody("simter-file module") })
       // OPTIONS /*
