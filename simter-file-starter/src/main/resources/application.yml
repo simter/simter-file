@@ -1,3 +1,4 @@
+module.version.simter-file: @project.version@
 simter.file.root: /data/files # the place to store physical file
 db:
   platform: @db.platform@

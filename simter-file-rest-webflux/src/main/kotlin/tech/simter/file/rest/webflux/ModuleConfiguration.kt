@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType.TEXT_PLAIN
-import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.router
@@ -26,9 +25,9 @@ private const val MODULE = "tech.simter.file.rest.webflux"
  */
 @Configuration("$MODULE.ModuleConfiguration")
 @ComponentScan(MODULE)
-@EnableWebFlux
 class ModuleConfiguration @Autowired constructor(
-  @Value("\${simter.rest.context-path.file:/}") private val contextPath: String,
+  @Value("\${module.version.simter-file:UNKNOWN}") private val version: String,
+  @Value("\${module.rest-context-path.simter-file:/file}") private val contextPath: String,
   private val attachmentFormHandler: AttachmentFormHandler,
   private val attachmentViewHandler: AttachmentViewHandler,
   private val findModuleAttachmentsHandler: FindModuleAttachmentsHandler,
@@ -40,7 +39,8 @@ class ModuleConfiguration @Autowired constructor(
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
 
   init {
-    logger.warn("simter.rest.context-path.file='{}'", contextPath)
+    logger.warn("module.version.simter-file='{}'", version)
+    logger.warn("module.rest-context-path.simter-file='{}'", contextPath)
   }
 
   /** Register a `RouterFunction<ServerResponse>` with all routers for this module */
@@ -63,7 +63,7 @@ class ModuleConfiguration @Autowired constructor(
       // GET /inline/{id}
       InlineFileHandler.REQUEST_PREDICATE.invoke(inlineFileHandler::handle)
       // GET /
-      GET("/", { ok().contentType(TEXT_PLAIN).syncBody("simter-file module") })
+      GET("/", { ok().contentType(TEXT_PLAIN).syncBody("simter-file-$version") })
       // OPTIONS /*
       OPTIONS("/**", { ServerResponse.noContent().build() })
     }
