@@ -1,5 +1,6 @@
 package tech.simter.file.dao.reactive.mongo
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,6 +16,7 @@ import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
 import java.time.OffsetDateTime
 import java.util.*
+import java.util.stream.IntStream
 
 /**
  * @author cjw
@@ -55,7 +57,7 @@ class AttachmentDaoImplTest @Autowired constructor(
   }
 
   @Test
-  fun find() {
+  fun findByPageable() {
     val pageable = PageRequest.of(0, 25)
 
     // 1. not found
@@ -75,6 +77,41 @@ class AttachmentDaoImplTest @Autowired constructor(
     StepVerifier.create(actual)
       .consumeNextWith { page -> assertEquals(pos.size, page.content.size) }
       .verifyComplete()
+  }
+
+  @Test
+  fun findByModuleAndSubgroup() {
+    // 1. mock
+    val puid = "puid1"
+    val subgroup: Short = 1
+    val now = OffsetDateTime.now()
+    val origin = (1..3).map {
+      Attachment(id = it.toString(), path = path, name = "Sample$it", ext = "png", size = 123,
+        uploadOn = now, uploader = uploader, puid = puid, subgroup = it.toShort())
+    }
+
+    // 2. not found: empty list
+    StepVerifier.create(dao.find(puid, subgroup).collectList())
+      .consumeNextWith { Assertions.assertTrue(it.isEmpty()) }
+      .verifyComplete()
+
+    // 3. init data
+    StepVerifier.create(operations.insertAll(origin)).expectNextCount(origin.size.toLong()).verifyComplete()
+
+    // 4. found all data in module
+    StepVerifier.create(dao.find(puid, null).collectList())
+      .consumeNextWith { actual ->
+        assertEquals(actual.size, origin.size)
+        IntStream.range(0, actual.size).forEach {
+          assertEquals(actual[it].id, origin[it].id)
+        }
+      }.verifyComplete()
+
+    // 5. found all data in module and subgroup
+    StepVerifier.create(dao.find(puid, subgroup).collectList())
+      .consumeNextWith {
+        assertEquals(it[0].id, origin.find { it.puid == puid && it.subgroup == subgroup }?.id)
+      }.verifyComplete()
   }
 
   @Test

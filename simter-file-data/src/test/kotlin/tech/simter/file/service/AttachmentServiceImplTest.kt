@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tech.simter.file.dao.AttachmentDao
@@ -42,7 +43,7 @@ class AttachmentServiceImplTest @Autowired constructor(
   }
 
   @Test
-  fun find() {
+  fun findByPageable() {
     // mock
     val pageable: Pageable = PageRequest.of(0, 25)
     val expect: Page<Attachment> = Page.empty()
@@ -54,6 +55,22 @@ class AttachmentServiceImplTest @Autowired constructor(
     // verify
     StepVerifier.create(actual).expectNext(expect).verifyComplete()
     verify(dao).find(pageable)
+  }
+
+  @Test
+  fun findByModuleAndSubgroup() {
+    // mock
+    val puid = "puid1"
+    val subgroup: Short = 1
+    val expect = Collections.emptyList<Attachment>()
+    `when`(dao.find(puid, subgroup)).thenReturn(Flux.fromIterable(expect))
+
+    // invoke
+    val actual = service.find(puid, subgroup)
+
+    // verify
+    StepVerifier.create(actual.collectList()).expectNext(expect).verifyComplete()
+    verify(dao).find(puid, subgroup)
   }
 
   @Test

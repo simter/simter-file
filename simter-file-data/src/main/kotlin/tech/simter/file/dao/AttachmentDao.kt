@@ -2,6 +2,7 @@ package tech.simter.file.dao
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.po.Attachment
 
@@ -27,6 +28,15 @@ interface AttachmentDao {
    * @return [Mono] emitting a page of attachments contains data or a empty page without data if none found
    */
   fun find(pageable: Pageable): Mono<Page<Attachment>>
+
+  /**
+   * Returns a [Flux] of [Attachment]'s by puid and subgroup.
+   *
+   * @param[puid] the module identity
+   * @param[subgroup] the subgroup from specify module
+   * @return [Flux] emitting attachments or a empty flux without data if none found
+   */
+  fun find(puid: String, subgroup: Short?): Flux<Attachment>
 
   /**
    * Create or update one or more [Attachment].
