@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
@@ -40,7 +41,7 @@ class AttachmentDaoImpl @Autowired constructor(
   override fun find(puid: String, subgroup: Short?): Flux<Attachment> {
     val condition = Criteria.where("puid").`is`(puid)
     if (null != subgroup) condition.and("subgroup").`is`(subgroup)
-    return operations.find(Query.query(condition), Attachment::class.java)
+    return operations.find(Query.query(condition).with(Sort(Sort.Direction.DESC, "uploadOn")), Attachment::class.java)
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {
