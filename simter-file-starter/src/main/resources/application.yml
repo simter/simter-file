@@ -1,5 +1,5 @@
 module.version.simter-file: @project.version@
-simter.file.root: /data/files # the place to store physical file
+simter.file.root: /data/file # the place to store physical file
 db:
   platform: @db.platform@
   init-mode: @db.init-mode@
