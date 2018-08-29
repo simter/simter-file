@@ -89,6 +89,7 @@ class AttachmentDaoImplTest @Autowired constructor(
       Attachment(id = it.toString(), path = path, name = "Sample$it", ext = "png", size = 123,
         uploadOn = now, uploader = uploader, puid = puid, subgroup = it.toShort())
     }
+    Collections.reverse(origin)
 
     // 2. not found: empty list
     StepVerifier.create(dao.find(puid, subgroup).collectList())
