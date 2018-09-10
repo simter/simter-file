@@ -34,7 +34,8 @@ class ModuleConfiguration @Autowired constructor(
   private val uploadFileByFormHandler: UploadFileByFormHandler,
   private val uploadFileByStreamHandler: UploadFileByStreamHandler,
   private val downloadFileHandler: DownloadFileHandler,
-  private val inlineFileHandler: InlineFileHandler
+  private val inlineFileHandler: InlineFileHandler,
+  private val deleteFilesHandler: DeleteFilesHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
 
@@ -62,6 +63,8 @@ class ModuleConfiguration @Autowired constructor(
       DownloadFileHandler.REQUEST_PREDICATE.invoke(downloadFileHandler::handle)
       // GET /inline/{id}
       InlineFileHandler.REQUEST_PREDICATE.invoke(inlineFileHandler::handle)
+      // DELETE /{ids}
+      DeleteFilesHandler.REQUEST_PREDICATE.invoke(deleteFilesHandler::handle)
       // GET /
       GET("/", { ok().contentType(TEXT_PLAIN).syncBody("simter-file-$version") })
       // OPTIONS /*
