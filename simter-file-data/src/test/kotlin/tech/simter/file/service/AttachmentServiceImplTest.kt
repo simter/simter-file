@@ -74,6 +74,21 @@ class AttachmentServiceImplTest @Autowired constructor(
   }
 
   @Test
+  fun findByIds() {
+    // mock
+    val ids = arrayOf("aaa", "bbb", "ccc")
+    val expect = Collections.emptyList<Attachment>()
+    `when`(dao.find(*ids)).thenReturn(Flux.fromIterable(expect))
+
+    // invoke
+    val actual = service.find(*ids)
+
+    // verify
+    StepVerifier.create(actual.collectList()).expectNext(expect).verifyComplete()
+    verify(dao).find(*ids)
+  }
+
+  @Test
   fun save() {
     // mock
     val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")

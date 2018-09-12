@@ -29,6 +29,10 @@ class AttachmentServiceImpl @Autowired constructor(val attachmentDao: Attachment
     return attachmentDao.find(puid, subgroup)
   }
 
+  override fun find(vararg ids: String): Flux<Attachment> {
+    return attachmentDao.find(*ids)
+  }
+
   override fun save(vararg attachments: Attachment): Mono<Void> {
     return attachmentDao.save(*attachments)
   }
