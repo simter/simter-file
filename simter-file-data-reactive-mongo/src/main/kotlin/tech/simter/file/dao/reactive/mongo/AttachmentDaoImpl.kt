@@ -44,6 +44,13 @@ class AttachmentDaoImpl @Autowired constructor(
     return operations.find(Query.query(condition).with(Sort(Sort.Direction.DESC, "uploadOn")), Attachment::class.java)
   }
 
+  override fun find(vararg ids: String): Flux<Attachment> {
+    return ids.let {
+      if (it.isEmpty()) throw NullPointerException("The ids parameter must not be empty")
+      else repository.findAllById(ids.asIterable())
+    }
+  }
+
   override fun save(vararg attachments: Attachment): Mono<Void> {
     return if (attachments.isEmpty()) Mono.empty()
     else repository.saveAll(attachments.asIterable()).then()

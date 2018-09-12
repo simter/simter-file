@@ -116,6 +116,37 @@ class AttachmentDaoImplTest @Autowired constructor(
   }
 
   @Test
+  fun findByIds(){
+    // 1. mock
+    val ids = arrayOf("a0001", "a0002", "a0003", "a0004", "a0005")
+    val now = OffsetDateTime.now()
+    val origin = (0..ids.size.minus(1)).map {
+      Attachment(id = ids[it], path = path, name = "Sample$it", ext = "png", size = 123,
+        uploadOn = now, uploader = uploader, puid = "puid1", subgroup = it.toShort())
+    }
+
+    // 2. throw NPE: empty ids
+    Assertions.assertThrows(NullPointerException::class.java, { dao.find().subscribe() })
+
+    // 3. not found: empty list
+    StepVerifier.create(dao.find(*ids).collectList())
+      .consumeNextWith { Assertions.assertTrue(it.isEmpty()) }
+      .verifyComplete()
+
+    // 4. init data
+    StepVerifier.create(operations.insertAll(origin)).expectNextCount(origin.size.toLong()).verifyComplete()
+
+    // 5. found all data by ids
+    StepVerifier.create(dao.find(*ids).collectList())
+      .consumeNextWith { actual ->
+        assertEquals(actual.size, origin.size)
+        IntStream.range(0, actual.size).forEach {
+          assertEquals(actual[it].id, origin[it].id)
+        }
+      }.verifyComplete()
+  }
+
+  @Test
   fun saveOne() {
     val po = Attachment(UUID.randomUUID().toString(), path, "Sample", "png", 123, now, uploader)
     val actual = dao.save(po)
