@@ -1,5 +1,6 @@
 package tech.simter.file.dao.jpa
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -125,6 +126,41 @@ class AttachmentDaoImplTest @Autowired constructor(
     StepVerifier.create(dao.find(puid, subgroup).collectList())
       .consumeNextWith {
         assertEquals(it[0].id, origin.find { it.puid == puid && it.subgroup == subgroup }?.id)
+      }.verifyComplete()
+  }
+
+  @Test
+  fun findByIds() {
+    // 1. mock
+    val ids = arrayOf("a0001","a0002","a0003","a0004","a0005")
+    val now = OffsetDateTime.now()
+    val origin = ArrayList<Attachment>()
+
+    // 2. throw NPE: empty ids
+    Assertions.assertThrows(NullPointerException::class.java, { dao.find().subscribe() })
+
+    // 3. not found: empty list
+    StepVerifier.create(dao.find(*ids).collectList())
+      .consumeNextWith { assertTrue(it.isEmpty()) }
+      .verifyComplete()
+
+    // 4. init data
+    IntStream.range(0, ids.size).forEach {
+      val po = Attachment(id = ids[it], path = "/data", name = "Sample", ext = "png", size = 123,
+        uploadOn = now.minusDays(it.toLong()), uploader = "Simter", puid = "puid1", subgroup = it.toShort())
+      em.persist(po)
+      origin.add(po)
+    }
+    em.flush()
+    em.clear()
+
+    // 5. found all data by ids
+    StepVerifier.create(dao.find(*ids).collectList())
+      .consumeNextWith { actual ->
+        assertEquals(actual.size, origin.size)
+        IntStream.range(0, actual.size).forEach {
+          assertEquals(actual[it].id, origin[it].id)
+        }
       }.verifyComplete()
   }
 
