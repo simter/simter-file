@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
@@ -16,6 +17,7 @@ import tech.simter.file.po.Attachment
  * @author RJ
  */
 @Component
+@Transactional
 class AttachmentServiceImpl @Autowired constructor(val attachmentDao: AttachmentDao) : AttachmentService {
   override fun get(id: String): Mono<Attachment> {
     return attachmentDao.get(id)
