@@ -5,14 +5,19 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import org.springframework.core.io.ClassPathResource
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Direction.DESC
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
+import org.springframework.util.FileCopyUtils
 import reactor.test.StepVerifier
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
+import java.io.File
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.stream.IntStream
@@ -25,7 +30,9 @@ import kotlin.collections.ArrayList
  */
 @SpringJUnitConfig(ModuleConfiguration::class)
 @DataJpaTest
+@TestPropertySource(properties = ["simter.file.root=target/files"])
 class AttachmentDaoImplTest @Autowired constructor(
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   @PersistenceContext val em: EntityManager,
   val dao: AttachmentDao
 ) {
@@ -132,7 +139,7 @@ class AttachmentDaoImplTest @Autowired constructor(
   @Test
   fun findByIds() {
     // 1. mock
-    val ids = arrayOf("a0001","a0002","a0003","a0004","a0005")
+    val ids = arrayOf("a0001", "a0002", "a0003", "a0004", "a0005")
     val now = OffsetDateTime.now()
     val origin = ArrayList<Attachment>()
 
@@ -216,24 +223,30 @@ class AttachmentDaoImplTest @Autowired constructor(
     // 3. delete exists id
     // 3.1 prepare data
     val pos = (1..3).map {
-      Attachment(UUID.randomUUID().toString(), "/data", "Sample-$it", "png", 123, OffsetDateTime.now(), "Simter")
+      Attachment(UUID.randomUUID().toString(), "/data/$it.xml", "Sample-$it", "png", 123,
+        OffsetDateTime.now(), "Simter")
     }
+    val ids = pos.map { it.id }
     pos.forEach { em.persist(it) }
     em.flush()
     em.clear()
+    buildTestFiles(pos)
 
-    // 3.2 invoke
-    val ids = pos.map { it.id }
-    val actual = dao.delete(*ids.toTypedArray())
+    // 3.2 verify attachments is deleted
+    StepVerifier.create(dao.delete(*ids.toTypedArray())).verifyComplete()
+    StepVerifier.create(dao.find(*ids.toTypedArray())).expectNextCount(0L).verifyComplete()
 
-    // 3.3 verify empty result
-    StepVerifier.create(actual).expectNextCount(0L).verifyComplete()
+    // 3.3 verify physics files is deleted
+    pos.forEach { assertTrue(!File("$fileRootDir/${it.path}").exists()) }
+  }
 
-    // 3.4 verify deleted
-    assertEquals(
-      0L,
-      em.createQuery("select count(id) from Attachment where id in (:ids)")
-        .setParameter("ids", ids).singleResult
-    )
+  /** build test file method */
+  private fun buildTestFiles(attachments: List<Attachment>) {
+    attachments.forEach {
+      val file = File("$fileRootDir/${it.path}")
+      val parentFile = file.parentFile
+      if (!parentFile.exists()) parentFile.mkdirs()
+      FileCopyUtils.copy(ClassPathResource("banner.txt").file.readBytes(), file)
+    }
   }
 }

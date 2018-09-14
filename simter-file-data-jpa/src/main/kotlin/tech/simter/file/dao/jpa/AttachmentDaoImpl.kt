@@ -1,6 +1,7 @@
 package tech.simter.file.dao.jpa
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -9,6 +10,7 @@ import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
+import java.io.File
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 import javax.persistence.Query
@@ -20,6 +22,7 @@ import javax.persistence.Query
  */
 @Component
 class AttachmentDaoImpl @Autowired constructor(
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   @PersistenceContext private val em: EntityManager,
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
@@ -57,12 +60,18 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun delete(vararg ids: String): Mono<Void> {
-    if (!ids.isEmpty()) {
-      em.createQuery("delete from Attachment where id in (:ids)")
-        .setParameter("ids", ids.toList())
-        .executeUpdate()
-    }
-
-    return Mono.empty()
+    return if (ids.isEmpty()) Mono.empty()
+    else this.find(*ids).collectList()
+      .flatMap {
+        if (!it.isEmpty()) {
+          // delete physics file
+          it.forEach { File("$fileRootDir/${it.path}").delete() }
+          // delete attachment in database
+          em.createQuery("delete from Attachment where id in (:ids)")
+            .setParameter("ids", it.map { it.id }.toList())
+            .executeUpdate()
+        }
+        Mono.empty<Void>()
+      }
   }
 }
