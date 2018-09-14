@@ -39,6 +39,15 @@ interface AttachmentDao {
   fun find(puid: String, subgroup: Short?): Flux<Attachment>
 
   /**
+   * Returns a [Flux] of [Attachment]'s by id array.
+   *
+   * @param[ids] the attachment identity array
+   * @return [Flux] emitting attachments or a empty flux without data if none found
+   * @throws [NullPointerException] if ids parameter had not data
+   */
+  fun find(vararg ids: String): Flux<Attachment>
+
+  /**
    * Create or update one or more [Attachment].
    *
    * @param[attachments] the attachments to save or update
@@ -47,7 +56,7 @@ interface AttachmentDao {
   fun save(vararg attachments: Attachment): Mono<Void>
 
   /**
-   * Delete [Attachment] by its id.
+   * Delete [Attachment] and physics file by its id.
    *
    * @param[ids] the ids to delete
    * @return [Mono] signaling when operation has completed

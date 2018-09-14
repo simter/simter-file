@@ -5,15 +5,20 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
+import org.springframework.core.io.ClassPathResource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
+import org.springframework.util.FileCopyUtils
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
+import java.io.File
 import java.time.OffsetDateTime
 import java.util.*
 import java.util.stream.IntStream
@@ -24,7 +29,9 @@ import java.util.stream.IntStream
  */
 @SpringJUnitConfig(ModuleConfiguration::class)
 @DataMongoTest
+@TestPropertySource(properties = ["simter.file.root=target/files"])
 class AttachmentDaoImplTest @Autowired constructor(
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val dao: AttachmentDao,
   private val operations: ReactiveMongoOperations
 ) {
@@ -116,6 +123,37 @@ class AttachmentDaoImplTest @Autowired constructor(
   }
 
   @Test
+  fun findByIds() {
+    // 1. mock
+    val ids = arrayOf("a0001", "a0002", "a0003", "a0004", "a0005")
+    val now = OffsetDateTime.now()
+    val origin = (0..ids.size.minus(1)).map {
+      Attachment(id = ids[it], path = path, name = "Sample$it", ext = "png", size = 123,
+        uploadOn = now, uploader = uploader, puid = "puid1", subgroup = it.toShort())
+    }
+
+    // 2. throw NPE: empty ids
+    Assertions.assertThrows(NullPointerException::class.java, { dao.find().subscribe() })
+
+    // 3. not found: empty list
+    StepVerifier.create(dao.find(*ids).collectList())
+      .consumeNextWith { Assertions.assertTrue(it.isEmpty()) }
+      .verifyComplete()
+
+    // 4. init data
+    StepVerifier.create(operations.insertAll(origin)).expectNextCount(origin.size.toLong()).verifyComplete()
+
+    // 5. found all data by ids
+    StepVerifier.create(dao.find(*ids).collectList())
+      .consumeNextWith { actual ->
+        assertEquals(actual.size, origin.size)
+        IntStream.range(0, actual.size).forEach {
+          assertEquals(actual[it].id, origin[it].id)
+        }
+      }.verifyComplete()
+  }
+
+  @Test
   fun saveOne() {
     val po = Attachment(UUID.randomUUID().toString(), path, "Sample", "png", 123, now, uploader)
     val actual = dao.save(po)
@@ -127,5 +165,41 @@ class AttachmentDaoImplTest @Autowired constructor(
     StepVerifier.create(operations.findById(po.id, Attachment::class.java))
       .expectNext(po)
       .verifyComplete()
+  }
+
+  @Test
+  fun delete() {
+    // 1. none
+    StepVerifier.create(dao.delete()).expectNextCount(0L).verifyComplete()
+
+    // 2. delete not exists id
+    StepVerifier.create(dao.delete(UUID.randomUUID().toString())).expectNextCount(0L).verifyComplete()
+
+    // 3. delete exists id
+    // 3.1 prepare data
+    val origin = (0..3).map {
+      Attachment(id = UUID.randomUUID().toString(), path = "$path/$it.xml", name = "Sample$it", ext = "png", size = 123,
+        uploadOn = now, uploader = uploader, puid = "puid1", subgroup = it.toShort())
+    }
+    val ids = origin.map { it.id }
+    StepVerifier.create(operations.insertAll(origin)).expectNextCount(origin.size.toLong()).verifyComplete()
+    buildTestFiles(origin)
+
+    // 3.2 verify attachments is deleted
+    StepVerifier.create(dao.delete(*ids.toTypedArray())).verifyComplete()
+    StepVerifier.create(dao.find(*ids.toTypedArray())).expectNextCount(0L).verifyComplete()
+
+    // 3.3 verify physics files is deleted
+    origin.forEach { Assertions.assertTrue(!File("$fileRootDir/${it.path}").exists()) }
+  }
+
+  /** build test file method */
+  private fun buildTestFiles(attachments: List<Attachment>) {
+    attachments.forEach {
+      val file = File("$fileRootDir/${it.path}")
+      val parentFile = file.parentFile
+      if (!parentFile.exists()) parentFile.mkdirs()
+      FileCopyUtils.copy(ClassPathResource("banner.txt").file.readBytes(), file)
+    }
   }
 }

@@ -1,6 +1,7 @@
 package tech.simter.file.dao.reactive.mongo
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -13,6 +14,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
+import java.io.File
 
 /**
  * The Reactive MongoDB implementation of [AttachmentDao].
@@ -21,6 +23,7 @@ import tech.simter.file.po.Attachment
  */
 @Component
 class AttachmentDaoImpl @Autowired constructor(
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val repository: AttachmentReactiveRepository,
   private val operations: ReactiveMongoOperations
 ) : AttachmentDao {
@@ -44,6 +47,13 @@ class AttachmentDaoImpl @Autowired constructor(
     return operations.find(Query.query(condition).with(Sort(Sort.Direction.DESC, "uploadOn")), Attachment::class.java)
   }
 
+  override fun find(vararg ids: String): Flux<Attachment> {
+    return ids.let {
+      if (it.isEmpty()) throw NullPointerException("The ids parameter must not be empty")
+      else repository.findAllById(ids.asIterable())
+    }
+  }
+
   override fun save(vararg attachments: Attachment): Mono<Void> {
     return if (attachments.isEmpty()) Mono.empty()
     else repository.saveAll(attachments.asIterable()).then()
@@ -51,6 +61,12 @@ class AttachmentDaoImpl @Autowired constructor(
 
   override fun delete(vararg ids: String): Mono<Void> {
     return if (ids.isEmpty()) Mono.empty()
-    else repository.deleteAll(repository.findAllById(ids.asIterable()))
+    else repository.findAllById(ids.asIterable()).collectList().flatMap {
+      if (it.isEmpty()) Mono.empty<Void>()
+      // delete physics file
+      it.forEach { File("$fileRootDir/${it.path}").delete() }
+      // delete attachment in database
+      repository.deleteAll(it.asIterable())
+    }
   }
 }
