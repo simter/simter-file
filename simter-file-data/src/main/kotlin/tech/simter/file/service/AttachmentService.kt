@@ -48,7 +48,8 @@ interface AttachmentService {
   fun save(vararg attachments: Attachment): Mono<Void>
 
   /**
-   * Delete [Attachment] by its id.
+   * Delete [Attachment] and physics file by its id.
+   * If specify [Attachment] not exists then ignore and handle as success.
    *
    * @param[ids] the ids to delete
    * @return [Mono] signaling when operation has completed

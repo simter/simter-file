@@ -1,6 +1,7 @@
 package tech.simter.file.dao.reactive.mongo
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -13,6 +14,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
+import java.io.File
 
 /**
  * The Reactive MongoDB implementation of [AttachmentDao].
@@ -21,6 +23,7 @@ import tech.simter.file.po.Attachment
  */
 @Component
 class AttachmentDaoImpl @Autowired constructor(
+  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val repository: AttachmentReactiveRepository,
   private val operations: ReactiveMongoOperations
 ) : AttachmentDao {
@@ -50,7 +53,13 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun delete(vararg ids: String): Mono<Void> {
-    return if (ids.isEmpty()) Mono.empty()
-    else repository.deleteAll(repository.findAllById(ids.asIterable()))
+    return if (ids.isEmpty()) Mono.empty<Void>()
+    else repository.findAllById(ids.asIterable()).collectList().flatMap {
+      // delete attachment in database
+      repository.deleteAll(it)
+        // delete physics file
+        .then(Mono.just(it.forEach { File("$fileRootDir/${it.path}").delete() }))
+        .then(Mono.empty<Void>())
+    }
   }
 }
