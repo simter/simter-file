@@ -36,7 +36,9 @@ internal class AttachmentFormHandlerTest @Autowired constructor(
   fun found() {
     // mock
     val id = UUID.randomUUID().toString()
-    val attachment = Attachment(id, "/path", "name", "ext", 100, OffsetDateTime.now(), "Simter", "0", 0)
+    val now = OffsetDateTime.now()
+    val attachment = Attachment(id, "/path", "name", "type", 100,
+      now, "Simter", now, "Simter", "0")
     `when`(service.get(id)).thenReturn(Mono.just(attachment))
 
     // invoke

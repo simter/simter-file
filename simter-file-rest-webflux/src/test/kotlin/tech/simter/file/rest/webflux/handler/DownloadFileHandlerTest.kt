@@ -46,9 +46,10 @@ internal class DownloadFileHandlerTest @Autowired constructor(
     val ext = "xml"
     val fileName = "$name.$ext"
     val id = UUID.randomUUID().toString()
+    val now = OffsetDateTime.now()
     val fileSize = FileSystemResource("$fileRootDir/resources/$fileName").contentLength()
     val attachment = Attachment(id, "resources/$name.$ext", name, ext, fileSize,
-      OffsetDateTime.now(), "Simter", "0", 0)
+      now, "Simter", now, "Simter", "0")
     val expected = Mono.just(attachment)
     `when`(service.get(id)).thenReturn(expected)
 

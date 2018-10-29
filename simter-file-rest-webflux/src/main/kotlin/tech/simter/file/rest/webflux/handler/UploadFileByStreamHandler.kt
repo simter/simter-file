@@ -28,7 +28,7 @@ import kotlin.collections.HashMap
  * Request: (form submit with <input type="file">)
  *
  * ```
- * POST {context-path}?puid=xxx&subgroup=xxx
+ * POST {context-path}?puid=xxx&upperId=xxx
  * Content-Type        : application/octet-stream
  * Content-Length      : {len}
  * Content-Disposition : {fileName}
@@ -63,8 +63,8 @@ class UploadFileByStreamHandler @Autowired constructor(
         formDataMap["filename"] = getFileName(request.headers().header("Content-Disposition"))
         formDataMap["puid"] = request.queryParam("puid")
           .orElseThrow { NullPointerException("Parameter \"puid\" mustn't be null!") }
-        formDataMap["subgroup"] = request.queryParam("subgroup")
-          .orElseThrow { NullPointerException("Parameter \"subgroup\" mustn't be null!") }.toShort()
+        formDataMap["upperId"] = request.queryParam("upperId")
+          .orElseThrow { NullPointerException("Parameter \"upperId\" mustn't be null!") }
         formDataMap["fileData"] = it
         formDataMap
       })
@@ -73,7 +73,7 @@ class UploadFileByStreamHandler @Autowired constructor(
         // get the FilePart by the Map
         val fileData = it["fileData"] as ByteArray
         // convert to Attachment instance
-        val attachment = toAttachment(fileData.size.toLong(), it["filename"] as String, it["puid"] as String, it["subgroup"] as Short)
+        val attachment = toAttachment(fileData.size.toLong(), it["filename"] as String, it["puid"] as String, it["upperId"] as String)
 
         val file = File("$fileRootDir/${attachment.path}")
         val fileDir = file.parentFile
@@ -93,23 +93,14 @@ class UploadFileByStreamHandler @Autowired constructor(
       .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() })
   }
 
-  private fun toAttachment(fileSize: Long, filename: String, puid: String, subgroup: Short): Attachment {
+  private fun toAttachment(fileSize: Long, filename: String, puid: String, upperId: String): Attachment {
     val id = newId()
     val now = OffsetDateTime.now()
     val lastDotIndex = filename.lastIndexOf(".")
-    val ext = filename.substring(lastDotIndex + 1)
-    val path = "${now.format(DateTimeFormatter.ofPattern("yyyyMM"))}/${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$ext"
-    return Attachment(
-      id,                                     // id
-      path,                                   // relative path
-      filename.substring(0, lastDotIndex),    // name
-      ext,                                    // ext
-      fileSize,                               // file size
-      now,                                    // upload time
-      "Simter",                               // uploader
-      puid,                                   // puid
-      subgroup                                // subgroup
-    )
+    val type = filename.substring(lastDotIndex + 1)
+    val path = "${now.format(DateTimeFormatter.ofPattern("yyyyMM"))}/${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$type"
+    return Attachment(id = id, path = path, name = filename.substring(0, lastDotIndex), type = type, size = fileSize,
+      createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", puid = puid, upperId = upperId)
   }
 
   /** Generate a new [Attachment] id */

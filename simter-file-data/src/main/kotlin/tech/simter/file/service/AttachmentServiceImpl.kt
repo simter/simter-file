@@ -25,8 +25,8 @@ class AttachmentServiceImpl @Autowired constructor(val attachmentDao: Attachment
     return attachmentDao.find(pageable)
   }
 
-  override fun find(puid: String, subgroup: Short?): Flux<Attachment> {
-    return attachmentDao.find(puid, subgroup)
+  override fun find(puid: String, upperId: String?): Flux<Attachment> {
+    return attachmentDao.find(puid, upperId)
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {

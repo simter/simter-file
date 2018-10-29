@@ -43,7 +43,9 @@ class AttachmentDaoImplTest @Autowired constructor(
       .verifyComplete()
 
     // prepare data
-    val po = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
+    val now = OffsetDateTime.now()
+    val po = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
+      123, now, "Simter", now, "Simter")
     em.persist(po)
     em.flush()
     em.clear()
@@ -70,15 +72,17 @@ class AttachmentDaoImplTest @Autowired constructor(
     // 2. found: page with content
     // 2.1 prepare data
     val now = OffsetDateTime.now()
-    val po1 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, now.minusDays(1), "Simter")
-    val po2 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, now, "Simter")
+    val po1 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123,
+      now.minusDays(1), "Simter", now.minusDays(1), "Simter")
+    val po2 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123,
+      now, "Simter", now, "Simter")
     em.persist(po1)
     em.persist(po2)
     em.flush()
     em.clear()
 
     // 2.2 invoke
-    val actual = dao.find(PageRequest.of(0, 25, Sort.by(DESC, "uploadOn")))
+    val actual = dao.find(PageRequest.of(0, 25, Sort.by(DESC, "createOn")))
 
     // 2.3 verify
     StepVerifier.create(actual)
@@ -98,7 +102,7 @@ class AttachmentDaoImplTest @Autowired constructor(
   fun findByModuleAndSubgroup() {
     // 1. mock
     val puid = "puid1"
-    val subgroup: Short = 1
+    val subgroup = "1"
     val now = OffsetDateTime.now()
     val origin = ArrayList<Attachment>()
 
@@ -109,14 +113,15 @@ class AttachmentDaoImplTest @Autowired constructor(
 
     // 3. init data
     IntStream.range(0, 5).forEach {
-      val po = Attachment(id = UUID.randomUUID().toString(), path = "/data", name = "Sample", ext = "png", size = 123,
-        uploadOn = now.minusDays(it.toLong()), uploader = "Simter", puid = "puid1", subgroup = it.toShort())
+      val po = Attachment(id = UUID.randomUUID().toString(), path = "/data", name = "Sample", type = "png", size = 123,
+        createOn = now.minusDays(it.toLong()), creator = "Simter", puid = "puid1", upperId = it.toString(),
+        modifyOn = now.minusDays(it.toLong()), modifier = "Simter")
       em.persist(po)
       origin.add(po)
     }
     em.flush()
     em.clear()
-    origin.sortBy { it.uploadOn }
+    origin.sortBy { it.createOn }
     origin.reverse()
 
     // 4. found all data by module
@@ -128,10 +133,10 @@ class AttachmentDaoImplTest @Autowired constructor(
         }
       }.verifyComplete()
 
-    // 5. found all data by module and subgroup
+    // 5. found all data by module and upperId
     StepVerifier.create(dao.find(puid, subgroup).collectList())
       .consumeNextWith {
-        assertEquals(it[0].id, origin.find { it.puid == puid && it.subgroup == subgroup }?.id)
+        assertEquals(it[0].id, origin.find { it.puid == puid && it.upperId == subgroup }?.id)
       }.verifyComplete()
   }
 
@@ -143,7 +148,9 @@ class AttachmentDaoImplTest @Autowired constructor(
   @Test
   fun saveOne() {
     // invoke
-    val po = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
+    val now = OffsetDateTime.now()
+    val po = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
+      123, now, "Simter", now, "Simter")
     val actual = dao.save(po)
 
     // verify result
@@ -158,8 +165,10 @@ class AttachmentDaoImplTest @Autowired constructor(
 
   @Test
   fun saveMulti() {
+    val now = OffsetDateTime.now()
     val pos = (1..3).map {
-      Attachment(UUID.randomUUID().toString(), "/data", "Sample-$it", "png", 123, OffsetDateTime.now(), "Simter")
+      Attachment(UUID.randomUUID().toString(), "/data", "Sample-$it", "png",
+        123, now, "Simter", now, "Simter")
     }
     val actual = dao.save(*pos.toTypedArray())
 
@@ -186,9 +195,10 @@ class AttachmentDaoImplTest @Autowired constructor(
 
     // 3. delete exists id
     // 3.1 prepare data
+    val now = OffsetDateTime.now()
     val pos = (1..3).map {
-      Attachment(id = UUID.randomUUID().toString(), path = "data/$it.xml", name = "Sample-$it", ext = "png",
-        size = 123, uploadOn = OffsetDateTime.now(), uploader = "Simter")
+      Attachment(id = UUID.randomUUID().toString(), path = "data/$it.xml", name = "Sample-$it", type = "png",
+        size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter")
     }
     val ids = pos.map { it.id }
     pos.forEach { em.persist(it) }

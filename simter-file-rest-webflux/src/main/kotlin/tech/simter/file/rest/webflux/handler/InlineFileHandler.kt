@@ -30,7 +30,7 @@ import tech.simter.file.service.AttachmentService
  * 200 OK
  * Content-Type        : application/octet-stream
  * Content-Length      : {len}
- * Content-Disposition : inline; filename="{file-name}.{ext}"
+ * Content-Disposition : inline; filename="{file-name}.{type}"
  *
  * :FILE-DATA
  * ```

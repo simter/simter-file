@@ -35,7 +35,7 @@ import kotlin.collections.HashMap
  * Content-Length      : {len}
  *
  * ------{boundary}
- * Content-Disposition: form-data; name="{input-name}"; filename="{file-name}.{ext}"
+ * Content-Disposition: form-data; name="{input-name}"; filename="{file-name}.{type}"
  * Content-Type: {media-type}
  *
  * {file-data}
@@ -44,9 +44,9 @@ import kotlin.collections.HashMap
  *
  * {puid}
  * ------{boundary}
- * Content-Disposition: form-data; name="subgroup"
+ * Content-Disposition: form-data; name="upperId"
  *
- * {subgroup}
+ * {upperId}
  * ------{boundary}--
  * ```
  *
@@ -80,10 +80,10 @@ class UploadFileByFormHandler @Autowired constructor(
         val formDataMap = HashMap<String, Any>()
         for (part in it) {
           if (part is FormFieldPart && "puid" == part.name()) {
-            formDataMap["puid"] = if (part.value() != "") part.value() else "0"
+            formDataMap["puid"] = if (part.value() != "") part.value() else ""
           }
-          if (part is FormFieldPart && "subgroup" == part.name()) {
-            formDataMap["subgroup"] = if (part.value().matches(Regex("\\d+"))) part.value().toShort() else 0
+          if (part is FormFieldPart && "upperId" == part.name()) {
+            formDataMap["upperId"] = if (part.value().matches(Regex("\\d+"))) part.value() else "0"
           }
           if (part is FilePart) formDataMap["fileData"] = part
         }
@@ -94,7 +94,7 @@ class UploadFileByFormHandler @Autowired constructor(
         // get the FilePart by the Map
         val fileData = it["fileData"] as FilePart
         // convert to Attachment instance
-        val attachment = toAttachment(fileData.headers().contentLength, fileData.filename(), it["puid"] as String, it["subgroup"] as Short)
+        val attachment = toAttachment(fileData.headers().contentLength, fileData.filename(), it["puid"] as String, it["upperId"] as String)
 
         val file = File("$fileRootDir/${attachment.path}")
         val fileDir = file.parentFile
@@ -114,23 +114,14 @@ class UploadFileByFormHandler @Autowired constructor(
       .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() })
   }
 
-  private fun toAttachment(fileSize: Long, filename: String, puid: String, subgroup: Short): Attachment {
+  private fun toAttachment(fileSize: Long, filename: String, puid: String, upperId: String): Attachment {
     val id = newId()
     val now = OffsetDateTime.now()
     val lastDotIndex = filename.lastIndexOf(".")
-    val ext = filename.substring(lastDotIndex + 1)
-    val path = "${now.format(DateTimeFormatter.ofPattern("yyyyMM"))}/${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$ext"
-    return Attachment(
-      id,                                     // id
-      path,                                   // relative path
-      filename.substring(0, lastDotIndex),    // name
-      ext,                                    // ext
-      fileSize,                               // file size
-      now,                                    // upload time
-      "Simter",                               // uploader
-      puid,                                   // puid
-      subgroup                                // subgroup
-    )
+    val type = filename.substring(lastDotIndex + 1)
+    val path = "${now.format(DateTimeFormatter.ofPattern("yyyyMM"))}/${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$type"
+    return Attachment(id = id, path = path, name = filename.substring(0, lastDotIndex), type = type, size = fileSize,                               // file size
+      createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", puid = puid, upperId = upperId)
   }
 
   /** Generate a new [Attachment] id */

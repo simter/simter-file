@@ -40,8 +40,10 @@ internal class AttachmentViewHandlerTest @Autowired constructor(
     val pageNo = 0
     val pageSize = 25
     val id = UUID.randomUUID().toString()
+    val now = OffsetDateTime.now()
     val list = ArrayList<Attachment>()
-    list.add(Attachment(id, "/path", "name", "ext", 100, OffsetDateTime.now(), "Simter", "0", 0))
+    list.add(Attachment(id, "/path", "name", "type", 100,
+      now, "Simter", now, "Simter", "0"))
     val pageable = PageRequest.of(pageNo, pageSize)
     `when`<Mono<Page<Attachment>>>(service.find(pageable)).thenReturn(Mono.just<Page<Attachment>>(PageImpl(list, pageable, list.size.toLong())))
 

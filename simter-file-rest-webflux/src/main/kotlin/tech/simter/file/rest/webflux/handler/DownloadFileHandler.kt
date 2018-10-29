@@ -33,7 +33,7 @@ import kotlin.text.Charsets.ISO_8859_1
  * 200 OK
  * Content-Type        : application/octet-stream
  * Content-Length      : {len}
- * Content-Disposition : attachment; filename="{file-name}.{ext}"
+ * Content-Disposition : attachment; filename="{file-name}.{type}"
  *
  * :FILE-DATA
  * ```

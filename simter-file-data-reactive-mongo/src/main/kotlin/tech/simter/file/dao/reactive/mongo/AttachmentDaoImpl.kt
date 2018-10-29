@@ -41,10 +41,10 @@ class AttachmentDaoImpl @Autowired constructor(
     return zip.defaultIfEmpty(Page.empty<Attachment>(pageable))
   }
 
-  override fun find(puid: String, subgroup: Short?): Flux<Attachment> {
+  override fun find(puid: String, upperId: String?): Flux<Attachment> {
     val condition = Criteria.where("puid").`is`(puid)
-    if (null != subgroup) condition.and("subgroup").`is`(subgroup)
-    return operations.find(Query.query(condition).with(Sort(Sort.Direction.DESC, "uploadOn")), Attachment::class.java)
+    if (null != upperId) condition.and("upperId").`is`(upperId)
+    return operations.find(Query.query(condition).with(Sort(Sort.Direction.DESC, "createOn")), Attachment::class.java)
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {

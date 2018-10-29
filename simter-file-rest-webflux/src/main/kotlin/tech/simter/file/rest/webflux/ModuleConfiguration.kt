@@ -57,7 +57,7 @@ class ModuleConfiguration @Autowired constructor(
       AttachmentViewHandler.REQUEST_PREDICATE.invoke(attachmentViewHandler::handle)
       // GET /attachment/{id}
       AttachmentFormHandler.REQUEST_PREDICATE.invoke(attachmentFormHandler::handle)
-      // GET /parent/{puid}/{subgroup}
+      // GET /parent/{puid}/{upperId}
       FindModuleAttachmentsHandler.REQUEST_PREDICATE.invoke(findModuleAttachmentsHandler::handle)
       // GET /{id}
       DownloadFileHandler.REQUEST_PREDICATE.invoke(downloadFileHandler::handle)

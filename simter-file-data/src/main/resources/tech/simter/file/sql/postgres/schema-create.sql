@@ -22,4 +22,4 @@ comment on column st_attachment.size is 'The byte unit file length';
 comment on column st_attachment.uploadOn is 'Upload time';
 comment on column st_attachment.uploader is 'The account do the upload';
 comment on column st_attachment.puid is 'The unique id of the parent module';
-comment on column st_attachment.subgroup is 'The subgroup of the parent module';
+comment on column st_attachment.subgroup is 'The upperId of the parent module';

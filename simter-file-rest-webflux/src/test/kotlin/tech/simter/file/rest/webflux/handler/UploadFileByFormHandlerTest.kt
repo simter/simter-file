@@ -55,7 +55,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     val file = ClassPathResource("$name.$ext")
     builder.part("fileData", file)
     builder.part("puid", "puid")
-    builder.part("subgroup", "1")
+    builder.part("upperId", "1")
     val parts = builder.build()
 
     // mock service.create return value
@@ -86,7 +86,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     assertTrue(files.isNotEmpty())
     var actualFile: File? = null
     for (f in files) {
-      // extract dateTime and id from fileName: yyyyMMddTHHmmss-{id}.{ext}
+      // extract dateTime and id from fileName: yyyyMMddTHHmmss-{id}.{type}
       val index = f.name.indexOf("-")
       val dateTime = LocalDateTime.parse(f.name.substring(0, index),
         DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))
