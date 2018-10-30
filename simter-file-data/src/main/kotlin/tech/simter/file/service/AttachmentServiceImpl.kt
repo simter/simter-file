@@ -17,6 +17,10 @@ import tech.simter.file.po.Attachment
  */
 @Component
 class AttachmentServiceImpl @Autowired constructor(val attachmentDao: AttachmentDao) : AttachmentService {
+  override fun getFullPath(id: String): Mono<String> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun get(id: String): Mono<Attachment> {
     return attachmentDao.get(id)
   }
@@ -36,4 +40,5 @@ class AttachmentServiceImpl @Autowired constructor(val attachmentDao: Attachment
   override fun delete(vararg ids: String): Mono<Void> {
     return attachmentDao.delete(*ids)
   }
+
 }

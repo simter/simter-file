@@ -48,6 +48,16 @@ interface AttachmentService {
   fun save(vararg attachments: Attachment): Mono<Void>
 
   /**
+   * Get ths full path of the specific attachment.
+   *
+   * If the attachment is not exists, return [Mono.error] with [NotFoundException].
+   *
+   * @param[id] the attachment's id
+   * @return [Mono] the full path relative to `{file-root}` path
+   */
+  fun getFullPath(id: String): Mono<String>
+
+  /**
    * Delete [Attachment] and physics file by its id.
    * If specify [Attachment] not exists then ignore and handle as success.
    *

@@ -51,7 +51,7 @@ class ModuleConfiguration @Autowired constructor(
     contextPath.nest {
       // POST /
       UploadFileByFormHandler.REQUEST_PREDICATE.invoke(uploadFileByFormHandler::handle)
-      // POST /
+      // POST /?puid=:puid&upper=:upper&filename=:filename
       UploadFileByStreamHandler.REQUEST_PREDICATE.invoke(uploadFileByStreamHandler::handle)
       // GET /attachment?page-no=:pageNo&page-size=:pageSize
       AttachmentViewHandler.REQUEST_PREDICATE.invoke(attachmentViewHandler::handle)
