@@ -31,13 +31,13 @@ interface AttachmentService {
   fun find(pageable: Pageable): Mono<Page<Attachment>>
 
   /**
-   * Returns a [Flux] of [Attachment]'s by puid and subgroup.
+   * Returns a [Flux] of [Attachment]'s by puid and upperId.
    *
    * @param[puid] the module identity
-   * @param[subgroup] the subgroup from specify module
+   * @param[upperId] the upperId from specify module
    * @return [Flux] emitting attachments or a empty flux without data if none found
    */
-  fun find(puid: String, subgroup: Short?): Flux<Attachment>
+  fun find(puid: String, upperId: String?): Flux<Attachment>
 
   /**
    * Create or update one or more [Attachment].

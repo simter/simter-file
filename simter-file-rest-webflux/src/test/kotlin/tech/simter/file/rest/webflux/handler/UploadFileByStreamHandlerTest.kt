@@ -61,7 +61,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
 
     // invoke request
     val now = LocalDateTime.now().truncatedTo(SECONDS)
-    client.post().uri("/?puid=puid1&subgroup=1")
+    client.post().uri("/?puid=puid1&upperId=1")
       .header("Content-Disposition","attachment; name=\"filedata\"; filename=\"$$name.$ext\"")
       .contentType(MediaType.APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
@@ -80,7 +80,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     assertTrue(files.isNotEmpty())
     var actualFile: File? = null
     for (f in files) {
-      // extract dateTime and id from fileName: yyyyMMddTHHmmss-{id}.{ext}
+      // extract dateTime and id from fileName: yyyyMMddTHHmmss-{id}.{type}
       val index = f.name.indexOf("-")
       val dateTime = LocalDateTime.parse(f.name.substring(0, index),
         DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))

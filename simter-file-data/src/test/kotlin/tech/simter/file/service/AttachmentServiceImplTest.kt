@@ -30,7 +30,9 @@ class AttachmentServiceImplTest @Autowired constructor(
   fun get() {
     // mock
     val id: String = UUID.randomUUID().toString()
-    val attachment = Attachment(id, "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
+    val now = OffsetDateTime.now()
+    val attachment = Attachment(id, "/data", "Sample", "png", 123, now,
+      "Simter", now, "Simter")
     val expected = Mono.just(attachment)
     `when`(dao.get(id)).thenReturn(expected)
 
@@ -61,7 +63,7 @@ class AttachmentServiceImplTest @Autowired constructor(
   fun findByModuleAndSubgroup() {
     // mock
     val puid = "puid1"
-    val subgroup: Short = 1
+    val subgroup = "1"
     val expect = Collections.emptyList<Attachment>()
     `when`(dao.find(puid, subgroup)).thenReturn(Flux.fromIterable(expect))
 
@@ -76,7 +78,9 @@ class AttachmentServiceImplTest @Autowired constructor(
   @Test
   fun save() {
     // mock
-    val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123, OffsetDateTime.now(), "Simter")
+    val now = OffsetDateTime.now()
+    val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
+      123, now, "Simter", now, "Simter")
     `when`(dao.save(attachment)).thenReturn(Mono.empty())
 
     // invoke

@@ -20,7 +20,7 @@ import tech.simter.file.service.AttachmentService
  * Request:
  *
  * ```
- * GET {context-path}/parent/:puid/:subgroup
+ * GET {context-path}/parent/:puid/:upperId
  * ```
  *
  * Response:
@@ -29,7 +29,7 @@ import tech.simter.file.service.AttachmentService
  * 200 OK
  * Content-Type: application/json;charset=UTF-8
  *
- * [{id, path, name, ext, size, uploadOn, uploader, fileName, puid, subgroup}, ...]
+ * [{id, path, name, type, size, createOn, creator, fileName, puid, upperId}, ...]
  * ```
  *
  * [More](https://github.com/simter/simter-file/wiki/Find-Module-Attachments)
@@ -44,7 +44,7 @@ class FindModuleAttachmentsHandler @Autowired constructor(
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return attachmentService.find(
       request.pathVariable("puid"),
-      request.pathVariable("subgroup").toShort()
+      request.pathVariable("upperId")
     ).collectList()// response
       .flatMap { ServerResponse.ok().contentType(MediaType.APPLICATION_JSON_UTF8).syncBody(it) }
       // error mapping
@@ -55,6 +55,6 @@ class FindModuleAttachmentsHandler @Autowired constructor(
 
   companion object {
     /** The default [RequestPredicate] */
-    val REQUEST_PREDICATE: RequestPredicate = GET("/parent/{puid}/{subgroup}")
+    val REQUEST_PREDICATE: RequestPredicate = GET("/parent/{puid}/{upperId}")
   }
 }

@@ -34,15 +34,15 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun find(puid: String, subgroup: Short?): Flux<Attachment> {
-    val hasSubgroup = null != subgroup
+  override fun find(puid: String, upperId: String?): Flux<Attachment> {
+    val hasSubgroup = null != upperId
     val sql = """
       select a from Attachment a
-      where puid = :puid ${if (hasSubgroup) "and subgroup = :subgroup" else ""}
-      order by uploadOn desc
+      where puid = :puid ${if (hasSubgroup) "and upperId = :upperId" else ""}
+      order by createOn desc
     """.trimIndent()
     val query: Query = em.createQuery(sql, Attachment::class.java).setParameter("puid", puid)
-    if (hasSubgroup) query.setParameter("subgroup", subgroup)
+    if (hasSubgroup) query.setParameter("upperId", upperId)
     return Flux.fromIterable(query.resultList as List<Attachment>)
   }
 

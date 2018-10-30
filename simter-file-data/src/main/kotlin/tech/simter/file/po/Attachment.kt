@@ -25,22 +25,28 @@ data class Attachment(
   @Column(nullable = false) val path: String,
   /** File name without extension */
   @Column(nullable = false) val name: String,
-  /** File extension without dot symbol */
-  @Column(nullable = false, length = 10) val ext: String,
+  /** If it is a file, the type is file extension without dot symbol.
+   *  and if it is a folder, the type is ":d".
+   */
+  @Column(nullable = false, length = 10) val type: String,
   /** The byte unit file length */
   @Column(nullable = false) val size: Long,
-  /** Upload time */
-  @Column(nullable = false) val uploadOn: OffsetDateTime,
-  /** The account do the upload */
-  @Column(nullable = false) val uploader: String,
+  /** Created time */
+  @Column(nullable = false) val createOn: OffsetDateTime,
+  /** The account do the created */
+  @Column(nullable = false) val creator: String,
+  /** Last modify time */
+  @Column(nullable = false) val modifyOn: OffsetDateTime,
+  /** The account do the last modify */
+  @Column(nullable = false) val modifier: String,
   /** The unique id of the parent module */
-  @Column(nullable = false, length = 36) val puid: String = "0",
-  /** The subgroup of the parent module */
-  @Column(nullable = false) val subgroup: Short = 0) {
+  @Column(nullable = true, length = 36) val puid: String = "",
+  /** The upperId of the parent module */
+  @Column(nullable = true, length = 36) val upperId: String = "0") {
 
   /** File name with extension */
   @Ignore
   @javax.persistence.Transient
   @org.springframework.data.annotation.Transient
-  val fileName = "$name.$ext"
+  val fileName = "$name${if (type == ":d") "" else ".$type"}"
 }

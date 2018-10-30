@@ -29,7 +29,7 @@ import tech.simter.file.service.AttachmentService
  * 200 OK
  * Content-Type: application/json;charset=UTF-8
  *
- * {id, path, name, ext, size, uploadOn, uploader, fileName, puid, subgroup}
+ * {id, path, name, type, size, createOn, creator, fileName, puid, upperId}
  * ```
  *
  * Response: (if not found)

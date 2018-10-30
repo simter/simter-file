@@ -34,30 +34,33 @@ internal class FindModuleAttachmentsHandlerTest @Autowired constructor(
   fun file() {
     // mock
     val puid = "puid1"
-    val subgroup: Short = 1
-    `when`<Flux<Attachment>>(service.find(puid, subgroup)).thenReturn(Flux.just(
+    val upperId = "1"
+    val now = OffsetDateTime.now()
+    `when`<Flux<Attachment>>(service.find(puid, upperId)).thenReturn(Flux.just(
       Attachment(
         id = "1",
         path = "path/",
         name = "name",
-        ext = "png",
+        type = "png",
         size = 100L,
-        uploadOn = OffsetDateTime.now(),
-        uploader = "uploader",
+        createOn = now,
+        creator = "creator",
+        modifyOn = now,
+        modifier = "creator",
         puid = puid,
-        subgroup = subgroup))
+        upperId = upperId))
     )
 
     // invoke
-    client.get().uri("/parent/$puid/$subgroup")
+    client.get().uri("/parent/$puid/$upperId")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
       .expectBody()
       .jsonPath("$[0].puid").isEqualTo(puid)
-      .jsonPath("$[0].subgroup").isEqualTo(subgroup.toString())
+      .jsonPath("$[0].upperId").isEqualTo(upperId.toString())
 
     // verify
-    verify(service).find(puid, subgroup)
+    verify(service).find(puid, upperId)
   }
 }

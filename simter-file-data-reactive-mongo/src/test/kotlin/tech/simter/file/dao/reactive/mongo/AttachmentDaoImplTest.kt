@@ -36,7 +36,7 @@ class AttachmentDaoImplTest @Autowired constructor(
   private val operations: ReactiveMongoOperations
 ) {
   private val path = "/data"
-  private val uploader = "Simter"
+  private val creator = "Simter"
   private val now = OffsetDateTime.now()
 
   @BeforeEach
@@ -56,7 +56,7 @@ class AttachmentDaoImplTest @Autowired constructor(
     StepVerifier.create(dao.get(id)).expectNextCount(0L).verifyComplete()
 
     // prepare data
-    val po = Attachment(id, path, "Sample", "png", 123, now, uploader)
+    val po = Attachment(id, path, "Sample", "png", 123, now, creator, now, creator)
     StepVerifier.create(operations.insert(po)).expectNextCount(1).verifyComplete()
 
     // verify exists
@@ -74,7 +74,9 @@ class AttachmentDaoImplTest @Autowired constructor(
 
     // 2. found
     // 2.1 prepare data
-    val pos = (1..3).map { Attachment(it.toString(), path, "Sample$it", "png", 123, now, uploader) }
+    val pos = (1..3).map {
+      Attachment(it.toString(), path, "Sample$it", "png", 123, now, creator, now, creator)
+    }
     StepVerifier.create(operations.insertAll(pos)).expectNextCount(pos.size.toLong()).verifyComplete()
 
     // 2.2 invoke
@@ -90,11 +92,12 @@ class AttachmentDaoImplTest @Autowired constructor(
   fun findByModuleAndSubgroup() {
     // 1. mock
     val puid = "puid1"
-    val subgroup: Short = 1
+    val subgroup = "1"
     val now = OffsetDateTime.now()
     val origin = (1..3).map {
-      Attachment(id = it.toString(), path = path, name = "Sample$it", ext = "png", size = 123,
-        uploadOn = now, uploader = uploader, puid = puid, subgroup = it.toShort())
+      Attachment(id = it.toString(), path = path, name = "Sample$it", type = "png", size = 123,
+        createOn = now, creator = creator, puid = puid, upperId = it.toString(), modifyOn = now, modifier = creator
+      )
     }
     Collections.reverse(origin)
 
@@ -115,16 +118,17 @@ class AttachmentDaoImplTest @Autowired constructor(
         }
       }.verifyComplete()
 
-    // 5. found all data in module and subgroup
+    // 5. found all data in module and upperId
     StepVerifier.create(dao.find(puid, subgroup).collectList())
       .consumeNextWith {
-        assertEquals(it[0].id, origin.find { it.puid == puid && it.subgroup == subgroup }?.id)
+        assertEquals(it[0].id, origin.find { it.puid == puid && it.upperId == subgroup }?.id)
       }.verifyComplete()
   }
 
   @Test
   fun saveOne() {
-    val po = Attachment(UUID.randomUUID().toString(), path, "Sample", "png", 123, now, uploader)
+    val po = Attachment(UUID.randomUUID().toString(), path, "Sample", "png",
+      123, now, creator, now, creator)
     val actual = dao.save(po)
 
     // verify result
@@ -147,8 +151,8 @@ class AttachmentDaoImplTest @Autowired constructor(
     // 3. delete exists id
     // 3.1 prepare data
     val origin = (0..3).map {
-      Attachment(id = UUID.randomUUID().toString(), path = "$path/$it.xml", name = "Sample$it", ext = "png", size = 123,
-        uploadOn = now, uploader = uploader, puid = "puid1", subgroup = it.toShort())
+      Attachment(id = UUID.randomUUID().toString(), path = "$path/$it.xml", name = "Sample$it", type = "png", size = 123,
+        createOn = now, creator = creator, puid = "puid1", upperId = it.toString(), modifier = creator, modifyOn = now)
     }
     val ids = origin.map { it.id }
     StepVerifier.create(operations.insertAll(origin)).expectNextCount(origin.size.toLong()).verifyComplete()

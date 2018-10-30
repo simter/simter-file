@@ -30,7 +30,7 @@ import tech.simter.file.service.AttachmentService
  *
  * {
  *   count, pageNo, pageSize,
- *   rows: [{id, path, name, ext, size, uploadOn, uploader, fileName, puid, subgroup}, ...]
+ *   rows: [{id, path, name, type, size, createOn, creator, fileName, puid, upperId}, ...]
  * }
  * ```
  *
