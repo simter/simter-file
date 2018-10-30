@@ -83,7 +83,7 @@ class UploadFileByFormHandler @Autowired constructor(
             formDataMap["puid"] = if (part.value() != "") part.value() else ""
           }
           if (part is FormFieldPart && "upperId" == part.name()) {
-            formDataMap["upperId"] = if (part.value().matches(Regex("\\d+"))) part.value() else "0"
+            formDataMap["upperId"] = if (part.value().matches(Regex("\\d+"))) part.value() else "EMPTY"
           }
           if (part is FilePart) formDataMap["fileData"] = part
         }

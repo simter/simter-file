@@ -42,7 +42,7 @@ data class Attachment(
   /** The unique id of the parent module */
   @Column(nullable = true, length = 36) val puid: String = "",
   /** The upperId of the parent module */
-  @Column(nullable = true, length = 36) val upperId: String = "0") {
+  @Column(nullable = true, length = 36) val upperId: String = "EMPTY") {
 
   /** File name with extension */
   @Ignore
