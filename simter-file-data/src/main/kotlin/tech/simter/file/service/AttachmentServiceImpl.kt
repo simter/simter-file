@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.po.Attachment
 
 /**
@@ -17,6 +18,10 @@ import tech.simter.file.po.Attachment
  */
 @Component
 class AttachmentServiceImpl @Autowired constructor(val attachmentDao: AttachmentDao) : AttachmentService {
+  override fun update(id: String, dto: AttachmentDto4Update): Mono<Void> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun getFullPath(id: String): Mono<String> {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }

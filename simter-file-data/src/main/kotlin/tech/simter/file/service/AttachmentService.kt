@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.po.Attachment
 
 /**
@@ -65,4 +66,14 @@ interface AttachmentService {
    * @return [Mono] signaling when operation has completed
    */
   fun delete(vararg ids: String): Mono<Void>
+
+  /**
+   * Update part of [AttachmentDto4Update] field in [Attachment] by id.
+   * If the attachment is not exists, return [Mono.error] with [NotFoundException].
+   * If the specified path already exists, return [Mono.error] with [PermissionDeniedException].
+   *
+   * @param[id] The id of the attachment to be updated
+   * @return[Mono] signaling when operation has completed
+   */
+  fun update(id: String, dto: AttachmentDto4Update): Mono<Void>
 }
