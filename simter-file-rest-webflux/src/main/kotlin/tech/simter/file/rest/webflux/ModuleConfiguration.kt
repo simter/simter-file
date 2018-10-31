@@ -35,7 +35,8 @@ class ModuleConfiguration @Autowired constructor(
   private val uploadFileByStreamHandler: UploadFileByStreamHandler,
   private val downloadFileHandler: DownloadFileHandler,
   private val inlineFileHandler: InlineFileHandler,
-  private val deleteFilesHandler: DeleteFilesHandler
+  private val deleteFilesHandler: DeleteFilesHandler,
+  private val reuploadFileByStreamHandler: ReuploadFileByStreamHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
 
@@ -53,6 +54,8 @@ class ModuleConfiguration @Autowired constructor(
       UploadFileByFormHandler.REQUEST_PREDICATE.invoke(uploadFileByFormHandler::handle)
       // POST /?puid=:puid&upper=:upper&filename=:filename
       UploadFileByStreamHandler.REQUEST_PREDICATE.invoke(uploadFileByStreamHandler::handle)
+      // PATCH /{id} Content-Type: application/octet-stream
+      ReuploadFileByStreamHandler.REQUEST_PREDICATE.invoke(reuploadFileByStreamHandler::handle)
       // GET /attachment?page-no=:pageNo&page-size=:pageSize
       AttachmentViewHandler.REQUEST_PREDICATE.invoke(attachmentViewHandler::handle)
       // GET /attachment/{id}
