@@ -37,7 +37,8 @@ class ModuleConfiguration @Autowired constructor(
   private val inlineFileHandler: InlineFileHandler,
   private val deleteFilesHandler: DeleteFilesHandler,
   private val reuploadFileByStreamHandler: ReuploadFileByStreamHandler,
-  private val updateAttachmentHandler:UpdateAttachmentHandler
+  private val updateAttachmentHandler:UpdateAttachmentHandler,
+  private val findAttechmentDescendentsHandler:FindAttechmentDescendentsHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
 
@@ -61,6 +62,8 @@ class ModuleConfiguration @Autowired constructor(
       AttachmentViewHandler.REQUEST_PREDICATE.invoke(attachmentViewHandler::handle)
       // GET /attachment/{id}
       AttachmentFormHandler.REQUEST_PREDICATE.invoke(attachmentFormHandler::handle)
+      // GET /attachment/{id}/descendent
+      FindAttechmentDescendentsHandler.REQUEST_PREDICATE.invoke(findAttechmentDescendentsHandler::handle)
       // PATCH /attachment/{id} Content-Type: application/json;charset=UTF-8
       UpdateAttachmentHandler.REQUEST_PREDICATE.invoke(updateAttachmentHandler::handle)
       // GET /parent/{puid}/{upperId}
