@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
@@ -85,4 +87,12 @@ interface AttachmentService {
    *   If the upper has no children or the upper is not exists, return [Flux.empty]
    */
   fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
+
+  /**
+   * Create one or more [Attachment]
+   *
+   * @return[Flux] emitting id of the newly created attachments.
+   *  If the specified path already exists, return [Flux.error] with [PermissionDeniedException].
+   */
+  fun create(vararg attachments: Attachment): Flux<String>
 }
