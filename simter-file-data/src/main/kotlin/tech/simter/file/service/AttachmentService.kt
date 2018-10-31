@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dto.AttachmentDto4Update
+import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 
 /**
@@ -76,4 +77,12 @@ interface AttachmentService {
    * @return[Mono] signaling when operation has completed
    */
   fun update(id: String, dto: AttachmentDto4Update): Mono<Void>
+
+  /**
+   * Recursively find all the children of the specific upper's [id].
+   *
+   * @return the children that include its children recursively.
+   *   If the upper has no children or the upper is not exists, return [Flux.empty]
+   */
+  fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
 }
