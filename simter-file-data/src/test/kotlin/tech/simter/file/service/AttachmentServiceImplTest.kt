@@ -11,10 +11,12 @@ import org.springframework.data.domain.Pageable
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
 import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import java.time.OffsetDateTime
 import java.util.*
@@ -123,5 +125,29 @@ class AttachmentServiceImplTest @Autowired constructor(
     // verify
     StepVerifier.create(actual).verifyError(NotFoundException::class.java)
     verify(dao).getFullPath(id)
+  }
+
+  @Test
+  fun findDescendents() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    val dtos = List(3) { index ->
+      AttachmentDtoWithChildren().apply {
+        this.id = UUID.randomUUID().toString()
+        name = "name$index"
+        type = "type$index"
+        size = index.toLong()
+        modifyOn = OffsetDateTime.now()
+        modifier = "modifier$index"
+      }
+    }
+    `when`(dao.findDescendents(id)).thenReturn(dtos.toFlux())
+
+    // invoke
+    val actual = service.findDescendents(id)
+
+    // verify
+    StepVerifier.create(actual.collectList()).expectNext(dtos).verifyComplete()
+    verify(dao).findDescendents(id)
   }
 }

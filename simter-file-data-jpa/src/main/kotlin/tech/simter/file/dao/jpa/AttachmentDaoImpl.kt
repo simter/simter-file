@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import java.io.File
 import javax.persistence.EntityManager
@@ -26,6 +27,10 @@ class AttachmentDaoImpl @Autowired constructor(
   @PersistenceContext private val em: EntityManager,
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
+  override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun getFullPath(id: String): Mono<String> {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }

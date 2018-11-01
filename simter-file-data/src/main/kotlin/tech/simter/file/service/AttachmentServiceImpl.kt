@@ -26,7 +26,7 @@ class AttachmentServiceImpl @Autowired constructor(val attachmentDao: Attachment
   }
 
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return attachmentDao.findDescendents(id)
   }
 
   override fun update(id: String, dto: AttachmentDto4Update): Mono<Void> {
