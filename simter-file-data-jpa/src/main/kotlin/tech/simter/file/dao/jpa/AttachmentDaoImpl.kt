@@ -18,6 +18,7 @@ import javax.persistence.Query
  * The JPA implementation of [AttachmentDao].
  *
  * @author RJ
+ * @author zh
  */
 @Component
 class AttachmentDaoImpl @Autowired constructor(
@@ -25,6 +26,10 @@ class AttachmentDaoImpl @Autowired constructor(
   @PersistenceContext private val em: EntityManager,
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
+  override fun getFullPath(id: String): Mono<String> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun get(id: String): Mono<Attachment> {
     return Mono.justOrEmpty(repository.findById(id))
   }

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDtoWithChildren
@@ -16,6 +17,7 @@ import tech.simter.file.po.Attachment
  *
  * @author cjw
  * @author RJ
+ * @author zh
  */
 @Component
 class AttachmentServiceImpl @Autowired constructor(val attachmentDao: AttachmentDao) : AttachmentService {
@@ -32,7 +34,8 @@ class AttachmentServiceImpl @Autowired constructor(val attachmentDao: Attachment
   }
 
   override fun getFullPath(id: String): Mono<String> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return attachmentDao.getFullPath(id)
+      .switchIfEmpty(Mono.error(NotFoundException("The attachment $id not exists")))
   }
 
   override fun get(id: String): Mono<Attachment> {

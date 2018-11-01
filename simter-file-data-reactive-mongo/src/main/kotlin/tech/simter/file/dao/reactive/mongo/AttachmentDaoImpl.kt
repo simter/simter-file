@@ -20,6 +20,7 @@ import java.io.File
  * The Reactive MongoDB implementation of [AttachmentDao].
  *
  * @author RJ
+ * @author zh
  */
 @Component
 class AttachmentDaoImpl @Autowired constructor(
@@ -27,6 +28,10 @@ class AttachmentDaoImpl @Autowired constructor(
   private val repository: AttachmentReactiveRepository,
   private val operations: ReactiveMongoOperations
 ) : AttachmentDao {
+  override fun getFullPath(id: String): Mono<String> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun get(id: String): Mono<Attachment> {
     return repository.findById(id)
   }

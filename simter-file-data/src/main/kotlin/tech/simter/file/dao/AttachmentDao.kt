@@ -11,6 +11,7 @@ import tech.simter.file.po.Attachment
  *
  * @author cjw
  * @author RJ
+ * @author zh
  */
 interface AttachmentDao {
   /**
@@ -54,4 +55,12 @@ interface AttachmentDao {
    * @return [Mono] signaling when operation has completed
    */
   fun delete(vararg ids: String): Mono<Void>
+
+  /**
+   * Get ths full path of the specific attachment.
+   *
+   * @param[id] the attachment's id
+   * @return [Mono] the full path relative to `{file-root}` path or [Mono.empty] if none found.
+   */
+  fun getFullPath(id: String): Mono<String>
 }

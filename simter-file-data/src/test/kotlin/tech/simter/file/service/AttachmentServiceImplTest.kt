@@ -11,14 +11,19 @@ import org.springframework.data.domain.Pageable
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
 import reactor.test.StepVerifier
+import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
 import java.time.OffsetDateTime
 import java.util.*
 
 /**
+ * Test [AttachmentService]
+ *
  * @author RJ
+ * @author zh
  */
 @SpringJUnitConfig(AttachmentServiceImpl::class)
 @MockBean(AttachmentDao::class)
@@ -89,5 +94,34 @@ class AttachmentServiceImplTest @Autowired constructor(
     // verify
     StepVerifier.create(actual).expectNext().verifyComplete()
     verify(dao).save(attachment)
+  }
+
+  @Test
+  fun getFullPath() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    val fullPath = "level1/level2/level3/level4"
+    `when`(dao.getFullPath(id)).thenReturn(fullPath.toMono())
+
+    // invoke
+    val actual = service.getFullPath(id)
+
+    // verify
+    StepVerifier.create(actual).expectNext(fullPath).verifyComplete()
+    verify(dao).getFullPath(id)
+  }
+
+  @Test
+  fun getFullPathNotFound() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(dao.getFullPath(id)).thenReturn(Mono.empty())
+
+    // invoke
+    val actual = service.getFullPath(id)
+
+    // verify
+    StepVerifier.create(actual).verifyError(NotFoundException::class.java)
+    verify(dao).getFullPath(id)
   }
 }
