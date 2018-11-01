@@ -27,6 +27,10 @@ class AttachmentDaoImpl @Autowired constructor(
   @PersistenceContext private val em: EntityManager,
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
+  override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }

@@ -72,4 +72,15 @@ interface AttachmentDao {
    *   If the upper has no children or the upper is not exists, return [Flux.empty]
    */
   fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
+
+  /**
+   *  Update part of the fields in the attachment
+   *
+   * @param[id] the attachment's id
+   * @param[data] The fields that will be modified
+   * @return [Mono] signaling when operation has completed
+   *   If the attachment is not exists, return [Mono.error] with [NotFoundException].
+   *   If the physical path is duplication, reactor throw [Mono.error] with [PersistenceException].
+   */
+  fun update(id: String, data: Map<String, Any?>): Mono<Void>
 }
