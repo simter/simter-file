@@ -41,12 +41,11 @@ import java.time.format.DateTimeFormatter
  *
  * ```
  * 204 No Content
- * Location : {context-path}/{id}
- * {id}
  * ```
  *
  * ```
  * 404 Not Found
+ *
  * Attachment not exists
  * ```
  *
@@ -73,13 +72,11 @@ class ReuploadFileByStreamHandler @Autowired constructor(
             var attachment = it.t1
             val oldFullPath = it.t2
             val parentFullPath = oldFullPath.substring(0, oldFullPath.lastIndexOf(attachment.path))
-
             // delete old file
             val oldFile = File("$fileRootDir/$oldFullPath")
             if (oldFile.exists() && oldFile.isFile) oldFile.delete()
             // modify attachment
             attachment = modifyAttachment(attachment, fileData.size.toLong(), fileName)
-
             // create new file
             val newFile = File("$fileRootDir/$parentFullPath/${attachment.path}")
             val fileDir = newFile.parentFile

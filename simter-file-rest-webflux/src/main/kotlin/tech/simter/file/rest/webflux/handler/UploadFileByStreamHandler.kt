@@ -2,8 +2,9 @@ package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.stereotype.Component
 import org.springframework.util.FileCopyUtils
 import org.springframework.web.reactive.function.server.HandlerFunction
@@ -12,7 +13,6 @@ import org.springframework.web.reactive.function.server.RequestPredicates.POST
 import org.springframework.web.reactive.function.server.RequestPredicates.contentType
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.ServerResponse.created
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
@@ -20,7 +20,6 @@ import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.io.File
-import java.net.URI
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -49,6 +48,7 @@ import kotlin.collections.HashMap
  * If not Found the upper
  * ```
  * 404 Not Found
+ *
  * Upper not exists
  * ```
  *
@@ -101,7 +101,7 @@ class UploadFileByStreamHandler @Autowired constructor(
       // 3. save attachment
       .flatMap { attachmentService.save(it).thenReturn(it) }
       // 4. return response
-      .flatMap { created(URI.create("/${it.id}")).syncBody(it.id) }
+      .flatMap { status(CREATED).syncBody(it.id) }
       .onErrorResume(NotFoundException::class.java) {
         status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message ?: "")
       }
@@ -126,6 +126,6 @@ class UploadFileByStreamHandler @Autowired constructor(
 
   companion object {
     /** The default [RequestPredicate] */
-    val REQUEST_PREDICATE: RequestPredicate = POST("/").and(contentType(MediaType.APPLICATION_OCTET_STREAM))
+    val REQUEST_PREDICATE: RequestPredicate = POST("/").and(contentType(APPLICATION_OCTET_STREAM))
   }
 }

@@ -25,7 +25,7 @@ import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
  * ```
  * PATCH {context-path}/attachment/{id}
  * Content-Type : application/json;charset=UTF-8
- *
+ * 
  * {DATA}
  * ```
  *
@@ -39,6 +39,7 @@ import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
  * 
  * ```
  * 404 Not Found
+ *
  * Attachment  not exists
  * ```
  *

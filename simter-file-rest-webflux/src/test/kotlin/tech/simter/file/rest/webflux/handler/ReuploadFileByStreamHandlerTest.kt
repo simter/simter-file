@@ -41,9 +41,9 @@ import java.util.*
 internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String,
-  private val reuploadFileByStreamHandler: ReuploadFileByStreamHandler
+  handler: ReuploadFileByStreamHandler
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, reuploadFileByStreamHandler)).build()
+  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
 
   @Test
   @Throws(IOException::class)

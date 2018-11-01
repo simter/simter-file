@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono
 import tech.simter.file.service.AttachmentService
 
 /**
- * The [HandlerFunction] for update attachment.
+ * The [HandlerFunction] for find attachment'descendants of the forest structure.
  *
  * Request:
  *
@@ -26,6 +26,7 @@ import tech.simter.file.service.AttachmentService
  * ```
  * 200 OK
  * Content-Type : application/json;charset=UTF-8
+ *
  * [{CHILD_DATA}, ...]
  * ```
  *

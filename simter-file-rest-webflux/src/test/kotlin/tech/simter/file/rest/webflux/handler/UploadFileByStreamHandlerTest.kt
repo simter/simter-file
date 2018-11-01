@@ -41,9 +41,9 @@ import java.util.*
 internal class UploadFileByStreamHandlerTest @Autowired constructor(
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String,
-  private val uploadFileByStreamHandler: UploadFileByStreamHandler
+  private val handler: UploadFileByStreamHandler
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, uploadFileByStreamHandler)).build()
+  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
 
   @Test
   @Throws(IOException::class)
@@ -58,9 +58,9 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     val fileSize = file.contentLength()
     `when`(service.getFullPath("EMPTY")).thenReturn(Mono.just(""))
     `when`(service.save(any())).thenReturn(Mono.empty())
-    
-    // mock uploadFileByStreamHandler.newId return value
-    `when`(uploadFileByStreamHandler.newId()).thenReturn(id)
+
+    // mock handler.newId return value
+    `when`(handler.newId()).thenReturn(id)
 
     // invoke request
     val now = LocalDateTime.now().truncatedTo(SECONDS)
@@ -70,7 +70,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
       .syncBody(file.file.readBytes())
       .exchange()
       .expectStatus().isCreated
-      .expectHeader().valueEquals("Location", "/$id")
+      .expectBody().jsonPath("$").isEqualTo(id)
 
     // 1. verify service.save method invoked
     verify(service).getFullPath("EMPTY")
@@ -118,8 +118,8 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     `when`(service.save(any())).thenReturn(Mono.empty())
 
 
-    // mock uploadFileByStreamHandler.newId return value
-    `when`(uploadFileByStreamHandler.newId()).thenReturn(id)
+    // mock handler.newId return value
+    `when`(handler.newId()).thenReturn(id)
 
     // invoke request
     val now = LocalDateTime.now().truncatedTo(SECONDS)
@@ -129,7 +129,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
       .syncBody(file.file.readBytes())
       .exchange()
       .expectStatus().isCreated
-      .expectHeader().valueEquals("Location", "/$id")
+      .expectBody().jsonPath("$").isEqualTo(id)
 
     // 1. verify service.save method invoked
     verify(service).getFullPath(upperId)
@@ -171,8 +171,8 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     val fileSize = file.contentLength()
     `when`(service.getFullPath(upperId)).thenReturn(Mono.error(NotFoundException("")))
 
-    // mock uploadFileByStreamHandler.newId return value
-    `when`(uploadFileByStreamHandler.newId()).thenReturn(id)
+    // mock handler.newId return value
+    `when`(handler.newId()).thenReturn(id)
 
     // invoke request
     client.post().uri("/?puid=puid1&upper=$upperId&filename=$name.$ext")

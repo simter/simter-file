@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto4Update
+import tech.simter.file.rest.webflux.Utils.randomString
 import tech.simter.file.rest.webflux.handler.UpdateAttachmentHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.util.*
@@ -28,23 +29,23 @@ import java.util.*
 @MockBean(AttachmentService::class)
 internal class UpdateAttachmentHandlerTest @Autowired constructor(
   private val service: AttachmentService,
-  updateAttachmentHandler: UpdateAttachmentHandler
+  handler: UpdateAttachmentHandler
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, updateAttachmentHandler)).build()
+  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
   private val id = UUID.randomUUID().toString()
   private val url = "/attachment/$id"
 
   private fun randomAttachmentDto4Update(): AttachmentDto4Update {
     return AttachmentDto4Update().apply {
-      name = "name"
+      name = randomString("name")
       upperId = UUID.randomUUID().toString()
-      puid = "puid"
+      puid = randomString("puid")
     }
   }
 
   @Test
   fun success() {
-    val dto = AttachmentDto4Update()
+    val dto = randomAttachmentDto4Update()
     `when`(service.update(id, dto)).thenReturn(Mono.empty())
 
     // invoke request
@@ -61,7 +62,7 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
   @Test
   fun `Found nothing`() {
     // mock
-    val dto = AttachmentDto4Update()
+    val dto = randomAttachmentDto4Update()
     `when`(service.update(id, dto)).thenReturn(Mono.error(NotFoundException("")))
 
     // invoke request
