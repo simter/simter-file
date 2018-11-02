@@ -15,11 +15,13 @@ import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
 import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import java.time.OffsetDateTime
 import java.util.*
+import javax.persistence.PersistenceException
 
 /**
  * Test [AttachmentService]
@@ -149,5 +151,40 @@ class AttachmentServiceImplTest @Autowired constructor(
     // verify
     StepVerifier.create(actual.collectList()).expectNext(dtos).verifyComplete()
     verify(dao).findDescendents(id)
+  }
+
+  @Test
+  fun create() {
+    // mock
+    val now = OffsetDateTime.now()
+    val attachments = List(3) {
+      Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
+        123, now, "Simter", now, "Simter", upperId = UUID.randomUUID().toString())
+    }
+    val ids = attachments.map { it.id }
+    `when`(dao.save(*attachments.toTypedArray())).thenReturn(Mono.empty())
+    // invoke
+    val actual = service.create(*attachments.toTypedArray())
+
+    // verify
+    StepVerifier.create(actual.collectList()).expectNext(ids).verifyComplete()
+    verify(dao).save(*attachments.toTypedArray())
+  }
+
+  @Test
+  fun createFailure() {
+    // mock
+    val now = OffsetDateTime.now()
+    val attachments = List(3) {
+      Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
+        123, now, "Simter", now, "Simter")
+    }
+    `when`(dao.save(*attachments.toTypedArray())).thenReturn(Mono.error(PersistenceException("")))
+    // invoke
+    val actual = service.create(*attachments.toTypedArray())
+
+    // verify
+    StepVerifier.create(actual.collectList()).expectError(PermissionDeniedException::class.java)
+    verify(dao).save(*attachments.toTypedArray())
   }
 }
