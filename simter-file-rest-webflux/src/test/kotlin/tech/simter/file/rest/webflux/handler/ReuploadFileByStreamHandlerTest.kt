@@ -18,67 +18,68 @@ import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
-import tech.simter.file.rest.webflux.handler.UploadFileByStreamHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.po.Attachment
+import tech.simter.file.rest.webflux.handler.ReuploadFileByStreamHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.io.File
 import java.io.IOException
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
 
 /**
- * Test UploadFileByStreamHandler.
+ * Test [ReuploadFileByStreamHandler].
  *
- * @author JW
  * @author zh
  */
-@SpringJUnitConfig(UploadFileByStreamHandler::class)
+@SpringJUnitConfig(ReuploadFileByStreamHandler::class)
 @EnableWebFlux
 @MockBean(AttachmentService::class)
-@SpyBean(UploadFileByStreamHandler::class)
+@SpyBean(ReuploadFileByStreamHandler::class)
 @TestPropertySource(properties = ["simter.file.root=target/files"])
-internal class UploadFileByStreamHandlerTest @Autowired constructor(
+internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String,
-  private val handler: UploadFileByStreamHandler
+  handler: ReuploadFileByStreamHandler
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
 
   @Test
   @Throws(IOException::class)
-  fun uploadByNoUpper() {
+  fun uploadByNofileName() {
     // mock MultipartBody
-    val name = "logback-test"
-    val ext = "xml"
-    val file = ClassPathResource("$name.$ext")
-
-    // mock service.create return value
+    val now = OffsetDateTime.now()
     val id = UUID.randomUUID().toString()
+    val file = ClassPathResource("logback-test.xml")
+    val parentPath = "parent-path7"
+    val oldPath = "${now.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.xml"
+    // mock service.create return value
     val fileSize = file.contentLength()
-    `when`(service.getFullPath("EMPTY")).thenReturn(Mono.just(""))
+    val oldAttachment = Attachment(
+      id = id, path = oldPath, name = "logback-test", type = "xml",
+      size = fileSize, createOn = now, creator = "Simter", modifyOn = now,
+      modifier = "Simter", puid = "", upperId = UUID.randomUUID().toString()
+    )
+    `when`(service.getFullPath(id)).thenReturn(Mono.just("$parentPath/$oldPath"))
+    `when`(service.get(id)).thenReturn(Mono.just(oldAttachment))
     `when`(service.save(any())).thenReturn(Mono.empty())
 
-    // mock handler.newId return value
-    `when`(handler.newId()).thenReturn(id)
-
     // invoke request
-    val now = LocalDateTime.now().truncatedTo(SECONDS)
-    client.post().uri("/?puid=puid1&filename=$name.$ext")
+    client.patch().uri("/$id")
       .contentType(MediaType.APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
       .syncBody(file.file.readBytes())
       .exchange()
-      .expectStatus().isCreated
-      .expectBody().jsonPath("$").isEqualTo(id)
+      .expectStatus().isNoContent
 
     // 1. verify service.save method invoked
-    verify(service).getFullPath("EMPTY")
+    verify(service).getFullPath(id)
+    verify(service).get(id)
     verify(service).save(any())
 
     // 2. verify the saved file exists
-    val yyyyMM = now.format(DateTimeFormatter.ofPattern("yyyyMM"))
-    val files = File("$fileRootDir/$yyyyMM").listFiles()
+    val files = File("$fileRootDir/$parentPath").listFiles()
     assertNotNull(files)
     assertTrue(files.isNotEmpty())
     var actualFile: File? = null
@@ -88,7 +89,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
       val dateTime = LocalDateTime.parse(f.name.substring(0, index),
         DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))
       val uuid = f.name.substring(index + 1, f.name.lastIndexOf("."))
-      if (id == uuid && !dateTime.isBefore(now)) {
+      if (id == uuid && !dateTime.isAfter(now.toLocalDateTime())) {
         actualFile = f
         break
       }
@@ -103,36 +104,39 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
 
   @Test
   @Throws(IOException::class)
-  fun uploadByHasUpper() {
+  fun reuploadByHasfileName() {
     // mock MultipartBody
     val name = "logback-test"
     val ext = "xml"
     val file = ClassPathResource("$name.$ext")
-    val parentPath = "parent-path/"
-
-    // mock service.create return value
-    val upperId = UUID.randomUUID().toString()
+    val now = OffsetDateTime.now()
     val id = UUID.randomUUID().toString()
+    val parentPath = "parent-path9"
+    val oldPath = "${now.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.xml"
+    // mock service.create return value
+
     val fileSize = file.contentLength()
-    `when`(service.getFullPath(upperId)).thenReturn(Mono.just(parentPath))
+    val oldAttachment = Attachment(
+      id = id, path = oldPath, name = "old", type = "xml",
+      size = fileSize, createOn = now, creator = "Simter", modifyOn = now,
+      modifier = "Simter", puid = "", upperId = UUID.randomUUID().toString()
+    )
+    `when`(service.getFullPath(id)).thenReturn(Mono.just("$parentPath/$oldPath"))
+    `when`(service.get(id)).thenReturn(Mono.just(oldAttachment))
     `when`(service.save(any())).thenReturn(Mono.empty())
 
-
-    // mock handler.newId return value
-    `when`(handler.newId()).thenReturn(id)
-
     // invoke request
-    val now = LocalDateTime.now().truncatedTo(SECONDS)
-    client.post().uri("/?puid=puid1&upper=$upperId&filename=$name.$ext")
+    client.patch().uri("/$id")
+      .header("Content-Disposition", "attachment; name=\"filedata\"; filename=\"$name.$ext\"")
       .contentType(MediaType.APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
       .syncBody(file.file.readBytes())
       .exchange()
-      .expectStatus().isCreated
-      .expectBody().jsonPath("$").isEqualTo(id)
+      .expectStatus().isNoContent
 
     // 1. verify service.save method invoked
-    verify(service).getFullPath(upperId)
+    verify(service).getFullPath(id)
+    verify(service).get(id)
     verify(service).save(any())
 
     // 2. verify the saved file exists
@@ -146,7 +150,9 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
       val dateTime = LocalDateTime.parse(f.name.substring(0, index),
         DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))
       val uuid = f.name.substring(index + 1, f.name.lastIndexOf("."))
-      if (id == uuid && !dateTime.isBefore(now)) {
+      // Verify that the old file is deleted.
+      assertNotEquals(f.name, oldPath)
+      if (id == uuid && !dateTime.isAfter(now.toLocalDateTime())) {
         actualFile = f
         break
       }
@@ -165,17 +171,14 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     val name = "logback-test"
     val ext = "xml"
     val file = ClassPathResource("$name.$ext")
-    val upperId = UUID.randomUUID().toString()
     // mock service.create return value
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    `when`(service.getFullPath(upperId)).thenReturn(Mono.error(NotFoundException("")))
-
-    // mock handler.newId return value
-    `when`(handler.newId()).thenReturn(id)
+    `when`(service.get(id)).thenReturn(Mono.error(NotFoundException("")))
 
     // invoke request
-    client.post().uri("/?puid=puid1&upper=$upperId&filename=$name.$ext")
+    client.patch().uri("/$id")
+      .header("Content-Disposition", "attachment; name=\"filedata\"; filename=\"$$name.$ext\"")
       .contentType(MediaType.APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
       .syncBody(file.file.readBytes())
@@ -183,7 +186,6 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isNotFound
 
     // verify service.save method invoked
-    verify(service).getFullPath(upperId)
-
+    verify(service).get(id)
   }
 }

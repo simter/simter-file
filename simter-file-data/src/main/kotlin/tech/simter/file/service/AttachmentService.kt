@@ -4,6 +4,10 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
+import tech.simter.file.dto.AttachmentDto4Update
+import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 
 /**
@@ -48,6 +52,16 @@ interface AttachmentService {
   fun save(vararg attachments: Attachment): Mono<Void>
 
   /**
+   * Get ths full path of the specific attachment.
+   *
+   * If the attachment is not exists, return [Mono.error] with [NotFoundException].
+   *
+   * @param[id] the attachment's id
+   * @return [Mono] the full path relative to `{file-root}` path
+   */
+  fun getFullPath(id: String): Mono<String>
+
+  /**
    * Delete [Attachment] and physics file by its id.
    * If specify [Attachment] not exists then ignore and handle as success.
    *
@@ -55,4 +69,30 @@ interface AttachmentService {
    * @return [Mono] signaling when operation has completed
    */
   fun delete(vararg ids: String): Mono<Void>
+
+  /**
+   * Update part of [AttachmentDto4Update] field in [Attachment] by id.
+   * If the attachment is not exists, return [Mono.error] with [NotFoundException].
+   * If the specified path already exists, return [Mono.error] with [PermissionDeniedException].
+   *
+   * @param[id] The id of the attachment to be updated
+   * @return[Mono] signaling when operation has completed
+   */
+  fun update(id: String, dto: AttachmentDto4Update): Mono<Void>
+
+  /**
+   * Recursively find all the children of the specific upper's [id].
+   *
+   * @return the children that include its children recursively.
+   *   If the upper has no children or the upper is not exists, return [Flux.empty]
+   */
+  fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
+
+  /**
+   * Create one or more [Attachment]
+   *
+   * @return[Flux] emitting id of the newly created attachments.
+   *  If the specified path already exists, return [Flux.error] with [PermissionDeniedException].
+   */
+  fun create(vararg attachments: Attachment): Flux<String>
 }
