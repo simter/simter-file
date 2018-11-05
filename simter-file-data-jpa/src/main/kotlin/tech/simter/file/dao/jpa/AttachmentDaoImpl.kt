@@ -12,6 +12,7 @@ import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import java.io.File
 import javax.persistence.EntityManager
+import javax.persistence.NoResultException
 import javax.persistence.PersistenceContext
 import javax.persistence.Query
 
@@ -36,7 +37,17 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun getFullPath(id: String): Mono<String> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    val sql = """
+      with recursive p(id, path, upper_id) as (
+        select id, concat(path, ''), upper_id from st_attachment where id = :id
+        union
+        select a.id, concat(a.path, '/', p.path), a.upper_id from st_attachment as a
+        join p on a.id = p.upper_id
+      )
+      select p.path from p where upper_id is null
+    """.trimIndent()
+    return Mono.fromSupplier { em.createNativeQuery(sql).setParameter("id", id).singleResult as String }
+      .onErrorResume(NoResultException::class.java) { Mono.empty() }
   }
 
   override fun get(id: String): Mono<Attachment> {
