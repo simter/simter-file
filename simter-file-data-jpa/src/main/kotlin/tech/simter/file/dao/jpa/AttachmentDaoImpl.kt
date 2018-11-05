@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
+import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
@@ -29,7 +31,17 @@ class AttachmentDaoImpl @Autowired constructor(
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
   override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return if (data.isEmpty()) {
+      Mono.empty()
+    } else {
+      Mono.fromSupplier {
+        em.createQuery("update Attachment set ${data.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
+          .apply { data.forEach { key, value -> setParameter(key, value) } }
+          .setParameter("id", id)
+          .executeUpdate()
+      }.delayUntil { em.clear().toMono() }
+        .flatMap { if (it > 0) Mono.empty<Void>() else Mono.error(NotFoundException()) }
+    }
   }
 
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {

@@ -14,7 +14,9 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.util.FileCopyUtils
 import reactor.test.StepVerifier
+import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.po.Attachment
 import java.io.File
 import java.time.OffsetDateTime
@@ -22,6 +24,7 @@ import java.util.*
 import java.util.stream.IntStream
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
+import javax.persistence.PersistenceException
 import kotlin.collections.ArrayList
 
 /**
@@ -72,9 +75,9 @@ class AttachmentDaoImplTest @Autowired constructor(
     // 2. found: page with content
     // 2.1 prepare data
     val now = OffsetDateTime.now()
-    val po1 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123,
+    val po1 = Attachment(UUID.randomUUID().toString(), "/data1", "Sample", "png", 123,
       now.minusDays(1), "Simter", now.minusDays(1), "Simter")
-    val po2 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png", 123,
+    val po2 = Attachment(UUID.randomUUID().toString(), "/data2", "Sample", "png", 123,
       now, "Simter", now, "Simter")
     em.persist(po1)
     em.persist(po2)
@@ -167,7 +170,7 @@ class AttachmentDaoImplTest @Autowired constructor(
   fun saveMulti() {
     val now = OffsetDateTime.now()
     val pos = (1..3).map {
-      Attachment(UUID.randomUUID().toString(), "/data", "Sample-$it", "png",
+      Attachment(UUID.randomUUID().toString(), "/data$it", "Sample-$it", "png",
         123, now, "Simter", now, "Simter")
     }
     val actual = dao.save(*pos.toTypedArray())
@@ -238,6 +241,36 @@ class AttachmentDaoImplTest @Autowired constructor(
     // invoke and verify
     StepVerifier.create(dao.getFullPath(po3.id))
       .expectNext(listOf(po1, po2, po3).joinToString("/") { it.path }).verifyComplete()
+  }
+
+  @Test
+  fun updateByNone() {
+    // prepare data
+    val dto = AttachmentDto4Update().apply {
+      name = "newName"
+      path = "/new-data"
+    }
+
+    // invoke and verify
+    StepVerifier.create(dao.update(UUID.randomUUID().toString(), dto.data)).verifyError(NotFoundException::class.java)
+  }
+
+  @Test
+  fun update() {
+    // prepare data
+    val now = OffsetDateTime.now()
+    val po = Attachment(UUID.randomUUID().toString(), "/data1", "Sample1", "png",
+      123, now, "Simter", now, "Simter")
+    em.persist(po)
+    em.flush()
+    val dto = AttachmentDto4Update().apply {
+      name = "newName"
+      path = "/new-data"
+    }
+
+    // invoke and verify
+    StepVerifier.create(dao.update(po.id, dto.data)).verifyComplete()
+    assertEquals(po.copy(name = dto.name!!, path = dto.path!!), em.find(Attachment::class.java, po.id))
   }
 
   /** build test file method */
