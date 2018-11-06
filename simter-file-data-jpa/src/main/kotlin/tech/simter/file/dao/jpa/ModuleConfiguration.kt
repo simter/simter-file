@@ -15,5 +15,5 @@ private const val MODULE = "tech.simter.file"
 @Configuration("$MODULE.dao.jpa.ModuleConfiguration")
 @ComponentScan("$MODULE.dao.jpa")
 @EnableJpaRepositories("$MODULE.dao.jpa")
-@EntityScan("$MODULE.po")
+@EntityScan("$MODULE.po","$MODULE.dto")
 class ModuleConfiguration

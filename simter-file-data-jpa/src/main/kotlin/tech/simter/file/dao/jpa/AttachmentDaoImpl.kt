@@ -7,10 +7,12 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDtoWithChildren
+import tech.simter.file.dto.AttachmentDtoWithUpper
 import tech.simter.file.po.Attachment
 import java.io.File
 import javax.persistence.EntityManager
@@ -44,8 +46,42 @@ class AttachmentDaoImpl @Autowired constructor(
     }
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    val sql = """
+      with recursive n(id, path, name, type, size, modify_on, modifier, upper_id)
+      as (
+        select id, path, name, type, size, modify_on, modifier, upper_id
+        from st_attachment where upper_id = :id
+        union
+        select a.id, a.path, a.name, a.type, a.size, a.modify_on, a.modifier, a.upper_id
+        from st_attachment as a join n on a.upper_id = n.id
+      )
+      select id, path, name, type, size, modify_on, modifier, upper_id from n
+    """.trimIndent()
+    var descendents = em.createNativeQuery(sql, AttachmentDtoWithUpper::class.java)
+      .setParameter("id", id)
+      .resultList as List<AttachmentDtoWithUpper>
+    val root = AttachmentDtoWithChildren().also {
+      it.id = id
+      it.children = listOf()
+    }
+    val queue = mutableListOf(root)
+
+    while (queue.isNotEmpty()) {
+      val top = queue.removeAt(0)
+      descendents.groupBy { if (top.id == it.upperId) "children" else "other" }
+        .also {
+          descendents = it["other"] ?: listOf()
+          it["children"]?.map { AttachmentDtoWithChildren().copy(it) }
+            ?.also {
+              top.children = it
+              queue.addAll(it)
+            }
+        }
+    }
+
+    return root.children!!.toFlux()
   }
 
   override fun getFullPath(id: String): Mono<String> {

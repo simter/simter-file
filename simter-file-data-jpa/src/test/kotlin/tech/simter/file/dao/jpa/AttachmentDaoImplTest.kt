@@ -17,6 +17,7 @@ import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Update
+import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import java.io.File
 import java.time.OffsetDateTime
@@ -271,6 +272,67 @@ class AttachmentDaoImplTest @Autowired constructor(
     // invoke and verify
     StepVerifier.create(dao.update(po.id, dto.data)).verifyComplete()
     assertEquals(po.copy(name = dto.name!!, path = dto.path!!), em.find(Attachment::class.java, po.id))
+  }
+
+  @Test
+  fun notFoundDescendents() {
+    // prepare data
+    val now = OffsetDateTime.now()
+    val po = Attachment(UUID.randomUUID().toString(), "/data1", "Sample1", "png",
+      123, now, "Simter", now, "Simter")
+    em.persist(po)
+    em.flush()
+
+    // invoke and verify
+    // none attachment
+    StepVerifier.create(dao.findDescendents(UUID.randomUUID().toString())).verifyComplete()
+    // none descendents
+    StepVerifier.create(dao.findDescendents(po.id)).verifyComplete()
+  }
+
+  @Test
+  fun findDescendents() {
+    // prepare data
+    //            po100
+    //       /            \
+    //    po110          po120
+    //   /     \      /    |     \
+    // po111 po112  po121 po122 po123
+    val now = OffsetDateTime.now()
+    val po100 = Attachment(id = "100", path = "data100", name = "Sample100", type = "png",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = null)
+    val po110 = Attachment(id = "110", path = "data110", name = "Sample110", type = "png",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = "100")
+    val po120 = Attachment(id = "120", path = "data120", name = "Sample120", type = "png",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = "100")
+    val po111 = Attachment(id = "111", path = "data111", name = "Sample111", type = "png",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = "110")
+    val po112 = Attachment(id = "112", path = "data112", name = "Sample112", type = "png",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = "110")
+    val po121 = Attachment(id = "121", path = "data121", name = "Sample121", type = "png",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = "120")
+    val po122 = Attachment(id = "122", path = "data122", name = "Sample122", type = "png",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = "120")
+    val po123 = Attachment(id = "123", path = "data123", name = "Sample123", type = "png",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = "120")
+    listOf(po100, po110, po111, po112, po120, po121, po122, po123).forEach {
+      em.persist(it)
+    }
+    em.flush()
+
+    // invoke and verify
+    StepVerifier.create(dao.findDescendents(po100.id)).consumeNextWith { actual ->
+      val expected = AttachmentDtoWithChildren().copy(po110).also { it.children = actual.children }
+      assertEquals(expected, actual)
+      assertEquals(AttachmentDtoWithChildren().copy(po111), actual.children!![0])
+      assertEquals(AttachmentDtoWithChildren().copy(po112), actual.children!![1])
+    }.consumeNextWith { actual ->
+      val expected = AttachmentDtoWithChildren().copy(po120).also { it.children = actual.children }
+      assertEquals(expected, actual)
+      assertEquals(AttachmentDtoWithChildren().copy(po121), actual.children!![0])
+      assertEquals(AttachmentDtoWithChildren().copy(po122), actual.children!![1])
+      assertEquals(AttachmentDtoWithChildren().copy(po123), actual.children!![2])
+    }.verifyComplete()
   }
 
   /** build test file method */
