@@ -16,6 +16,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
 import tech.simter.file.po.Attachment
 import tech.simter.file.rest.webflux.handler.InlineFileHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
@@ -47,10 +48,11 @@ internal class InlineFileHandlerTest @Autowired constructor(
     val id = UUID.randomUUID().toString()
     val now = OffsetDateTime.now()
     val fileSize = FileSystemResource("$fileRootDir/resources/$fileName").contentLength()
-    val attachment = Attachment(id, "resources/$name.$ext", name, ext, fileSize,
+    val attachment = Attachment(id, "$name.$ext", name, ext, fileSize,
       now, "Simter", now, "Simter", "0")
     val expected = Mono.just(attachment)
     `when`(service.get(id)).thenReturn(expected)
+    `when`(service.getFullPath(id)).thenReturn("resources/$name.$ext".toMono())
 
     // invoke request
     val result = client.get().uri("/inline/$id")
@@ -67,6 +69,7 @@ internal class InlineFileHandlerTest @Autowired constructor(
 
     // verify method service.get invoked
     verify(service).get(id)
+    verify(service).getFullPath(id)
   }
 
   @Test
@@ -74,11 +77,13 @@ internal class InlineFileHandlerTest @Autowired constructor(
     // mock
     val id = UUID.randomUUID().toString()
     `when`(service.get(id)).thenReturn(Mono.empty())
+    `when`(service.getFullPath(id)).thenReturn(Mono.empty())
 
     // invoke
     client.get().uri("/inline/$id").exchange().expectStatus().isNotFound
 
     // verify
     verify(service).get(id)
+    verify(service).getFullPath(id)
   }
 }

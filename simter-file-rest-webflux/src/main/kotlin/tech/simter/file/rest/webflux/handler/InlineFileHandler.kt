@@ -3,7 +3,6 @@ package tech.simter.file.rest.webflux.handler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
-import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.HandlerFunction
@@ -52,18 +51,19 @@ class InlineFileHandler @Autowired constructor(
 ) : HandlerFunction<ServerResponse> {
 
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    return attachmentService
-      // get Attachment by path variable id
-      .get(request.pathVariable("id"))
+    val id = request.pathVariable("id")
+    return attachmentService.get(id)
+      .zipWith(Mono.defer { attachmentService.getFullPath(id) })
       // the flatMap run on other thread by the scheduler
       .publishOn(Schedulers.elastic())
       // found
       .flatMap({
         // return response
         ServerResponse.ok()
-          .contentLength(it.size)
-          .header("Content-Disposition", "inline; filename=\"${String(it.fileName.toByteArray(), Charsets.ISO_8859_1)}\"")
-          .body(BodyInserters.fromResource(FileSystemResource("$fileRootDir/${it.path}")))
+          .contentLength(it.t1.size)
+          .header("Content-Disposition",
+            "inline; filename=\"${String("${it.t1.name}.${it.t1.type}".toByteArray(), Charsets.ISO_8859_1)}\"")
+          .body(BodyInserters.fromResource(FileSystemResource("$fileRootDir/${it.t2}")))
       })
       // not found
       .switchIfEmpty(ServerResponse.notFound().build())
