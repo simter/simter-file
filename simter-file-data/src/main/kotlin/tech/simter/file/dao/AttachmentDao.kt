@@ -51,6 +51,7 @@ interface AttachmentDao {
   /**
    * Delete [Attachment] and physics file by its id.
    * If specify [Attachment] not exists then ignore and handle as success.
+   * If the attachment to be deleted is a folder type, recursively delete its descendants
    *
    * @param[ids] the ids to delete
    * @return [Mono] signaling when operation has completed

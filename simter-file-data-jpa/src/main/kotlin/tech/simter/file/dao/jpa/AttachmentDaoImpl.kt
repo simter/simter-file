@@ -5,12 +5,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDto4FullPath
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.dto.AttachmentDtoWithUpper
 import tech.simter.file.po.Attachment
@@ -27,6 +29,7 @@ import javax.persistence.Query
  * @author zh
  */
 @Component
+@Transactional
 class AttachmentDaoImpl @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   @PersistenceContext private val em: EntityManager,
@@ -124,13 +127,42 @@ class AttachmentDaoImpl @Autowired constructor(
     return Mono.empty()
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun delete(vararg ids: String): Mono<Void> {
-    if (!ids.isEmpty()) {
-      val attachments = repository.findAllById(ids.toList())
-      if (!attachments.isEmpty()) {
-        repository.deleteAll(attachments)
-        attachments.forEach { File("$fileRootDir/${it.path}").delete() }
+    if (ids.isNotEmpty()) {
+      // Query the full path of the attachments
+      val fullPathSql = """
+        with recursive p(id, path, upper_id) as (
+          select id, concat(path, ''), upper_id from st_attachment where id in :ids
+          union
+          select p.id, concat(a.path, '/', p.path), a.upper_id from st_attachment as a
+          join p on a.id = p.upper_id
+          -- If the ancestors of attachment in the attachments list, ignored the attachment
+          where p.upper_id not in :ids
+        )
+        select id, path as full_path from p where upper_id is null
+      """.trimIndent()
+      val fullPathDaos = em.createNativeQuery(fullPathSql, AttachmentDto4FullPath::class.java)
+        .setParameter("ids", ids.toList())
+        .resultList as List<AttachmentDto4FullPath>
+
+      // Delete attachments and all theirs descendants
+      val nodeSql = """
+        with recursive u(id, upper_id ) as (
+          select id, upper_id  from st_attachment where id in :ids
+          union
+          select a.id, a.upper_id from st_attachment as a join u on a.upper_id = u.id
+        )
+        select id from u
+      """.trimIndent()
+      val nodeDtos = em.createNativeQuery(nodeSql).setParameter("ids", ids.toList()).resultList
+      if (nodeDtos.isNotEmpty()) {
+        em.createNativeQuery("delete from st_attachment where id in :ids")
+          .setParameter("ids", nodeDtos).executeUpdate()
       }
+
+      // Delete physics file
+      fullPathDaos.forEach { File("$fileRootDir/${it.fullPath}").deleteRecursively() }
     }
     return Mono.empty<Void>()
   }

@@ -25,8 +25,8 @@ import java.util.*
 import java.util.stream.IntStream
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
-import javax.persistence.PersistenceException
 import kotlin.collections.ArrayList
+import kotlin.test.assertFalse
 
 /**
  * @author RJ
@@ -191,31 +191,64 @@ class AttachmentDaoImplTest @Autowired constructor(
 
   @Test
   fun delete() {
-    // 1. none
-    StepVerifier.create(dao.delete()).expectNextCount(0L).verifyComplete()
-
-    // 2. delete not exists id
-    StepVerifier.create(dao.delete(UUID.randomUUID().toString())).expectNextCount(0L).verifyComplete()
-
-    // 3. delete exists id
-    // 3.1 prepare data
+    // prepare data
+    //            po100
+    //       /            \
+    //    po110          po120
+    //   /     \      /    |     \
+    // po111 po112  po121 po122 po123
     val now = OffsetDateTime.now()
-    val pos = (1..3).map {
-      Attachment(id = UUID.randomUUID().toString(), path = "data/$it.xml", name = "Sample-$it", type = "png",
-        size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter")
+    val basicPo = Attachment(id = UUID.randomUUID().toString(), path = "", name = "Sample100", type = ":d",
+      size = 123, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = null)
+    val po100 = basicPo.copy(id = "100", upperId = null, path = "path100")
+    val po110 = basicPo.copy(id = "110", upperId = "100", path = "path110")
+    val po120 = basicPo.copy(id = "120", upperId = "100", path = "path120")
+    val po111 = basicPo.copy(id = "111", upperId = "110", path = "path111.xml")
+    val po112 = basicPo.copy(id = "112", upperId = "110", path = "path112.xml")
+    val po121 = basicPo.copy(id = "121", upperId = "120", path = "path121.xml")
+    val po122 = basicPo.copy(id = "122", upperId = "120", path = "path122.xml")
+    val po123 = basicPo.copy(id = "123", upperId = "120", path = "path123.xml")
+    listOf(po100, po110, po111, po112, po120, po121, po122, po123).forEach {
+      em.persist(it)
     }
-    val ids = pos.map { it.id }
-    pos.forEach { em.persist(it) }
     em.flush()
-    em.clear()
-    buildTestFiles(pos)
 
-    // 3.2 verify attachments is deleted
-    StepVerifier.create(dao.delete(*ids.toTypedArray()))
-      .verifyComplete()
+    // prepare file
+    File(fileRootDir).deleteRecursively()
+    val file100 = File("$fileRootDir/${po100.path}").apply { mkdir() }
+    val file110 = File("$fileRootDir/${po100.path}/${po110.path}").apply { mkdirs() }
+    val file120 = File("$fileRootDir/${po100.path}/${po120.path}").apply { mkdirs() }
+    val file111 = File("$fileRootDir/${po100.path}/${po110.path}/${po111.path}").apply { createNewFile() }
+    val file112 = File("$fileRootDir/${po100.path}/${po110.path}/${po112.path}").apply { createNewFile() }
+    val file121 = File("$fileRootDir/${po100.path}/${po120.path}/${po121.path}").apply { createNewFile() }
+    val file122 = File("$fileRootDir/${po100.path}/${po120.path}/${po122.path}").apply { createNewFile() }
+    val file123 = File("$fileRootDir/${po100.path}/${po120.path}/${po123.path}").apply { createNewFile() }
 
-    // 3.3 verify physics files is deleted
-    pos.forEach { assertTrue(!File("$fileRootDir/${it.path}").exists()) }
+
+    StepVerifier.create(dao.delete("110", "121")).verifyComplete()
+    // 1. Verify attachments and all its descendants
+    val newPo = em.createQuery("select a from Attachment a", Attachment::class.java).resultList
+    assertEquals(4, newPo.size)
+    assertEquals(listOf("100", "120", "122", "123"), newPo.map { it.id })
+
+    // 2. Verify delete physical file
+    assertTrue(file100.exists())
+    assertFalse(file110.exists())
+    assertTrue(file120.exists())
+    assertFalse(file111.exists())
+    assertFalse(file112.exists())
+    assertFalse(file121.exists())
+    assertTrue(file122.exists())
+    assertTrue(file123.exists())
+  }
+
+  @Test
+  fun deleteNoneAndNotExists() {
+    // none
+    StepVerifier.create(dao.delete()).verifyComplete()
+
+    // delete not exists id
+    StepVerifier.create(dao.delete(UUID.randomUUID().toString())).verifyComplete()
   }
 
   @Test
