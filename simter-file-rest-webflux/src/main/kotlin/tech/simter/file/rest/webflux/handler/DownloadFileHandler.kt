@@ -56,18 +56,19 @@ class DownloadFileHandler @Autowired constructor(
 ) : HandlerFunction<ServerResponse> {
 
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    return attachmentService
-      // get Attachment by path variable id
-      .get(request.pathVariable("id"))
+    val id = request.pathVariable("id")
+    return attachmentService.get(id)
+      .zipWith(Mono.defer { attachmentService.getFullPath(id) })
       // the flatMap run on other thread by the scheduler
       .publishOn(Schedulers.elastic())
       // found
       .flatMap({
         // return response
         ok().contentType(APPLICATION_OCTET_STREAM)
-          .contentLength(it.size)
-          .header("Content-Disposition", "attachment; filename=\"${String(it.fileName.toByteArray(), ISO_8859_1)}\"")
-          .body(BodyInserters.fromResource(FileSystemResource("$fileRootDir/${it.path}")))
+          .contentLength(it.t1.size)
+          .header("Content-Disposition",
+            "attachment; filename=\"${String("${it.t1.name}.${it.t1.type}".toByteArray(), ISO_8859_1)}\"")
+          .body(BodyInserters.fromResource(FileSystemResource("$fileRootDir/${it.t2}")))
       })
       // not found
       .switchIfEmpty(notFound().build())
