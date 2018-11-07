@@ -2,7 +2,6 @@ package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.CREATED
-import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.MediaType.APPLICATION_JSON_UTF8
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
@@ -10,11 +9,9 @@ import org.springframework.web.reactive.function.server.RequestPredicates.POST
 import org.springframework.web.reactive.function.server.RequestPredicates.contentType
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
-import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto4Create
 import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -43,14 +40,6 @@ import java.util.*
  * or [id1, ..., idN] # multiple ID, The order is the same as [{DATA}, ...]
  * ```
  *
- * If the specified path already exists
- *
- * ```
- * 403 Forbidden
- *
- * The specified path already exists
- * ```
- *
  * @author zh
  */
 
@@ -68,9 +57,6 @@ class CreateAttachmentsHandler @Autowired constructor(
           .flatMap { attachmentService.create(it).collectList() }
           .flatMap { status(CREATED).contentType(APPLICATION_JSON_UTF8).syncBody(it[0]) }
       )
-      .onErrorResume(PermissionDeniedException::class.java) {
-        status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message ?: "")
-      }
   }
 
   fun toAttachment(dto: AttachmentDto4Create): Attachment {

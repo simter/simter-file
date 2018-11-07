@@ -72,7 +72,6 @@ interface AttachmentService {
   /**
    * Update part of [AttachmentDto4Update] field in [Attachment] by id.
    * If the attachment is not exists, return [Mono.error] with [NotFoundException].
-   * If the specified path already exists, return [Mono.error] with [PermissionDeniedException].
    *
    * @param[id] The id of the attachment to be updated
    * @return[Mono] signaling when operation has completed
@@ -91,7 +90,6 @@ interface AttachmentService {
    * Create one or more [Attachment]
    *
    * @return[Flux] emitting id of the newly created attachments.
-   *  If the specified path already exists, return [Flux.error] with [PermissionDeniedException].
    */
   fun create(vararg attachments: Attachment): Flux<String>
 }

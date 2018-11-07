@@ -9,7 +9,6 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
 import tech.simter.exception.NotFoundException
-import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDtoWithChildren
@@ -17,7 +16,6 @@ import tech.simter.file.po.Attachment
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
-import javax.persistence.PersistenceException
 
 /**
  * The attachment service implementation.
@@ -33,9 +31,6 @@ class AttachmentServiceImpl @Autowired constructor(
 ) : AttachmentService {
   override fun create(vararg attachments: Attachment): Flux<String> {
     return attachmentDao.save(*attachments).thenMany(attachments.map { it.id }.toFlux())
-      .onErrorResume(PersistenceException::class.java) {
-        Flux.error(PermissionDeniedException("The specified path already exists"))
-      }
   }
 
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
@@ -55,8 +50,6 @@ class AttachmentServiceImpl @Autowired constructor(
             StandardCopyOption.REPLACE_EXISTING)
         }
         .then()
-    }.onErrorResume(PersistenceException::class.java) {
-      Mono.error(PermissionDeniedException("The specified path already exists"))
     }
   }
 

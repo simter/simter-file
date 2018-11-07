@@ -13,14 +13,11 @@ import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
-import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto4Create
 import tech.simter.file.rest.webflux.Utils.randomInt
 import tech.simter.file.rest.webflux.Utils.randomString
 import tech.simter.file.rest.webflux.handler.CreateAttachmentsHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
-import tech.simter.reactive.web.Utils
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.util.*
 
 /**
@@ -81,22 +78,6 @@ internal class CreateAttachmentsHandlerTest @Autowired constructor(
       .expectStatus().isCreated
       .expectHeader().contentType(APPLICATION_JSON_UTF8)
       .expectBody().jsonPath("$").isEqualTo(dto.id!!)
-
-    // verify
-    verify(service).create(anyVararg())
-  }
-
-  @Test
-  fun `permission denied`() {
-    // mock
-    val dto = randomAttachmentDto4Create()
-    `when`(service.create(anyVararg())).thenReturn(Flux.error(PermissionDeniedException()))
-
-    // invoke
-    client.post().uri("/attachment").contentType(APPLICATION_JSON_UTF8).syncBody(dto.data)
-      .exchange()
-      .expectHeader().contentType(TEXT_PLAIN_UTF8)
-      .expectStatus().isForbidden
 
     // verify
     verify(service).create(anyVararg())

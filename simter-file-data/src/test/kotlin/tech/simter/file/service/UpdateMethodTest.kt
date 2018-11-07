@@ -5,16 +5,15 @@ import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import reactor.test.StepVerifier
-import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Update
 import java.io.File
 import java.util.*
-import javax.persistence.PersistenceException
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -26,6 +25,7 @@ import kotlin.test.assertTrue
  */
 @SpringJUnitConfig(AttachmentServiceImpl::class)
 @MockBean(AttachmentDao::class)
+@TestPropertySource(properties = ["simter.file.root=target/files"])
 class UpdateMethodTest @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val dao: AttachmentDao,
@@ -97,22 +97,6 @@ class UpdateMethodTest @Autowired constructor(
 
     // verify
     StepVerifier.create(actual).verifyComplete()
-    Mockito.verify(dao).update(id, dto.data)
-  }
-
-  @Test
-  fun updateFailure() {
-    // mock
-    val id = UUID.randomUUID().toString()
-    val dto = AttachmentDto4Update()
-    Mockito.`when`(dao.update(id, dto.data)).thenReturn(
-      Mono.error(PersistenceException("")))
-
-    // invoke
-    val actual = service.update(id, dto)
-
-    // verify
-    StepVerifier.create(actual).verifyError(PermissionDeniedException::class.java)
     Mockito.verify(dao).update(id, dto.data)
   }
 }
