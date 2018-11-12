@@ -11,14 +11,21 @@ import org.springframework.data.domain.Pageable
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toFlux
+import reactor.core.publisher.toMono
 import reactor.test.StepVerifier
+import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import java.time.OffsetDateTime
 import java.util.*
 
 /**
+ * Test [AttachmentService]
+ *
  * @author RJ
+ * @author zh
  */
 @SpringJUnitConfig(AttachmentServiceImpl::class)
 @MockBean(AttachmentDao::class)
@@ -89,5 +96,76 @@ class AttachmentServiceImplTest @Autowired constructor(
     // verify
     StepVerifier.create(actual).expectNext().verifyComplete()
     verify(dao).save(attachment)
+  }
+
+  @Test
+  fun getFullPath() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    val fullPath = "level1/level2/level3/level4"
+    `when`(dao.getFullPath(id)).thenReturn(fullPath.toMono())
+
+    // invoke
+    val actual = service.getFullPath(id)
+
+    // verify
+    StepVerifier.create(actual).expectNext(fullPath).verifyComplete()
+    verify(dao).getFullPath(id)
+  }
+
+  @Test
+  fun getFullPathNotFound() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(dao.getFullPath(id)).thenReturn(Mono.empty())
+
+    // invoke
+    val actual = service.getFullPath(id)
+
+    // verify
+    StepVerifier.create(actual).verifyError(NotFoundException::class.java)
+    verify(dao).getFullPath(id)
+  }
+
+  @Test
+  fun findDescendents() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    val dtos = List(3) { index ->
+      AttachmentDtoWithChildren().apply {
+        this.id = UUID.randomUUID().toString()
+        name = "name$index"
+        type = "type$index"
+        size = index.toLong()
+        modifyOn = OffsetDateTime.now()
+        modifier = "modifier$index"
+      }
+    }
+    `when`(dao.findDescendents(id)).thenReturn(dtos.toFlux())
+
+    // invoke
+    val actual = service.findDescendents(id)
+
+    // verify
+    StepVerifier.create(actual.collectList()).expectNext(dtos).verifyComplete()
+    verify(dao).findDescendents(id)
+  }
+
+  @Test
+  fun create() {
+    // mock
+    val now = OffsetDateTime.now()
+    val attachments = List(3) {
+      Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
+        123, now, "Simter", now, "Simter", upperId = UUID.randomUUID().toString())
+    }
+    val ids = attachments.map { it.id }
+    `when`(dao.save(*attachments.toTypedArray())).thenReturn(Mono.empty())
+    // invoke
+    val actual = service.create(*attachments.toTypedArray())
+
+    // verify
+    StepVerifier.create(actual.collectList()).expectNext(ids).verifyComplete()
+    verify(dao).save(*attachments.toTypedArray())
   }
 }

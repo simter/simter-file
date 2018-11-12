@@ -4,8 +4,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import tech.simter.exception.NotFoundException
-import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
@@ -16,6 +14,7 @@ import tech.simter.file.po.Attachment
  * This interface is design for all external modules to use.
  *
  * @author cjw
+ * @author zh
  */
 interface AttachmentService {
   /**
@@ -73,7 +72,6 @@ interface AttachmentService {
   /**
    * Update part of [AttachmentDto4Update] field in [Attachment] by id.
    * If the attachment is not exists, return [Mono.error] with [NotFoundException].
-   * If the specified path already exists, return [Mono.error] with [PermissionDeniedException].
    *
    * @param[id] The id of the attachment to be updated
    * @return[Mono] signaling when operation has completed
@@ -92,7 +90,6 @@ interface AttachmentService {
    * Create one or more [Attachment]
    *
    * @return[Flux] emitting id of the newly created attachments.
-   *  If the specified path already exists, return [Flux.error] with [PermissionDeniedException].
    */
   fun create(vararg attachments: Attachment): Flux<String>
 }

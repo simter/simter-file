@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import java.io.File
 
@@ -20,6 +21,7 @@ import java.io.File
  * The Reactive MongoDB implementation of [AttachmentDao].
  *
  * @author RJ
+ * @author zh
  */
 @Component
 class AttachmentDaoImpl @Autowired constructor(
@@ -27,6 +29,18 @@ class AttachmentDaoImpl @Autowired constructor(
   private val repository: AttachmentReactiveRepository,
   private val operations: ReactiveMongoOperations
 ) : AttachmentDao {
+  override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun getFullPath(id: String): Mono<String> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun get(id: String): Mono<Attachment> {
     return repository.findById(id)
   }

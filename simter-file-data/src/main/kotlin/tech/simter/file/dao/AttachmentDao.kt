@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 
 /**
@@ -11,6 +12,7 @@ import tech.simter.file.po.Attachment
  *
  * @author cjw
  * @author RJ
+ * @author zh
  */
 interface AttachmentDao {
   /**
@@ -54,4 +56,30 @@ interface AttachmentDao {
    * @return [Mono] signaling when operation has completed
    */
   fun delete(vararg ids: String): Mono<Void>
+
+  /**
+   * Get ths full path of the specific attachment.
+   *
+   * @param[id] the attachment's id
+   * @return [Mono] the full path relative to `{file-root}` path or [Mono.empty] if none found.
+   */
+  fun getFullPath(id: String): Mono<String>
+
+  /**
+   * Recursively find all the children of the specific upper's [id].
+   *
+   * @return the children that include its children recursively.
+   *   If the upper has no children or the upper is not exists, return [Flux.empty]
+   */
+  fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
+
+  /**
+   *  Update part of the fields in the attachment
+   *
+   * @param[id] the attachment's id
+   * @param[data] The fields that will be modified
+   * @return [Mono] signaling when operation has completed
+   *   If the attachment is not exists, return [Mono.error] with [NotFoundException].
+   */
+  fun update(id: String, data: Map<String, Any?>): Mono<Void>
 }

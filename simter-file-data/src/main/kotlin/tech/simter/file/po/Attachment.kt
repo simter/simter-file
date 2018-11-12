@@ -6,6 +6,7 @@ import java.time.OffsetDateTime
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Table
+import javax.persistence.UniqueConstraint
 
 /**
  * The meta information of the upload file.
@@ -13,7 +14,7 @@ import javax.persistence.Table
  * @author JF
  */
 @Entity
-@Table(name = "st_attachment")
+@Table(name = "st_attachment", uniqueConstraints = [UniqueConstraint(columnNames = ["path", "upperId"])])
 @Document(collection = "st_attachment")
 data class Attachment(
   /** UUID */

@@ -1,7 +1,6 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType.APPLICATION_JSON_UTF8
 import org.springframework.stereotype.Component
@@ -12,7 +11,6 @@ import org.springframework.web.reactive.function.server.ServerResponse.noContent
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
-import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.service.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
@@ -25,7 +23,7 @@ import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
  * ```
  * PATCH {context-path}/attachment/{id}
  * Content-Type : application/json;charset=UTF-8
- * 
+ *
  * {DATA}
  * ```
  *
@@ -36,19 +34,11 @@ import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
  * ```
  *
  * If not Found the attachment
- * 
+ *
  * ```
  * 404 Not Found
  *
  * Attachment  not exists
- * ```
- *
- * If the specified path already exists
- *
- * ```
- * 403 Forbidden
- *
- * The specified path already exists
  * ```
  *
  * @author zh
@@ -64,9 +54,6 @@ class UpdateAttachmentHandler @Autowired constructor(
       .then(noContent().build())
       .onErrorResume(NotFoundException::class.java) {
         status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message ?: "")
-      }
-      .onErrorResume(PermissionDeniedException::class.java) {
-        status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message ?: "")
       }
   }
 
