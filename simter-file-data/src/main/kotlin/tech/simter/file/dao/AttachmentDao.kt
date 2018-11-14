@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 
@@ -83,4 +84,14 @@ interface AttachmentDao {
    *   If the attachment is not exists, return [Mono.error] with [NotFoundException].
    */
   fun update(id: String, data: Map<String, Any?>): Mono<Void>
+
+  /**
+   * Find [AttachmentDto4Zip] from the descendents of attachments and attachments.
+   *   If not found, return [Flux.empty].
+   *   [AttachmentDto4Zip.zipPath] is logical path relatively to the recent common ancestor of file attachments
+   *     and it not include the file suffix .
+   *   [AttachmentDto4Zip.physicalPath] is the physical path of the file.
+   * @param[ids] the attachments id.
+   */
+  fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip>
 }

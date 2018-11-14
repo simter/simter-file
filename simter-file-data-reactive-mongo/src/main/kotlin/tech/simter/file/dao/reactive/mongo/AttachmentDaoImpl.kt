@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import java.io.File
@@ -29,6 +30,10 @@ class AttachmentDaoImpl @Autowired constructor(
   private val repository: AttachmentReactiveRepository,
   private val operations: ReactiveMongoOperations
 ) : AttachmentDao {
+  override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
