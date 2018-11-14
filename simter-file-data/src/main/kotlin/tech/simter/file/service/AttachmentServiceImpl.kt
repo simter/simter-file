@@ -8,11 +8,14 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
+import reactor.util.function.Tuple2
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Update
+import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
@@ -29,6 +32,14 @@ class AttachmentServiceImpl @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   val attachmentDao: AttachmentDao
 ) : AttachmentService {
+  override fun packageAttachments(outputStream: OutputStream, vararg ids: String): Mono<String> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun create(vararg attachments: Attachment): Flux<String> {
     return attachmentDao.save(*attachments).thenMany(attachments.map { it.id }.toFlux())
   }
