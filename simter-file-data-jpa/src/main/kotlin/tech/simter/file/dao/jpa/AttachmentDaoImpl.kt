@@ -36,8 +36,65 @@ class AttachmentDaoImpl @Autowired constructor(
   @PersistenceContext private val em: EntityManager,
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
+  @Suppress("UNCHECKED_CAST")
   override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    if (ids.isEmpty()) return Flux.empty()
+    val sql = """
+      with recursive
+      -- Below the subtree is subtree from root to "ids"
+      -- e: subtree of edge plus edge from "ids" to it
+      e(id, upper_id) as (
+        select id, id from st_attachment where id in :ids
+        union
+        select a.id, a.upper_id from st_attachment as a
+        join e on a.id = e.upper_id
+      ),
+      -- o：e's node of out-degree
+      o(id, count) as (
+        select upper_id, count(0) from e group by upper_id
+      ),
+      -- c: "ids" of common-ancestor
+      c(id, upper_id, least) as(
+        select o.id, o.id, count <> 1 from o where  o.id is null
+        union
+        select e.id, e.upper_id, count <> 1 or e.id in :ids
+        from e join o on e.id = o.id
+        join c on (e.upper_id = c.id or (c.id is null and e.upper_id is null))
+          and c.least = false
+      ),
+      -- l: "ids" of least-common-ancestor
+      l(id, upper_id)
+      as (
+        select id, upper_id from c where least = true
+      ),
+      -- a: path from "ids" of all ancestors to "ids"
+      a(id, upper_id, physical_path, zip_path, type)
+      as(
+        select id, upper_id, concat(path, ''), concat(name, ''), type
+        from st_attachment as a where id in :ids
+        union
+        select a.id, s.upper_id, concat(path, '/', physical_path), concat(name, '/', zip_path), a.type
+        from st_attachment as s
+        join a on a.upper_id = s.id
+      )
+      -- d: path from "ids" of least-common-ancestor to "ids" of all descendant
+      , d(id, lca_id, physical_path, zip_path, type)
+      as(
+        select a.id, l.id, a.physical_path, a.zip_path, a.type
+        from a
+        join l on a.upper_id = l.upper_id or (a.upper_id is null and l.upper_id is null)
+        union
+        select a.id, d.lca_id, concat(physical_path, '/', path), concat(zip_path, '/', name), a.type
+        from st_attachment as a join d on a.upper_id = d.id
+      )
+      select id as terminus, lca_id as origin, physical_path, zip_path, type,
+        concat(case when lca_id is null then 'null' else concat('"', lca_id, '"') end, '-"', id, '"') as id
+      from d
+    """.trimIndent()
+    val dtos = em.createNativeQuery(sql, AttachmentDto4Zip::class.java)
+      .setParameter("ids", ids.toList())
+      .resultList as List<AttachmentDto4Zip>
+    return dtos.toFlux()
   }
 
   override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
