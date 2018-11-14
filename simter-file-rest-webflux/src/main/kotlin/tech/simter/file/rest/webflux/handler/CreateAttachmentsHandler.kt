@@ -24,20 +24,21 @@ import java.util.*
  * POST {context-path}/attachment
  * Content-Type : application/json;charset=UTF-8
  *
- * {DATA} # single
- * or [{DATA}, ...] # multiple
+ * [{DATA}, ...]
  * ```
- * {DATA}={id, name, upperId, path, puid}
- * > If no path is specified, use ID instead.
- * > The user can specify the id but is responsible for ensuring the global uniqueness of the id.
- *
+ * {DATA}={id, name, upperId, path, type, puid}
+ * >
+ *  If no path is specified, use ID instead.
+ *  The user can specify the id but is responsible for ensuring the global uniqueness of the id.
+ *  If type is ":d", the attachment is a folder attachment.
+ *  If type is none or blank, the attachment type is not specified.
+ * >
  * Response:
  *
  * ```
  * 201 Created
  *
- * {id} # single ID
- * or [id1, ..., idN] # multiple ID, The order is the same as [{DATA}, ...]
+ *  [id1, ..., idN] # The order is the same as [{DATA}, ...]
  * ```
  *
  * @author zh
@@ -52,17 +53,12 @@ class CreateAttachmentsHandler @Autowired constructor(
       .collectList().map { it.toTypedArray() }
       .flatMap { attachmentService.create(*it).collectList() }
       .flatMap { status(CREATED).contentType(APPLICATION_JSON_UTF8).syncBody(it) }
-      .switchIfEmpty(
-        request.bodyToMono<AttachmentDto4Create>().map { toAttachment(it) }
-          .flatMap { attachmentService.create(it).collectList() }
-          .flatMap { status(CREATED).contentType(APPLICATION_JSON_UTF8).syncBody(it[0]) }
-      )
   }
 
   fun toAttachment(dto: AttachmentDto4Create): Attachment {
     val id = dto.id ?: UUID.randomUUID().toString()
     val now = OffsetDateTime.now()
-    return Attachment(id = id, path = dto.path ?: id, name = dto.name!!, type = ":d",
+    return Attachment(id = id, path = dto.path ?: id, name = dto.name!!, type = dto.type ?: "",
       size = 0, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter",
       puid = dto.puid ?: "", upperId = dto.upperId ?: "EMPTY")
   }
