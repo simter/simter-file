@@ -6,20 +6,24 @@ create table st_attachment (
   id   varchar(36) primary key,
   path varchar(255) not null,
   name varchar(255) not null,
-  ext varchar(10) not null,
+  type varchar(10) not null,
   size integer not null,
-  upload_on timestamp not null,
-  uploader varchar(255) not null,
-  puid varchar(36) not null default '0',
-  subgroup integer not null default 0
+  create_on timestamp not null,
+  creator varchar(255) not null,
+  modify_on timestamp not null,
+  modifier varchar(255) not null,
+  puid varchar(36),
+  upperId varchar(36)
 );
 comment on table st_attachment is 'The meta information of the upload file';
 comment on column st_attachment.id is 'UUID';
 comment on column st_attachment.path is 'The relative path that store the actual physical file';
 comment on column st_attachment.name is 'File name without extension';
-comment on column st_attachment.ext is 'File extension without dot symbol';
+comment on column st_attachment.type is 'If it is a file, the type is file extension without dot symbol and if it is a folder, the type is ":d"';
 comment on column st_attachment.size is 'The byte unit file length';
-comment on column st_attachment.uploadOn is 'Upload time';
-comment on column st_attachment.uploader is 'The account do the upload';
+comment on column st_attachment.create_on is 'Created time';
+comment on column st_attachment.creator is 'The account do the created';
+comment on column st_attachment.modify_on is 'Last modify time';
+comment on column st_attachment.modifier is 'The account do the last modify';
 comment on column st_attachment.puid is 'The unique id of the parent module';
-comment on column st_attachment.subgroup is 'The upperId of the parent module';
+comment on column st_attachment.upperId is 'The upperId of the parent module';
