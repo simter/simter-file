@@ -9,4 +9,5 @@ import tech.simter.file.po.Attachment
  * */
 class AttachmentDto4Create : AttachmentDto4Update() {
   var id: String? by holder
+  var type: String? by holder
 }

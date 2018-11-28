@@ -65,21 +65,4 @@ internal class CreateAttachmentsHandlerTest @Autowired constructor(
     // verify
     verify(service).create(anyVararg())
   }
-
-  @Test
-  fun `create single`() {
-    // mock
-    val dto = randomAttachmentDto4Create()
-    `when`(service.create(anyVararg())).thenReturn(Flux.just(dto.id!!))
-
-    // invoke
-    client.post().uri("/attachment").contentType(APPLICATION_JSON_UTF8).syncBody(dto.data)
-      .exchange()
-      .expectStatus().isCreated
-      .expectHeader().contentType(APPLICATION_JSON_UTF8)
-      .expectBody().jsonPath("$").isEqualTo(dto.id!!)
-
-    // verify
-    verify(service).create(anyVararg())
-  }
 }
