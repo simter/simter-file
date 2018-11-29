@@ -70,6 +70,7 @@ class UploadFileByStreamHandler @Autowired constructor(
       .map {
         // build Map by data in list
         val formDataMap = HashMap<String, Any>()
+        formDataMap["id"] = request.queryParam("id").orElse(newId())
         formDataMap["fileName"] = request.queryParam("filename")
           .orElseThrow { NullPointerException("Parameter \"filename\" mustn't be null!") }
         formDataMap["puid"] = request.queryParam("puid").orElse("")
@@ -82,7 +83,8 @@ class UploadFileByStreamHandler @Autowired constructor(
         // get the FilePart by the Map
         val fileData = it["fileData"] as ByteArray
         // convert to Attachment instance
-        val attachment = toAttachment(fileData.size.toLong(), it["fileName"] as String, it["puid"] as String, it["upperId"] as String)
+        val attachment = toAttachment(it["id"] as String, fileData.size.toLong(),
+          it["fileName"] as String, it["puid"] as String, it["upperId"] as String)
         // get path
         attachmentService.getFullPath(it["upperId"] as String)
           .flatMap { upperFullPath ->
@@ -107,8 +109,7 @@ class UploadFileByStreamHandler @Autowired constructor(
       }
   }
 
-  private fun toAttachment(fileSize: Long, fileName: String, puid: String, upperId: String): Attachment {
-    val id = newId()
+  private fun toAttachment(id: String, fileSize: Long, fileName: String, puid: String, upperId: String): Attachment {
     val now = OffsetDateTime.now()
     val lastDotIndex = fileName.lastIndexOf(".")
     val type = fileName.substring(lastDotIndex + 1)
