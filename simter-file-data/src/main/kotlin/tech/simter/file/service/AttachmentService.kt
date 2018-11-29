@@ -5,8 +5,10 @@ import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.dto.AttachmentDto4Update
+import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import java.io.OutputStream
 
 /**
  * The [Attachment] Service Interface.
@@ -92,4 +94,33 @@ interface AttachmentService {
    * @return[Flux] emitting id of the newly created attachments.
    */
   fun create(vararg attachments: Attachment): Flux<String>
+  
+  /**
+   * Package attachments and their descendant attachments.
+   *   if attachments don't have least-common-ancestors, the zip structure is
+   *     |- {sub-folder.name}
+   *       |- {sub-folder.name} or {sub-file.name}.{sub-file.type}
+   *       |- ...
+   *     |- {sub-folder.name} or {sub-file.name}.{sub-file.type}
+   *     |- ...
+   *   if attachments have least-common-ancestors and it is file, the zip structure is
+   *     |- {sub-file.name}.{sub-file.type}
+   *   if attachments have least-common-ancestors and it is folder, the zip structure is
+   *     |- {least-common-ancestors.name}
+   *       |- {sub-folder.name}
+   *         |- {sub-folder.name} or {sub-file.name}.{sub-file.type}
+   *         |- ...
+   *       |- {sub-folder.name} or {sub-file.name}.{sub-file.type}
+   *       |- ...
+   * @param[outputStream] zip file data output position.
+   * @param[ids] the attachments id.
+   * @return[Mono] default name of the zip file.
+   *   if attachments is not exists, return [Mono.empty]
+   *   if attachments don't have least-common-ancestors, the name is "root.zip";
+   *   if attachments have least-common-ancestors and it is file,
+   *     the name is "{least-common-ancestors.name}.{least-common-ancestors.type}.zip";
+   *   if attachments have least-common-ancestors and it is folder,
+   *     the name is "{least-common-ancestors.name}.zip".
+   */
+  fun packageAttachments(outputStream: OutputStream, vararg ids: String): Mono<String>
 }

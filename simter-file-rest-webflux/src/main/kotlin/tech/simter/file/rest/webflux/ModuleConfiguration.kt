@@ -40,7 +40,9 @@ class ModuleConfiguration @Autowired constructor(
   private val updateAttachmentHandler: UpdateAttachmentHandler,
   private val findAttechmentDescendentsHandler: FindAttechmentDescendentsHandler,
   private val createAttachmentsHandler: CreateAttachmentsHandler,
-  private val deleteNumerousFilesHandler: DeleteNumerousFilesHandler
+  private val deleteNumerousFilesHandler: DeleteNumerousFilesHandler,
+  private val packageFilesHandler: PackageFilesHandler,
+  private val packageFileHandler: PackageFileHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
 
@@ -66,6 +68,10 @@ class ModuleConfiguration @Autowired constructor(
       AttachmentFormHandler.REQUEST_PREDICATE.invoke(attachmentFormHandler::handle)
       // GET /attachment/{id}/descendent
       FindAttechmentDescendentsHandler.REQUEST_PREDICATE.invoke(findAttechmentDescendentsHandler::handle)
+      // GET /zip/{id}?name=:name
+      PackageFileHandler.REQUEST_PREDICATE.invoke(packageFileHandler::handle)
+      // POST /zip?name=:name
+      PackageFilesHandler.REQUEST_PREDICATE.invoke(packageFilesHandler::handle)
       // POST /attachment
       CreateAttachmentsHandler.REQUEST_PREDICATE.invoke(createAttachmentsHandler::handle)
       // PATCH /attachment/{id} Content-Type: application/json;charset=UTF-8
