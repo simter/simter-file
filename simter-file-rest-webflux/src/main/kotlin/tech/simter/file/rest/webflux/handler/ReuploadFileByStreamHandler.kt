@@ -20,6 +20,7 @@ import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.io.File
+import java.net.URLDecoder
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
@@ -121,7 +122,8 @@ class ReuploadFileByStreamHandler @Autowired constructor(
     if (contentDisposition.isEmpty()) return null
     val disposition = contentDisposition[0]
     val filenameIndex = disposition.indexOf("filename=\"").plus("filename=\"".length)
-    return disposition.substring(filenameIndex, disposition.indexOf("\"", filenameIndex))
+    val fileName = disposition.substring(filenameIndex, disposition.indexOf("\"", filenameIndex))
+    return URLDecoder.decode(fileName, "utf-8")
   }
 
   companion object {

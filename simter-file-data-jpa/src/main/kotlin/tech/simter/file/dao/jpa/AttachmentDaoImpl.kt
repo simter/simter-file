@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
-import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4FullPath
@@ -101,13 +100,14 @@ class AttachmentDaoImpl @Autowired constructor(
     return if (data.isEmpty()) {
       Mono.empty()
     } else {
-      Mono.fromSupplier {
-        em.createQuery("update Attachment set ${data.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
-          .apply { data.forEach { key, value -> setParameter(key, value) } }
-          .setParameter("id", id)
-          .executeUpdate()
-      }.delayUntil { em.clear().toMono() }
-        .flatMap { if (it > 0) Mono.empty<Void>() else Mono.error(NotFoundException()) }
+      val result = em
+        .createQuery("update Attachment set ${data.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
+        .apply { data.forEach { key, value -> setParameter(key, value) } }
+        .setParameter("id", id)
+        .executeUpdate()
+      em.clear()
+      if (result > 0) Mono.empty<Void>()
+      else Mono.error(NotFoundException())
     }
   }
 
@@ -138,8 +138,8 @@ class AttachmentDaoImpl @Autowired constructor(
       descendents.groupBy { if (top.id == it.upperId) "children" else "other" }
         .also {
           descendents = it["other"] ?: listOf()
-          it["children"]?.map { AttachmentDtoWithChildren().copy(it) }
-            ?.also {
+          (it["children"] ?: listOf()).map { AttachmentDtoWithChildren().copy(it) }
+            .also {
               top.children = it
               queue.addAll(it)
             }
@@ -159,8 +159,13 @@ class AttachmentDaoImpl @Autowired constructor(
       )
       select p.path from p where upper_id is null
     """.trimIndent()
-    return Mono.fromSupplier { em.createNativeQuery(sql).setParameter("id", id).singleResult as String }
-      .onErrorResume(NoResultException::class.java) { Mono.empty() }
+    return try {
+      Mono.just(em.createNativeQuery(sql).setParameter("id", id).singleResult as String)
+    } catch (e: NoResultException) {
+      Mono.empty()
+    } catch (e: Throwable) {
+      Mono.error(e)
+    }
   }
 
   override fun get(id: String): Mono<Attachment> {
