@@ -343,7 +343,7 @@ class AttachmentDaoImplTest @Autowired constructor(
         assertEquals(listOf(
           AttachmentDto4Zip().apply {
             terminus = "110"
-            physicalPath = "path110"
+            physicalPath = "path100/path110"
             zipPath = "name110"
             type = ":d"
             origin = "110"
@@ -351,7 +351,7 @@ class AttachmentDaoImplTest @Autowired constructor(
           },
           AttachmentDto4Zip().apply {
             terminus = "111"
-            physicalPath = "path110/path111.xml"
+            physicalPath = "path100/path110/path111.xml"
             zipPath = "name110/name111"
             type = "xml"
             origin = "110"
@@ -359,7 +359,7 @@ class AttachmentDaoImplTest @Autowired constructor(
           },
           AttachmentDto4Zip().apply {
             terminus = "112"
-            physicalPath = "path110/path112.xml"
+            physicalPath = "path100/path110/path112.xml"
             zipPath = "name110/name112"
             type = "xml"
             origin = "110"
@@ -395,7 +395,7 @@ class AttachmentDaoImplTest @Autowired constructor(
         assertEquals(listOf(
           AttachmentDto4Zip().apply {
             terminus = "111"
-            physicalPath = "path111.xml"
+            physicalPath = "path100/path110/path111.xml"
             zipPath = "name111"
             type = "xml"
             origin = "111"
@@ -409,7 +409,7 @@ class AttachmentDaoImplTest @Autowired constructor(
         assertEquals(listOf(
           AttachmentDto4Zip().apply {
             terminus = "110"
-            physicalPath = "path110"
+            physicalPath = "path100/path110"
             zipPath = "name110"
             type = ":d"
             origin = "110"
@@ -417,7 +417,7 @@ class AttachmentDaoImplTest @Autowired constructor(
           },
           AttachmentDto4Zip().apply {
             terminus = "111"
-            physicalPath = "path110/path111.xml"
+            physicalPath = "path100/path110/path111.xml"
             zipPath = "name110/name111"
             type = "xml"
             origin = "110"
@@ -425,7 +425,7 @@ class AttachmentDaoImplTest @Autowired constructor(
           },
           AttachmentDto4Zip().apply {
             terminus = "112"
-            physicalPath = "path110/path112.xml"
+            physicalPath = "path100/path110/path112.xml"
             zipPath = "name110/name112"
             type = "xml"
             origin = "110"
