@@ -76,19 +76,28 @@ class AttachmentDaoImpl @Autowired constructor(
         from st_attachment as s
         join a on a.upper_id = s.id
       )
-      -- d: path from "ids" of least-common-ancestor to "ids" of all descendant
-      , d(id, lca_id, physical_path, zip_path, type)
+      -- d: zip_path from "ids" of least-common-ancestor to "ids" of all descendant
+      , d(id, lca_id, zip_path, type)
       as(
-        select a.id, l.id, a.physical_path, a.zip_path, a.type
+        select a.id, l.id, a.zip_path, a.type
         from a
         join l on a.upper_id = l.upper_id or (a.upper_id is null and l.upper_id is null)
         union
-        select a.id, d.lca_id, concat(physical_path, '/', path), concat(zip_path, '/', name), a.type
+        select a.id, d.lca_id, concat(zip_path, '/', name), a.type
         from st_attachment as a join d on a.upper_id = d.id
       )
-      select id as terminus, lca_id as origin, physical_path, zip_path, type,
-        concat(case when lca_id is null then 'null' else concat('"', lca_id, '"') end, '-"', id, '"') as id
-      from d
+       -- d2: physical_path from "ids" of root to "ids" of all descendant
+      , d2(id, physical_path)
+      as(
+        select a.id, a.physical_path
+        from a where a.upper_id is null
+        union
+        select a.id, concat(physical_path, '/', path)
+        from st_attachment as a join d2 as d on a.upper_id = d.id
+      )
+      select d.id as terminus, lca_id as origin, physical_path, zip_path, type,
+        concat(case when lca_id is null then 'null' else concat('"', lca_id, '"') end, '-"', d.id, '"') as id
+      from d, d2 where d.id = d2.id
     """.trimIndent()
     val dtos = em.createNativeQuery(sql, AttachmentDto4Zip::class.java)
       .setParameter("ids", ids.toList())
