@@ -29,6 +29,10 @@ import javax.persistence.PersistenceContext
 import kotlin.collections.ArrayList
 import kotlin.test.assertFalse
 
+fun AttachmentDtoWithChildren.getOwnData(): Map<String, Any?> {
+  return data.filter { it.key != "children" }
+}
+
 /**
  * @author RJ
  */
@@ -513,16 +517,14 @@ class AttachmentDaoImplTest @Autowired constructor(
 
     // invoke and verify
     StepVerifier.create(dao.findDescendents(po100.id)).consumeNextWith { actual ->
-      val expected = AttachmentDtoWithChildren().copy(po110).also { it.children = actual.children }
-      assertEquals(expected, actual)
-      assertEquals(AttachmentDtoWithChildren().copy(po111), actual.children!![0])
-      assertEquals(AttachmentDtoWithChildren().copy(po112), actual.children!![1])
+      assertEquals(AttachmentDtoWithChildren().copy(po110).getOwnData(), actual.getOwnData())
+      assertEquals(AttachmentDtoWithChildren().copy(po111).getOwnData(), actual.children!![0].getOwnData())
+      assertEquals(AttachmentDtoWithChildren().copy(po112).getOwnData(), actual.children!![1].getOwnData())
     }.consumeNextWith { actual ->
-      val expected = AttachmentDtoWithChildren().copy(po120).also { it.children = actual.children }
-      assertEquals(expected, actual)
-      assertEquals(AttachmentDtoWithChildren().copy(po121), actual.children!![0])
-      assertEquals(AttachmentDtoWithChildren().copy(po122), actual.children!![1])
-      assertEquals(AttachmentDtoWithChildren().copy(po123), actual.children!![2])
+      assertEquals(AttachmentDtoWithChildren().copy(po120).getOwnData(), actual.getOwnData())
+      assertEquals(AttachmentDtoWithChildren().copy(po121).getOwnData(), actual.children!![0].getOwnData())
+      assertEquals(AttachmentDtoWithChildren().copy(po122).getOwnData(), actual.children!![1].getOwnData())
+      assertEquals(AttachmentDtoWithChildren().copy(po123).getOwnData(), actual.children!![2].getOwnData())
     }.verifyComplete()
   }
 
