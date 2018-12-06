@@ -102,7 +102,7 @@ class ReuploadFileByStreamHandler @Autowired constructor(
 
   private fun modifyAttachment(attachment: Attachment, fileSize: Long, filename: String?): Attachment {
     val now = OffsetDateTime.now()
-    return if (filename != null && attachment.fileName != filename) {
+    return if (filename != null && "${attachment.fileName}.${attachment.type}" != filename) {
       val lastDotIndex = filename.lastIndexOf(".")
       val type = filename.substring(lastDotIndex + 1)
       val path = if (attachment.upperId == "EMPTY") {
