@@ -58,7 +58,10 @@ class UpdateMethodTest @Autowired constructor(
     Mockito.verify(dao).update(id, dto.data)
     assertFalse(oldFolder.exists())
     assertTrue(newFolder.exists())
-    assertEquals(listOf("TestFile.txt", "TestFolder"), newFolder.list().map { it })
+    val expected = listOf("TestFile.txt", "TestFolder")
+    val actualList = newFolder.list()
+    assertEquals(expected.size, actualList.size)
+    actualList.forEach { assertTrue(expected.contains(it)) }
   }
 
   @Test
