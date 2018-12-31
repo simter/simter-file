@@ -1,6 +1,6 @@
 package tech.simter.file.po
 
-import jdk.nashorn.internal.ir.annotations.Ignore
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.OffsetDateTime
 import javax.persistence.Column
@@ -46,7 +46,7 @@ data class Attachment(
   @Column(nullable = true, length = 36) val upperId: String? = "EMPTY") {
 
   /** File name with extension */
-  @Ignore
+  @JsonIgnore
   @javax.persistence.Transient
   @org.springframework.data.annotation.Transient
   val fileName = "$name${if (type == ":d") "" else ".$type"}"
