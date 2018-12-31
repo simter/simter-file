@@ -20,6 +20,7 @@ import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.po.Attachment
 import java.io.File
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 import java.util.*
 import java.util.stream.IntStream
 
@@ -37,7 +38,7 @@ class AttachmentDaoImplTest @Autowired constructor(
 ) {
   private val path = "/data"
   private val creator = "Simter"
-  private val now = OffsetDateTime.now()
+  private val now = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS)
 
   @BeforeEach
   fun setup() {
