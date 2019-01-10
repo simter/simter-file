@@ -1,5 +1,9 @@
 # simter-file changelog
 
+## 0.3.0 2019-01-10
+
+- Upgrade to simter platform 1.0.0
+
 ## 0.2.0 2018-12-04
 
 - Fixed jpa find-descendents unit test failed
