@@ -53,7 +53,8 @@ class UpdateAttachmentHandler @Autowired constructor(
       .flatMap { attachmentService.update(request.pathVariable("id"), it) }
       .then(noContent().build())
       .onErrorResume(NotFoundException::class.java) {
-        status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message ?: "")
+        if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
+        else status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
       }
   }
 

@@ -1,18 +1,21 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
+import org.springframework.http.HttpStatus.FORBIDDEN
+import org.springframework.http.MediaType.APPLICATION_JSON_UTF8
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
 import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.ServerResponse.ok
+import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
+import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 
 /**
  * The [HandlerFunction] for find multiple [Attachment] by module info.
@@ -46,11 +49,12 @@ class FindModuleAttachmentsHandler @Autowired constructor(
       request.pathVariable("puid"),
       request.pathVariable("upperId")
     ).collectList()// response
-      .flatMap { ServerResponse.ok().contentType(MediaType.APPLICATION_JSON_UTF8).syncBody(it) }
+      .flatMap { ok().contentType(APPLICATION_JSON_UTF8).syncBody(it) }
       // error mapping
-      .onErrorResume(PermissionDeniedException::class.java, {
-        ServerResponse.status(HttpStatus.FORBIDDEN).contentType(MediaType.TEXT_PLAIN).syncBody(it.message ?: "")
-      })
+      .onErrorResume(PermissionDeniedException::class.java) {
+        if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
+        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+      }
   }
 
   companion object {

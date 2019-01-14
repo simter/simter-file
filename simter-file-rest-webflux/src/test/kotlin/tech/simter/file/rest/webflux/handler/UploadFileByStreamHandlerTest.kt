@@ -3,8 +3,7 @@ package tech.simter.file.rest.webflux.handler
 import com.nhaarman.mockito_kotlin.any
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
+import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -172,18 +171,15 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     `when`(service.getFullPath(upperId)).thenReturn(Mono.error(NotFoundException("")))
 
     // mock handler.newId return value
-    `when`(handler.newId()).thenReturn(id)
+    doReturn(id).`when`(handler).newId()
 
-    // invoke request
+    // invoke and verify
     client.post().uri("/?puid=puid1&upper=$upperId&filename=$name.$ext")
       .contentType(MediaType.APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(file.file.readBytes())
+      .syncBody(file.inputStream.readBytes())
       .exchange()
       .expectStatus().isNotFound
-
-    // verify service.save method invoked
     verify(service).getFullPath(upperId)
-
   }
 }

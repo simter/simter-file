@@ -105,7 +105,8 @@ class UploadFileByStreamHandler @Autowired constructor(
       // 4. return response
       .flatMap { status(CREATED).syncBody(it.id) }
       .onErrorResume(NotFoundException::class.java) {
-        status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message ?: "")
+        if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
+        else status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
       }
   }
 
