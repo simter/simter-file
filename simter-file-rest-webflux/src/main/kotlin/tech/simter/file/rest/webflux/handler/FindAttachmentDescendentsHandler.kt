@@ -35,7 +35,7 @@ import tech.simter.file.service.AttachmentService
  * @author zh
  */
 @Component
-class FindAttechmentDescendentsHandler @Autowired constructor(
+class FindAttachmentDescendentsHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {

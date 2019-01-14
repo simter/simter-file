@@ -9,7 +9,6 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.ServerResponse.ok
 import org.springframework.web.reactive.function.server.router
 import tech.simter.file.rest.webflux.handler.*
 
@@ -38,7 +37,7 @@ class ModuleConfiguration @Autowired constructor(
   private val deleteFilesHandler: DeleteFilesHandler,
   private val reuploadFileByStreamHandler: ReuploadFileByStreamHandler,
   private val updateAttachmentHandler: UpdateAttachmentHandler,
-  private val findAttechmentDescendentsHandler: FindAttechmentDescendentsHandler,
+  private val findAttachmentDescendentsHandler: FindAttachmentDescendentsHandler,
   private val createAttachmentsHandler: CreateAttachmentsHandler,
   private val deleteNumerousFilesHandler: DeleteNumerousFilesHandler,
   private val packageFilesHandler: PackageFilesHandler,
@@ -67,7 +66,7 @@ class ModuleConfiguration @Autowired constructor(
       // GET /attachment/{id}
       AttachmentFormHandler.REQUEST_PREDICATE.invoke(attachmentFormHandler::handle)
       // GET /attachment/{id}/descendent
-      FindAttechmentDescendentsHandler.REQUEST_PREDICATE.invoke(findAttechmentDescendentsHandler::handle)
+      FindAttachmentDescendentsHandler.REQUEST_PREDICATE.invoke(findAttachmentDescendentsHandler::handle)
       // GET /zip/{id}?name=:name
       PackageFileHandler.REQUEST_PREDICATE.invoke(packageFileHandler::handle)
       // POST /zip?name=:name

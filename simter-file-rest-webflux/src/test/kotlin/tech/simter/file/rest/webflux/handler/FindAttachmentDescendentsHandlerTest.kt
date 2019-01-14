@@ -15,21 +15,21 @@ import reactor.core.publisher.toFlux
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.rest.webflux.Utils.randomInt
 import tech.simter.file.rest.webflux.Utils.randomString
-import tech.simter.file.rest.webflux.handler.FindAttechmentDescendentsHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.rest.webflux.handler.FindAttachmentDescendentsHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.util.*
 
 /**
- * Test [FindAttechmentDescendentsHandler].
+ * Test [FindAttachmentDescendentsHandler].
  *
  * @author zh
  */
-@SpringJUnitConfig(FindAttechmentDescendentsHandler::class)
+@SpringJUnitConfig(FindAttachmentDescendentsHandler::class)
 @EnableWebFlux
 @MockBean(AttachmentService::class)
-internal class FindAttechmentDescendentsHandlerTest @Autowired constructor(
+internal class FindAttachmentDescendentsHandlerTest @Autowired constructor(
   private val service: AttachmentService,
-  handler: FindAttechmentDescendentsHandler
+  handler: FindAttachmentDescendentsHandler
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
   private val id = UUID.randomUUID().toString()
