@@ -14,7 +14,7 @@
   <packaging>pom</packaging>
   <description>Builder</description>
   <properties>
-    <revision>0.3-SNAPSHOT</revision>
+    <revision>0.4-SNAPSHOT</revision>
     <simter-file.version>${revision}</simter-file.version>
     <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
   </properties>
