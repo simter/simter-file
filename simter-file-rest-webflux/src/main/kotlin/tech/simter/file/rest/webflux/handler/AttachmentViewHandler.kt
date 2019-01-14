@@ -42,7 +42,6 @@ import tech.simter.file.service.AttachmentService
 class AttachmentViewHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return attachmentService
       // find Page<Attachment> by queryParam page-no, page-size
@@ -50,7 +49,7 @@ class AttachmentViewHandler @Autowired constructor(
         request.queryParam("page-no").get().toInt(),
         request.queryParam("page-size").get().toInt()
       ))
-      .map({
+      .map {
         // build response body
         val attachmentViewData = HashMap<String, Any>()
         attachmentViewData["count"] = it.totalElements
@@ -58,13 +57,13 @@ class AttachmentViewHandler @Autowired constructor(
         attachmentViewData["pageSize"] = it.pageable.pageSize
         attachmentViewData["rows"] = it.content
         attachmentViewData
-      })
-      .flatMap({
+      }
+      .flatMap {
         // return response
         ServerResponse.ok()
           .contentType(MediaType.APPLICATION_JSON_UTF8)
           .syncBody(it)
-      })
+      }
   }
 
   companion object {

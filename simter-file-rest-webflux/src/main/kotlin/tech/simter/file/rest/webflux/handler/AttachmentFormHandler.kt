@@ -47,11 +47,10 @@ import tech.simter.file.service.AttachmentService
 class AttachmentFormHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return attachmentService.get(request.pathVariable("id"))
-      .flatMap({ ok().contentType(MediaType.APPLICATION_JSON_UTF8).syncBody(it) }) // found
-      .switchIfEmpty(notFound().build())                                           // not found
+      .flatMap { ok().contentType(MediaType.APPLICATION_JSON_UTF8).syncBody(it) } // found
+      .switchIfEmpty(notFound().build())                                          // not found
   }
 
   companion object {

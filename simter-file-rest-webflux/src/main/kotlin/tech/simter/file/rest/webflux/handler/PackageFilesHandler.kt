@@ -1,7 +1,6 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
@@ -49,15 +48,13 @@ import java.io.ByteArrayOutputStream
  */
 @Component
 class PackageFilesHandler @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return request.formData().map { it["id"]!! }
-      .flatMap {
+      .flatMap { ids ->
         val byteOutputStream = ByteArrayOutputStream()
-        attachmentService.packageAttachments(byteOutputStream, *it.toTypedArray())
+        attachmentService.packageAttachments(byteOutputStream, *ids.toTypedArray())
           .map { defaultName ->
             Pair(byteOutputStream.toByteArray(), request.queryParam("name").map { "$it.zip" }.orElse(defaultName))
           }
@@ -68,7 +65,6 @@ class PackageFilesHandler @Autowired constructor(
           .contentLength(data.size.toLong())
           .header("Content-Disposition", "attachment; filename=\"${it.second}\"")
           .body(BodyInserters.fromResource(ByteArrayResource(data)))
-
       }
       .switchIfEmpty(notFound().build())
   }

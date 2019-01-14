@@ -54,7 +54,6 @@ class DownloadFileHandler @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     val id = request.pathVariable("id")
     return attachmentService.get(id)
@@ -62,14 +61,14 @@ class DownloadFileHandler @Autowired constructor(
       // the flatMap run on other thread by the scheduler
       .publishOn(Schedulers.elastic())
       // found
-      .flatMap({
+      .flatMap {
         // return response
         ok().contentType(APPLICATION_OCTET_STREAM)
           .contentLength(it.t1.size)
           .header("Content-Disposition",
             "attachment; filename=\"${String("${it.t1.name}.${it.t1.type}".toByteArray(), ISO_8859_1)}\"")
           .body(BodyInserters.fromResource(FileSystemResource("$fileRootDir/${it.t2}")))
-      })
+      }
       // not found
       .switchIfEmpty(notFound().build())
   }

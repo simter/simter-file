@@ -57,15 +57,13 @@ class ReuploadFileByStreamHandler @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return request
       .bodyToMono(ByteArray::class.java)
-      .flatMap {
+      .flatMap { fileData ->
         // 1. extract data in request body
         val fileName = getFileName(request.headers().header("Content-Disposition"))
         val id = request.pathVariable("id")
-        val fileData = it
         // 2. save file to disk
         attachmentService.get(id)
           .zipWith(Mono.defer { attachmentService.getFullPath(id) })

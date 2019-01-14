@@ -10,6 +10,7 @@ import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.ServerResponse.*
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import tech.simter.file.service.AttachmentService
@@ -49,7 +50,6 @@ class InlineFileHandler @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     val id = request.pathVariable("id")
     return attachmentService.get(id)
@@ -57,16 +57,16 @@ class InlineFileHandler @Autowired constructor(
       // the flatMap run on other thread by the scheduler
       .publishOn(Schedulers.elastic())
       // found
-      .flatMap({
+      .flatMap {
         // return response
-        ServerResponse.ok()
+        ok()
           .contentLength(it.t1.size)
           .header("Content-Disposition",
             "inline; filename=\"${String("${it.t1.name}.${it.t1.type}".toByteArray(), Charsets.ISO_8859_1)}\"")
           .body(BodyInserters.fromResource(FileSystemResource("$fileRootDir/${it.t2}")))
-      })
+      }
       // not found
-      .switchIfEmpty(ServerResponse.notFound().build())
+      .switchIfEmpty(notFound().build())
   }
 
   companion object {

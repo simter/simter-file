@@ -47,7 +47,6 @@ import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 class UpdateAttachmentHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return request.bodyToMono<AttachmentDto4Update>()
       .flatMap { attachmentService.update(request.pathVariable("id"), it) }

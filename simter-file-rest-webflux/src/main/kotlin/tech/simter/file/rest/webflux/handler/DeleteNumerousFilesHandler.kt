@@ -35,7 +35,6 @@ import tech.simter.file.service.AttachmentService
 class DeleteNumerousFilesHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return request.bodyToMono<Array<String>>()
       .flatMap { attachmentService.delete(*it) }

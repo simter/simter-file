@@ -46,7 +46,6 @@ import java.io.ByteArrayOutputStream
 class PackageFileHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     val ids = request.pathVariable("id").split(",")
     val byteOutputStream = ByteArrayOutputStream()

@@ -38,7 +38,6 @@ import tech.simter.file.service.AttachmentService
 class FindAttechmentDescendentsHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return attachmentService.findDescendents(request.pathVariable("id")).collectList()
       .flatMap { ok().contentType(APPLICATION_JSON_UTF8).syncBody(it) }

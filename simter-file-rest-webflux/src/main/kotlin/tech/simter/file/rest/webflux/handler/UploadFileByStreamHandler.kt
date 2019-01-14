@@ -62,7 +62,6 @@ class UploadFileByStreamHandler @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return request
       .bodyToMono(ByteArray::class.java)

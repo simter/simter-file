@@ -1,7 +1,6 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
 import org.springframework.web.reactive.function.server.RequestPredicate
@@ -32,10 +31,8 @@ import tech.simter.file.service.AttachmentService
  */
 @Component
 class DeleteFilesHandler @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return attachmentService.delete(*request.pathVariable("ids").split(",").toTypedArray())
       .then(ServerResponse.noContent().build())

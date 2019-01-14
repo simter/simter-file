@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates.POST
 import org.springframework.web.reactive.function.server.RequestPredicates.contentType
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.ServerResponse.noContent
 import reactor.core.publisher.Mono
 import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
@@ -67,15 +68,13 @@ class UploadFileByFormHandler @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
-
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    val a = request.bodyToFlux(Part::class.java)
     return request
       .bodyToFlux(Part::class.java)
-      .filter({ it is FilePart || it is FormFieldPart })
+      .filter { it is FilePart || it is FormFieldPart }
       .collectList()
       // 1. extract data in request body
-      .map({
+      .map {
         // build Map by data in list
         val formDataMap = HashMap<String, Any>()
         for (part in it) {
@@ -88,9 +87,9 @@ class UploadFileByFormHandler @Autowired constructor(
           if (part is FilePart) formDataMap["fileData"] = part
         }
         formDataMap
-      })
+      }
       // 2. save file to disk
-      .flatMap({
+      .flatMap {
         // get the FilePart by the Map
         val fileData = it["fileData"] as FilePart
         // convert to Attachment instance
@@ -107,11 +106,11 @@ class UploadFileByFormHandler @Autowired constructor(
         // save to disk
         fileData.transferTo(file)
           .then(Mono.just(if (attachment.size != -1L) attachment else attachment.copy(size = file.length())))
-      })
+      }
       // 3. save attachment
-      .flatMap({ attachmentService.save(it).thenReturn(it) })
+      .flatMap { attachmentService.save(it).thenReturn(it) }
       // 4. return response
-      .flatMap({ ServerResponse.noContent().location(URI.create("/${it.id}")).build() })
+      .flatMap { noContent().location(URI.create("/${it.id}")).build() }
   }
 
   private fun toAttachment(fileSize: Long, filename: String, puid: String, upperId: String): Attachment {
