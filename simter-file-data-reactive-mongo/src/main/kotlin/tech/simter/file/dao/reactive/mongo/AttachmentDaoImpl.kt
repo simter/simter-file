@@ -7,11 +7,13 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.data.mongodb.core.aggregation.Aggregation.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.toMono
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
@@ -43,7 +45,18 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun getFullPath(id: String): Mono<String> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return operations.aggregate(
+      newAggregation(
+        // Filter out the specified Attachment
+        match(Criteria.where("id").`is`(id)),
+        // Aggregate all upper(including itself) into an array into field "aggregate"
+        graphLookup("st_attachment")
+          .startWith("id").connectFrom("upperId").connectTo("_id").`as`("aggregate"),
+        project("aggregate")
+      ),
+      Attachment::class.java, AttachmentUppersPath::class.java
+    )
+      .singleOrEmpty().map(AttachmentUppersPath::fullPath)
   }
 
   override fun get(id: String): Mono<Attachment> {

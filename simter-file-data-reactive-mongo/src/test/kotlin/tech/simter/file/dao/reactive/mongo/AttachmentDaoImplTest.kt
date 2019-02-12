@@ -166,6 +166,30 @@ class AttachmentDaoImplTest @Autowired constructor(
     origin.forEach { Assertions.assertTrue(!File("$fileRootDir/${it.path}").exists()) }
   }
 
+  @Test
+  fun notFoundFullPath() {
+    // invoke and verify
+    StepVerifier.create(dao.getFullPath(UUID.randomUUID().toString())).verifyComplete()
+  }
+
+  @Test
+  fun getFullPath() {
+    // prepare data
+    val now = OffsetDateTime.now()
+    val po1 = Attachment(id = UUID.randomUUID().toString(), path = "data-1", name = "Sample-1", type = ":d", size = 123,
+      createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = null)
+    val po2 = Attachment(id = UUID.randomUUID().toString(), path = "data-2", name = "Sample-2", type = ":d", size = 123,
+      createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = po1.id)
+    val po3 = Attachment(id = UUID.randomUUID().toString(), path = "data-3", name = "Sample-3", type = ":d", size = 123,
+      createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", upperId = po2.id)
+    val pos = listOf(po1, po2, po3)
+    StepVerifier.create(operations.insertAll(pos)).expectNextCount(3).verifyComplete()
+
+    // invoke and verify
+    StepVerifier.create(dao.getFullPath(po3.id))
+      .expectNext(pos.joinToString("/") { it.path }).verifyComplete()
+  }
+
   /** build test file method */
   private fun buildTestFiles(attachments: List<Attachment>) {
     attachments.forEach {
