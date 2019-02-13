@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
+import org.springframework.data.mongodb.core.remove
 import org.springframework.data.mongodb.core.updateMulti
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
@@ -115,12 +116,47 @@ class AttachmentDaoImpl @Autowired constructor(
 
   override fun delete(vararg ids: String): Mono<Void> {
     return if (ids.isEmpty()) Mono.empty<Void>()
-    else repository.findAllById(ids.asIterable()).collectList().flatMap {
-      // delete attachment in database
-      repository.deleteAll(it)
-        // delete physics file
-        .then(Mono.just(it.forEach { File("$fileRootDir/${it.path}").delete() }))
-        .then(Mono.empty<Void>())
-    }
+    else
+    // 1. Query the full path of the attachments
+      operations.aggregate(
+        newAggregation(
+          match(Criteria.where("id").`in`(*ids)),
+          graphLookup("st_attachment")
+            .startWith("id").connectFrom("upperId").connectTo("_id").`as`("aggregate"),
+          project("aggregate")
+        ),
+        Attachment::class.java,
+        AttachmentUppersPath::class.java
+      )
+        .map(AttachmentUppersPath::fullPath).collectList()
+        // 2. Delete attachments
+        .delayUntil { fullPath ->
+          if (fullPath.isEmpty()) Mono.empty<Void>()
+          else
+          // 2.1. Query the attachments descendants
+            operations.aggregate(
+              newAggregation(
+                match(Criteria.where("id").`in`(*ids)),
+                graphLookup("st_attachment")
+                  .startWith("id").connectFrom("_id").connectTo("upperId").`as`("aggregate"),
+                project("aggregate")
+              ),
+              Attachment::class.java,
+              AttachmentDescendentsId::class.java
+            )
+              .map(AttachmentDescendentsId::descendents).flatMapIterable { it }.collectList()
+              // 2.2. Delete attachments and theirs descendants
+              .flatMap {
+                operations.remove(
+                  Query.query(Criteria.where("id").`in`(*it.toSet().toTypedArray())),
+                  Attachment::class
+                )
+              }
+        }
+        // 3. Delete physics file
+        .delayUntil {
+          it.forEach { File("$fileRootDir/$it").deleteRecursively() }.toMono()
+        }
+        .then()
   }
 }
