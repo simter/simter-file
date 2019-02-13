@@ -15,7 +15,6 @@ import org.springframework.data.mongodb.core.updateMulti
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
@@ -59,7 +58,19 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return operations.aggregate(
+      newAggregation(
+        // Filter out the specified Attachment
+        match(Criteria.where("id").`is`(id)),
+        // Aggregate all descendents into an array into field "aggregate"
+        graphLookup("st_attachment")
+          .startWith("id").connectFrom("_id").connectTo("upperId").`as`("aggregate"),
+        project("aggregate")
+      ),
+      Attachment::class.java,
+      AttachmentDescendentsDtoWithUpper::class.java
+    )
+      .singleOrEmpty().map(AttachmentDescendentsDtoWithUpper::dtoWithChildren).flatMapIterable { it.children!! }
   }
 
   override fun getFullPath(id: String): Mono<String> {

@@ -1,5 +1,6 @@
 package tech.simter.file.dto
 
+import org.springframework.data.annotation.AccessType
 import tech.simter.file.po.Attachment
 import javax.persistence.Entity
 
@@ -9,6 +10,7 @@ import javax.persistence.Entity
  * @author zh
  * */
 @Entity
+@AccessType(AccessType.Type.PROPERTY)
 class AttachmentDtoWithUpper : AttachmentDto() {
   var upperId: String? by holder
 }

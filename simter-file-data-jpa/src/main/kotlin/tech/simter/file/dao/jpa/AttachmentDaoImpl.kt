@@ -133,29 +133,13 @@ class AttachmentDaoImpl @Autowired constructor(
       )
       select id, path, name, type, size, modify_on, modifier, upper_id from n
     """.trimIndent()
-    var descendents = em.createNativeQuery(sql, AttachmentDtoWithUpper::class.java)
+    val descendents = em.createNativeQuery(sql, AttachmentDtoWithUpper::class.java)
       .setParameter("id", id)
       .resultList as List<AttachmentDtoWithUpper>
-    val root = AttachmentDtoWithChildren().also {
-      it.id = id
-      it.children = listOf()
-    }
-    val queue = mutableListOf(root)
-
-    while (queue.isNotEmpty()) {
-      val top = queue.removeAt(0)
-      descendents.groupBy { if (top.id == it.upperId) "children" else "other" }
-        .also {
-          descendents = it["other"] ?: listOf()
-          (it["children"] ?: listOf()).map { AttachmentDtoWithChildren().copy(it) }
-            .also {
-              top.children = it
-              queue.addAll(it)
-            }
-        }
-    }
-
-    return root.children!!.toFlux()
+    return AttachmentDtoWithChildren().apply {
+      this.id = id
+      generateChildren(descendents)
+    }.children!!.toFlux()
   }
 
   override fun getFullPath(id: String): Mono<String> {
