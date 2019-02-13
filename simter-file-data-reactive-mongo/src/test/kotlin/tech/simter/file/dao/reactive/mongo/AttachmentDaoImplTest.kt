@@ -11,12 +11,16 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.util.FileCopyUtils
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.po.Attachment
 import java.io.File
 import java.time.OffsetDateTime
@@ -27,6 +31,7 @@ import java.util.stream.IntStream
 /**
  * @author cjw
  * @author RJ
+ * @author zh
  */
 @SpringJUnitConfig(ModuleConfiguration::class)
 @DataMongoTest
@@ -188,6 +193,38 @@ class AttachmentDaoImplTest @Autowired constructor(
     // invoke and verify
     StepVerifier.create(dao.getFullPath(po3.id))
       .expectNext(pos.joinToString("/") { it.path }).verifyComplete()
+  }
+
+  @Test
+  fun updateByNone() {
+    // prepare data
+    val dto = AttachmentDto4Update().apply {
+      name = "newName"
+      path = "/new-data"
+    }
+
+    // invoke and verify
+    StepVerifier.create(dao.update(UUID.randomUUID().toString(), dto.data)).verifyError(NotFoundException::class.java)
+  }
+
+  @Test
+  fun update() {
+    // prepare data
+    val now = OffsetDateTime.now()
+    val po = Attachment(UUID.randomUUID().toString(), "/data1", "Sample1", "png",
+      123, now, "Simter", now, "Simter")
+    StepVerifier.create(operations.insert(po)).expectNextCount(1).verifyComplete()
+    val dto = AttachmentDto4Update().apply {
+      name = "newName"
+      path = "/new-data"
+      upperId = null
+    }
+
+    // invoke and verify
+    StepVerifier.create(dao.update(po.id, dto.data)).verifyComplete()
+    StepVerifier.create(operations.find(Query.query(Criteria.where("id").`is`(po.id)), Attachment::class.java))
+      .expectNext(po.copy(name = dto.name!!, path = dto.path!!, upperId = null))
+      .verifyComplete()
   }
 
   /** build test file method */

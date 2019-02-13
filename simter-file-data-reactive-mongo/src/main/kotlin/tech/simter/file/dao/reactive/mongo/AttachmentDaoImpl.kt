@@ -10,10 +10,13 @@ import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.aggregation.Aggregation.*
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
+import org.springframework.data.mongodb.core.query.Update
+import org.springframework.data.mongodb.core.updateMulti
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
+import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
@@ -36,8 +39,23 @@ class AttachmentDaoImpl @Autowired constructor(
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
+  @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
   override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return if (data.isEmpty()) Mono.empty()
+    else operations.updateMulti(
+      // Filter out the specified Attachment
+      Query.query(Criteria.where("id").`is`(id)),
+      // Set update fields
+      Update().also { update ->
+        data.forEach { k, v ->
+          update.set(k, v)
+        }
+      },
+      Attachment::class
+    ).flatMap {
+      if (it.matchedCount > 0) Mono.empty<Void>()
+      else Mono.error(NotFoundException())
+    }
   }
 
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
