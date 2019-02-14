@@ -1,7 +1,7 @@
 package tech.simter.file.dao.reactive.mongo
 
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -174,32 +174,13 @@ class AttachmentDaoImplTest @Autowired constructor(
     StepVerifier.create(operations.insertAll(listOf(po100, po110, po111, po112, po120, po121, po122, po123)))
       .expectNextCount(8).verifyComplete()
 
-    // prepare file
-    File(fileRootDir).deleteRecursively()
-    val file100 = File("$fileRootDir/${po100.path}").apply { mkdir() }
-    val file110 = File("$fileRootDir/${po100.path}/${po110.path}").apply { mkdirs() }
-    val file120 = File("$fileRootDir/${po100.path}/${po120.path}").apply { mkdirs() }
-    val file111 = File("$fileRootDir/${po100.path}/${po110.path}/${po111.path}").apply { createNewFile() }
-    val file112 = File("$fileRootDir/${po100.path}/${po110.path}/${po112.path}").apply { createNewFile() }
-    val file121 = File("$fileRootDir/${po100.path}/${po120.path}/${po121.path}").apply { createNewFile() }
-    val file122 = File("$fileRootDir/${po100.path}/${po120.path}/${po122.path}").apply { createNewFile() }
-    val file123 = File("$fileRootDir/${po100.path}/${po120.path}/${po123.path}").apply { createNewFile() }
-
-    StepVerifier.create(dao.delete("110", "121")).verifyComplete()
-    // 1. Verify attachments and all its descendants
+    // invoke and verify
+    StepVerifier.create(dao.delete("110", "121"))
+      .expectNext("path100/path110")
+      .expectNext("path100/path120/path121.xml").verifyComplete()
     StepVerifier.create(operations.findAll(Attachment::class.java).collectList())
       .expectNext(listOf(po100, po120, po122, po123))
       .verifyComplete()
-
-    // 2. Verify delete physical file
-    assertTrue(file100.exists())
-    assertFalse(file110.exists())
-    assertTrue(file120.exists())
-    assertFalse(file111.exists())
-    assertFalse(file112.exists())
-    assertFalse(file121.exists())
-    assertTrue(file122.exists())
-    assertTrue(file123.exists())
   }
 
   @Test

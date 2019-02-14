@@ -50,14 +50,14 @@ interface AttachmentDao {
   fun save(vararg attachments: Attachment): Mono<Void>
 
   /**
-   * Delete [Attachment] and physics file by its id.
-   * If specify [Attachment] not exists then ignore and handle as success.
+   * Delete [Attachment] by id.
    * If the attachment to be deleted is a folder type, recursively delete its descendants
    *
    * @param[ids] the ids to delete
-   * @return [Mono] signaling when operation has completed
+   * @return [Flux] The full path of the exists attachments to be deleted.
+   *   If all specify attachments not exists, return [Flux.empty]
    */
-  fun delete(vararg ids: String): Mono<Void>
+  fun delete(vararg ids: String): Flux<String>
 
   /**
    * Get ths full path of the specific attachment.

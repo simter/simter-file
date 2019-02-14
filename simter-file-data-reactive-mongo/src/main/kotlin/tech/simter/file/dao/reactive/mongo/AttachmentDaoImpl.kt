@@ -21,7 +21,6 @@ import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
-import java.io.File
 
 /**
  * The Reactive MongoDB implementation of [AttachmentDao].
@@ -129,8 +128,8 @@ class AttachmentDaoImpl @Autowired constructor(
     else repository.saveAll(attachments.asIterable()).then()
   }
 
-  override fun delete(vararg ids: String): Mono<Void> {
-    return if (ids.isEmpty()) Mono.empty<Void>()
+  override fun delete(vararg ids: String): Flux<String> {
+    return if (ids.isEmpty()) Flux.empty()
     else
     // 1. Query the full path of the attachments
       operations.aggregate(
@@ -167,11 +166,6 @@ class AttachmentDaoImpl @Autowired constructor(
                   Attachment::class
                 )
               }
-        }
-        // 3. Delete physics file
-        .delayUntil {
-          it.forEach { File("$fileRootDir/$it").deleteRecursively() }.toMono()
-        }
-        .then()
+        }.flatMapIterable { it }
   }
 }

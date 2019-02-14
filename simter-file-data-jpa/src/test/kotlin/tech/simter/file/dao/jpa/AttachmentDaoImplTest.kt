@@ -27,7 +27,6 @@ import java.util.stream.IntStream
 import javax.persistence.EntityManager
 import javax.persistence.PersistenceContext
 import kotlin.collections.ArrayList
-import kotlin.test.assertFalse
 
 fun AttachmentDtoWithChildren.getOwnData(): Map<String, Any?> {
   return data.filter { it.key != "children" }
@@ -218,33 +217,13 @@ class AttachmentDaoImplTest @Autowired constructor(
     }
     em.flush()
 
-    // prepare file
-    File(fileRootDir).deleteRecursively()
-    val file100 = File("$fileRootDir/${po100.path}").apply { mkdir() }
-    val file110 = File("$fileRootDir/${po100.path}/${po110.path}").apply { mkdirs() }
-    val file120 = File("$fileRootDir/${po100.path}/${po120.path}").apply { mkdirs() }
-    val file111 = File("$fileRootDir/${po100.path}/${po110.path}/${po111.path}").apply { createNewFile() }
-    val file112 = File("$fileRootDir/${po100.path}/${po110.path}/${po112.path}").apply { createNewFile() }
-    val file121 = File("$fileRootDir/${po100.path}/${po120.path}/${po121.path}").apply { createNewFile() }
-    val file122 = File("$fileRootDir/${po100.path}/${po120.path}/${po122.path}").apply { createNewFile() }
-    val file123 = File("$fileRootDir/${po100.path}/${po120.path}/${po123.path}").apply { createNewFile() }
-
-
-    StepVerifier.create(dao.delete("110", "121")).verifyComplete()
-    // 1. Verify attachments and all its descendants
+    // invoke and verify
+    StepVerifier.create(dao.delete("110", "121"))
+      .expectNext("path100/path110")
+      .expectNext("path100/path120/path121.xml").verifyComplete()
     val newPo = em.createQuery("select a from Attachment a", Attachment::class.java).resultList
     assertEquals(4, newPo.size)
     assertEquals(listOf("100", "120", "122", "123"), newPo.map { it.id })
-
-    // 2. Verify delete physical file
-    assertTrue(file100.exists())
-    assertFalse(file110.exists())
-    assertTrue(file120.exists())
-    assertFalse(file111.exists())
-    assertFalse(file112.exists())
-    assertFalse(file121.exists())
-    assertTrue(file122.exists())
-    assertTrue(file123.exists())
   }
 
   @Test

@@ -14,6 +14,7 @@ import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import java.io.File
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousFileChannel
@@ -196,6 +197,7 @@ class AttachmentServiceImpl @Autowired constructor(
 
   override fun delete(vararg ids: String): Mono<Void> {
     return attachmentDao.delete(*ids)
+      .doOnNext { File("$fileRootDir/$it").deleteRecursively() }
+      .then()
   }
-
 }

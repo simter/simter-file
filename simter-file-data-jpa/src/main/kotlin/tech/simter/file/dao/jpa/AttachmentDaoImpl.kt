@@ -16,7 +16,6 @@ import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.dto.AttachmentDtoWithUpper
 import tech.simter.file.po.Attachment
-import java.io.File
 import javax.persistence.EntityManager
 import javax.persistence.NoResultException
 import javax.persistence.PersistenceContext
@@ -188,8 +187,8 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun delete(vararg ids: String): Mono<Void> {
-    if (ids.isNotEmpty()) {
+  override fun delete(vararg ids: String): Flux<String> {
+    return if (ids.isNotEmpty()) {
       // Query the full path of the attachments
       val fullPathSql = """
         with recursive p(id, path, upper_id) as (
@@ -220,10 +219,7 @@ class AttachmentDaoImpl @Autowired constructor(
         em.createNativeQuery("delete from st_attachment where id in :ids")
           .setParameter("ids", nodeDtos).executeUpdate()
       }
-
-      // Delete physics file
-      fullPathDaos.forEach { File("$fileRootDir/${it.fullPath}").deleteRecursively() }
-    }
-    return Mono.empty<Void>()
+      fullPathDaos.map { it.fullPath!! }.toFlux()
+    } else Flux.empty()
   }
 }
