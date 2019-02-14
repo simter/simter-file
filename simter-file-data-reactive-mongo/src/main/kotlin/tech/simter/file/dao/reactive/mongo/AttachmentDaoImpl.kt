@@ -36,7 +36,22 @@ class AttachmentDaoImpl @Autowired constructor(
   private val operations: ReactiveMongoOperations
 ) : AttachmentDao {
   override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return operations.aggregate(
+      newAggregation(
+        // Filter out the specified Attachment
+        match(Criteria.where("id").`in`(*ids)),
+        // Aggregate all upper(including itself) into an array into field "aggregate"
+        graphLookup("st_attachment")
+          .startWith("id").connectFrom("upperId").connectTo("_id").`as`("uppers"),
+        // Aggregate all descendents into an array into field "aggregate"
+        graphLookup("st_attachment")
+          .startWith("id").connectFrom("_id").connectTo("upperId").`as`("descendents"),
+        project("uppers", "descendents", "type")
+      ),
+      Attachment::class.java,
+      AttachmentUppersWithDescendents::class.java
+    )
+      .collectList().flatMapIterable { it.convertToAttachmentDto4Zip() }
   }
 
   @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
