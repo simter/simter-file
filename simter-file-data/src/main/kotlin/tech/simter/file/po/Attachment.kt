@@ -41,9 +41,9 @@ data class Attachment(
   /** The account do the last modify */
   @Column(nullable = false) val modifier: String,
   /** The unique id of the parent module */
-  @Column(nullable = true, length = 36) val puid: String? = "",
+  @Column(nullable = true, length = 36) val puid: String? = null,
   /** The upperId of the parent module */
-  @Column(nullable = true, length = 36) val upperId: String? = "EMPTY") {
+  @Column(nullable = true, length = 36) val upperId: String? = null) {
 
   /** File name with extension */
   @JsonIgnore

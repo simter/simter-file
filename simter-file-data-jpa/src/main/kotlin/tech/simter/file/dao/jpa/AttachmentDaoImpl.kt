@@ -16,7 +16,6 @@ import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.dto.AttachmentDtoWithUpper
 import tech.simter.file.po.Attachment
-import java.io.File
 import javax.persistence.EntityManager
 import javax.persistence.NoResultException
 import javax.persistence.PersistenceContext
@@ -133,29 +132,13 @@ class AttachmentDaoImpl @Autowired constructor(
       )
       select id, path, name, type, size, modify_on, modifier, upper_id from n
     """.trimIndent()
-    var descendents = em.createNativeQuery(sql, AttachmentDtoWithUpper::class.java)
+    val descendents = em.createNativeQuery(sql, AttachmentDtoWithUpper::class.java)
       .setParameter("id", id)
       .resultList as List<AttachmentDtoWithUpper>
-    val root = AttachmentDtoWithChildren().also {
-      it.id = id
-      it.children = listOf()
-    }
-    val queue = mutableListOf(root)
-
-    while (queue.isNotEmpty()) {
-      val top = queue.removeAt(0)
-      descendents.groupBy { if (top.id == it.upperId) "children" else "other" }
-        .also {
-          descendents = it["other"] ?: listOf()
-          (it["children"] ?: listOf()).map { AttachmentDtoWithChildren().copy(it) }
-            .also {
-              top.children = it
-              queue.addAll(it)
-            }
-        }
-    }
-
-    return root.children!!.toFlux()
+    return AttachmentDtoWithChildren().apply {
+      this.id = id
+      generateChildren(descendents)
+    }.children!!.toFlux()
   }
 
   override fun getFullPath(id: String): Mono<String> {
@@ -204,8 +187,8 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun delete(vararg ids: String): Mono<Void> {
-    if (ids.isNotEmpty()) {
+  override fun delete(vararg ids: String): Flux<String> {
+    return if (ids.isNotEmpty()) {
       // Query the full path of the attachments
       val fullPathSql = """
         with recursive p(id, path, upper_id) as (
@@ -236,10 +219,7 @@ class AttachmentDaoImpl @Autowired constructor(
         em.createNativeQuery("delete from st_attachment where id in :ids")
           .setParameter("ids", nodeDtos).executeUpdate()
       }
-
-      // Delete physics file
-      fullPathDaos.forEach { File("$fileRootDir/${it.fullPath}").deleteRecursively() }
-    }
-    return Mono.empty<Void>()
+      fullPathDaos.map { it.fullPath!! }.toFlux()
+    } else Flux.empty()
   }
 }

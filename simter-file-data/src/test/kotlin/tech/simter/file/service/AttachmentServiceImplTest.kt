@@ -26,6 +26,7 @@ import java.util.*
 import java.util.zip.ZipInputStream
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Test [AttachmentService]
@@ -35,7 +36,7 @@ import kotlin.test.assertNull
  */
 @SpringJUnitConfig(AttachmentServiceImpl::class)
 @MockBean(AttachmentDao::class)
-@TestPropertySource(properties = ["simter.file.root=target"])
+@TestPropertySource(properties = ["simter.file.root=target/files"])
 class AttachmentServiceImplTest @Autowired constructor(
   private val dao: AttachmentDao,
   private val service: AttachmentService,
@@ -267,7 +268,6 @@ class AttachmentServiceImplTest @Autowired constructor(
     outputStream.close()
   }
 
-
   @Test
   fun packageNoAttachment() {
     // mock
@@ -281,5 +281,51 @@ class AttachmentServiceImplTest @Autowired constructor(
     // verify
     StepVerifier.create(actual).verifyComplete()
     verify(dao).findDescendentsZipPath(id)
+  }
+
+  @Test
+  fun deleteNothing() {
+    // mock
+    val ids = List(3) { UUID.randomUUID().toString() }.toTypedArray()
+    `when`(dao.delete(*ids)).thenReturn(Flux.empty())
+
+    // invoke and verify
+    StepVerifier.create(service.delete(*ids)).verifyComplete()
+    verify(dao).delete(*ids)
+  }
+
+  @Test
+  fun deleteSomething() {
+    // mock data
+    val folderPaths = listOf("path1", "path2")
+    val filePaths = listOf("path1/file1.txt", "path3/file2.txt")
+    val paths = folderPaths.plus(filePaths).toTypedArray()
+    val ids = List(3) { UUID.randomUUID().toString() }.toTypedArray()
+    `when`(dao.delete(*ids)).thenReturn(Flux.just(*paths))
+    // mock file
+    // specified delete: path1, path2, file1 and file2
+    // actual delete: path1, path2, file1, file2 and file3
+    //          root
+    //    /      |        \
+    // path1   path2     path3
+    //   |       |      /     \
+    // file1   file3  file2  file4
+    val folders = folderPaths.plus("path3").map { File("$fileRootDir/$it") }
+    val files = filePaths.plus("path2/file3.txt")
+      .plus("path3/file4.txt").map { File("$fileRootDir/$it") }
+    folders.forEach {
+      it.delete()
+      it.mkdirs()
+    }
+    files.forEach {
+      File(it.parent).mkdirs()
+      it.createNewFile()
+    }
+
+    // invoke and verify
+    StepVerifier.create(service.delete(*ids)).verifyComplete()
+    verify(dao).delete(*ids)
+    assertTrue(folders.map { it.exists() }.run { dropLast(1).any { !it } && last() })
+    assertTrue(files.map { it.exists() }.run { dropLast(1).any { !it } && last() })
   }
 }

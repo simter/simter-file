@@ -21,7 +21,7 @@ class AttachmentTest {
     assertEquals(attachment1.fileName, "Sample.png")
     assertEquals(attachment1, attachment1.copy())
     assertNotEquals(attachment1, attachment1.copy(name = "OtherName"))
-    assertEquals(attachment1.upperId, "EMPTY")
-    assertEquals(attachment1.puid, "")
+    assertEquals(attachment1.upperId, null)
+    assertEquals(attachment1.puid, null)
   }
 }

@@ -29,4 +29,23 @@ class AttachmentDtoWithChildren : AttachmentDto() {
     this.modifier = node.modifier
     return this
   }
+
+  fun generateChildren(children: List<AttachmentDtoWithUpper>): AttachmentDtoWithChildren {
+    var descendents = children
+    this.children = listOf()
+    val queue = mutableListOf(this)
+    while (queue.isNotEmpty()) {
+      val top = queue.removeAt(0)
+      descendents.groupBy { if (top.id == it.upperId) "children" else "other" }
+        .also {
+          descendents = it["other"] ?: listOf()
+          (it["children"] ?: listOf()).map { AttachmentDtoWithChildren().copy(it) }
+            .also {
+              top.children = it
+              queue.addAll(it)
+            }
+        }
+    }
+    return this
+  }
 }
