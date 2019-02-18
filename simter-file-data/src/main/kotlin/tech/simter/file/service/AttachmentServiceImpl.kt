@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
+import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Update
@@ -199,5 +200,30 @@ class AttachmentServiceImpl @Autowired constructor(
     return attachmentDao.delete(*ids)
       .doOnNext { File("$fileRootDir/$it").deleteRecursively() }
       .then()
+  }
+
+  override fun uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>): Mono<Void> {
+    val upperId = attachment.upperId
+    // 1. get upper full path
+    return (upperId?.let {
+      attachmentDao.getFullPath(upperId)
+        .switchIfEmpty(Mono.error(NotFoundException("The attachment $upperId not exists")))
+    } ?: Mono.just(""))
+      // 2. save physical file
+      .flatMap { upperFullPath ->
+        val file = File("$fileRootDir/$upperFullPath/${attachment.path}")
+        val fileDir = file.parentFile
+        if (!fileDir.exists()) {
+          if (!fileDir.mkdirs())  // create file directory if not exists
+            throw IllegalAccessException("Failed to create parents dir: ${fileDir.absolutePath}")
+        }
+        if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
+        writer(file).then(Mono.defer {
+          if (attachment.size != -1L) attachment.toMono()
+          else attachment.copy(size = file.length()).toMono()
+        })
+      }
+      // 3. save attachment data
+      .flatMap { attachmentDao.save(it) }
   }
 }
