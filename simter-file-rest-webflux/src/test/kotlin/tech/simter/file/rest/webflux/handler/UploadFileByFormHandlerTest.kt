@@ -1,6 +1,9 @@
 package tech.simter.file.rest.webflux.handler
 
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.argThat
+import com.nhaarman.mockito_kotlin.doReturn
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
@@ -18,13 +21,11 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
+import reactor.test.StepVerifier
+import tech.simter.exception.NotFoundException
 import tech.simter.file.rest.webflux.handler.UploadFileByFormHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.io.File
-import java.io.IOException
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
 
 /**
@@ -45,29 +46,31 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, byFormHandler)).build()
 
-  @Test
-  @Throws(IOException::class)
-  fun upload() {
-    // mock MultipartBody
-    val name = "logback-test"
-    val ext = "xml"
-    val builder = MultipartBodyBuilder()
-    val file = ClassPathResource("$name.$ext")
-    builder.part("fileData", file)
-    builder.part("puid", "puid")
-    builder.part("upperId", "1")
-    val parts = builder.build()
+  @AfterEach
+  fun clean() {
+    File(fileRootDir).deleteRecursively()
+  }
 
-    // mock service.create return value
+  @Test
+  fun success() {
+    // mock
+    val fileName = "logback-test.xml"
+    val file = ClassPathResource(fileName)
+    val upperId = UUID.randomUUID().toString()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    `when`(service.save(any())).thenReturn(Mono.empty())
-
-    // mock byFormHandler.newId return value
-    `when`(byFormHandler.newId()).thenReturn(id)
+    val puid = "text"
+    val beCreatedFile = File("fileRootDir/text.xml")
+    val parts = MultipartBodyBuilder().also {
+      it.part("fileData", file)
+      it.part("upperId", upperId)
+      it.part("puid", puid)
+    }.build()
+    beCreatedFile.parentFile.mkdirs()
+    `when`(service.uploadFile(any(), any())).thenReturn(Mono.empty())
+    doReturn(id).`when`(byFormHandler).newId()
 
     // invoke request
-    val now = LocalDateTime.now().truncatedTo(SECONDS)
     client.post().uri("/")
       .contentType(MULTIPART_FORM_DATA)
       .contentLength(fileSize)
@@ -76,31 +79,52 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
       .expectStatus().isNoContent
       .expectHeader().valueEquals("Location", "/$id")
 
-    // 1. verify service.save method invoked
-    verify(service).save(any())
+    // verify
+    verify(service).uploadFile(argThat {
+      assertEquals(id, this.id)
+      assertEquals(upperId, this.upperId)
+      assertEquals(fileSize, this.size)
+      assertEquals(puid, this.puid)
+      true
+    }, argThat {
+      StepVerifier.create(this(beCreatedFile)).verifyComplete()
+      true
+    })
+    assertTrue(beCreatedFile.exists())
+  }
 
-    // 2. verify the saved file exists
-    val yyyyMM = now.format(DateTimeFormatter.ofPattern("yyyyMM"))
-    val files = File("$fileRootDir/$yyyyMM").listFiles()
-    assertNotNull(files)
-    assertTrue(files.isNotEmpty())
-    var actualFile: File? = null
-    for (f in files) {
-      // extract dateTime and id from fileName: yyyyMMddTHHmmss-{id}.{type}
-      val index = f.name.indexOf("-")
-      val dateTime = LocalDateTime.parse(f.name.substring(0, index),
-        DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))
-      val uuid = f.name.substring(index + 1, f.name.lastIndexOf("."))
-      if (id == uuid && !dateTime.isBefore(now)) {
-        actualFile = f
-        break
-      }
-    }
-    assertNotNull(actualFile)
+  @Test
+  fun notFoundUpper() {
+    // mock
+    val fileName = "logback-test.xml"
+    val file = ClassPathResource(fileName)
+    val upperId = UUID.randomUUID().toString()
+    val id = UUID.randomUUID().toString()
+    val fileSize = file.contentLength()
+    val beCreatedFile = File("fileRootDir/text.xml")
+    val parts = MultipartBodyBuilder().also {
+      it.part("fileData", file)
+      it.part("upperId", upperId)
+    }.build()
+    beCreatedFile.parentFile.mkdirs()
+    `when`(service.uploadFile(any(), any())).thenReturn(Mono.error(NotFoundException("not Found upper")))
+    doReturn(id).`when`(byFormHandler).newId()
 
-    // 3. verify the saved file size
-    assertEquals(actualFile!!.length(), fileSize)
+    // invoke request
+    client.post().uri("/")
+      .contentType(MULTIPART_FORM_DATA)
+      .contentLength(fileSize)
+      .syncBody(parts)
+      .exchange()
+      .expectStatus().isNotFound
 
-    // 4. TODO verify the attachment
+    // verify
+    verify(service).uploadFile(argThat {
+      assertEquals(id, this.id)
+      assertEquals(upperId, this.upperId)
+      assertEquals(fileSize, this.size)
+      assertNull(this.puid)
+      true
+    }, any())
   }
 }
