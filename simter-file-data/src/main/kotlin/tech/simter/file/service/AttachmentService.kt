@@ -5,6 +5,7 @@ import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
+import tech.simter.file.dto.AttachmentDto
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
@@ -137,4 +138,17 @@ interface AttachmentService {
    * @return[Mono] signaling when operation has completed.
    */
   fun uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>): Mono<Void>
+
+  /**
+   * save physical file and update the [AttachmentDto].
+   *
+   * If [Attachment] is not exists, return [Mono.error] with [NotFoundException].
+   * And if new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
+   *
+   * @param[dto] the [Attachment] will modify part of the value.
+   * @param[fileData] the reupload file data.
+   *
+   * @return[Mono] signaling when operation has completed.
+   */
+  fun reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void>
 }
