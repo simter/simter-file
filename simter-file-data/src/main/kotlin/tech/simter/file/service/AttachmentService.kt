@@ -47,14 +47,6 @@ interface AttachmentService {
   fun find(puid: String, upperId: String?): Flux<Attachment>
 
   /**
-   * Create or update one or more [Attachment].
-   *
-   * @param[attachments] the attachments to save or update
-   * @return [Mono] signaling when operation has completed
-   */
-  fun save(vararg attachments: Attachment): Mono<Void>
-
-  /**
    * Get ths full path of the specific attachment.
    *
    * If the attachment is not exists, return [Mono.error] with [NotFoundException].

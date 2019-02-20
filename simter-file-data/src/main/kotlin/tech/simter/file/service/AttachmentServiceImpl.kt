@@ -194,10 +194,6 @@ class AttachmentServiceImpl @Autowired constructor(
     return attachmentDao.find(puid, upperId)
   }
 
-  override fun save(vararg attachments: Attachment): Mono<Void> {
-    return attachmentDao.save(*attachments)
-  }
-
   override fun delete(vararg ids: String): Mono<Void> {
     return attachmentDao.delete(*ids)
       .doOnNext { File("$fileRootDir/$it").deleteRecursively() }
