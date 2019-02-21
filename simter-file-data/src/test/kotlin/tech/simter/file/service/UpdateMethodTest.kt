@@ -4,14 +4,15 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import reactor.test.StepVerifier
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Update
+import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.File
 import java.util.*
 import kotlin.test.assertEquals
@@ -23,8 +24,8 @@ import kotlin.test.assertTrue
  *
  * @author zh
  */
-@SpringJUnitConfig(AttachmentServiceImpl::class)
-@MockBean(AttachmentDao::class)
+@SpringBootTest(classes = [AttachmentServiceImpl::class, ModuleConfiguration::class])
+@MockBean(AttachmentDao::class, ReactiveSecurityService::class)
 @TestPropertySource(properties = ["simter.file.root=target/files"])
 class UpdateMethodTest @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,

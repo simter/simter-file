@@ -4,12 +4,12 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.test.context.TestPropertySource
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
@@ -20,6 +20,7 @@ import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.*
 import java.time.OffsetDateTime
 import java.util.*
@@ -34,8 +35,8 @@ import kotlin.test.assertTrue
  * @author RJ
  * @author zh
  */
-@SpringJUnitConfig(AttachmentServiceImpl::class)
-@MockBean(AttachmentDao::class)
+@SpringBootTest(classes = [AttachmentServiceImpl::class, ModuleConfiguration::class])
+@MockBean(AttachmentDao::class, ReactiveSecurityService::class)
 @TestPropertySource(properties = ["simter.file.root=target/files"])
 class AttachmentServiceImplTest @Autowired constructor(
   private val dao: AttachmentDao,

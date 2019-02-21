@@ -11,12 +11,18 @@ import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
+import tech.simter.exception.UnauthenticatedException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import tech.simter.file.service.AttachmentServiceImpl.OperationType.*
+import tech.simter.kotlin.properties.AuthorizeModuleOperations
+import tech.simter.kotlin.properties.AuthorizeRole
+import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.File
 import java.io.OutputStream
 import java.nio.ByteBuffer
@@ -38,8 +44,67 @@ import java.util.zip.ZipOutputStream
 @Component
 class AttachmentServiceImpl @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
-  val attachmentDao: AttachmentDao
+  val attachmentDao: AttachmentDao,
+  authorizeModuleOperationProperties: AuthorizeModuleOperations,
+  val securityService: ReactiveSecurityService
 ) : AttachmentService {
+  private val authorizeModuleOperations = authorizeModuleOperationProperties.operations!!
+    .map { module ->
+      module.key to module.value.flatMap { authorizeOperation ->
+        authorizeOperation.key.split(",").map { it to authorizeOperation.value }
+      }.toMap()
+    }.toMap()
+
+  enum class OperationType {
+    Read, Create, Update, Delete
+  }
+
+  private val operationDescribe =
+    hashMapOf(Read to "read", Create to "create", Update to "update", Delete to "delete")
+
+  private val hasAdmin = authorizeModuleOperations.containsKey("admin")
+
+  /**
+   * 1. If [module] is not "admin" and no admin configuration,
+   *   verify module or default(no module configuration) [AuthorizeRole]
+   * 2. If [module] is not "admin" and has admin configuration,
+   *   verify module or default(no module configuration) [AuthorizeRole],
+   *   verify admin [AuthorizeRole] if authentication failed.
+   * 3. If [module] is "admin" and no admin configuration, authentication failed.
+   * 4. If [module] is "admin" and has admin configuration, verify admin [AuthorizeRole].
+   * 5. According to [strategy][AuthorizeRole.strategy],
+   *   verify whether the system-context has any [roles][AuthorizeRole.roles] or has all roles [roles][AuthorizeRole.roles].
+   *
+   * @return[Mono.empty]
+   *   return [Mono.error] with [UnauthenticatedException] if without a authenticated system-context.
+   *   return a [Mono.error] with [PermissionDeniedException] if has a authenticated system-context but it has'ont specified roles.
+   */
+  fun verifyAuthorize(module: String?, operation: OperationType): Mono<Void> {
+    val verifier: (Map<String, AuthorizeRole>?) -> Mono<Void> = {
+      it?.get(operationDescribe[operation]!!)?.let {
+        if (it.strategy == AuthorizeRole.Strategy.And)
+          securityService.verifyHasAllRole(*it.roles.toTypedArray())
+        else
+          securityService.verifyHasAnyRole(*it.roles.toTypedArray())
+      } ?: Mono.empty()
+    }
+    return when {
+      module != "admin" && hasAdmin -> {
+        verifier(authorizeModuleOperations[module] ?: authorizeModuleOperations["default"])
+          .onErrorResume(PermissionDeniedException::class.java) { verifier(authorizeModuleOperations["admin"]) }
+      }
+      module != "admin" -> {
+        verifier(authorizeModuleOperations[module] ?: authorizeModuleOperations["default"])
+      }
+      hasAdmin -> {
+        verifier(authorizeModuleOperations["admin"])
+      }
+      else -> {
+        Mono.error(PermissionDeniedException())
+      }
+    }
+  }
+
   override fun packageAttachments(outputStream: OutputStream, vararg ids: String): Mono<String> {
     return attachmentDao.findDescendentsZipPath(*ids).collectList()
       .flatMap { reactivePackage(outputStream, it).then(Mono.just(it)) }

@@ -1,0 +1,33 @@
+module.authorization.simter-file.test-only-module:
+  operations:
+    TEST_MODULE_A:
+      read:
+        roles: ['moduleA-R-1', 'moduleA-R-2']
+        strategy: 'or'
+      "[create,update]":
+        roles: ['moduleA-CU-1', 'moduleA-CU-2']
+        strategy: 'and'
+module.authorization.simter-file.test-has-basic:
+  operations:
+    default:
+      read:
+        roles: ['default-R-1', 'default-R-2']
+        strategy: 'or'
+    TEST_MODULE_A:
+      read:
+        roles: ['moduleA-R-1', 'moduleA-R-2']
+        strategy: 'or'
+      "[create,update]":
+        roles: ['moduleA-CU-1', 'moduleA-CU-2']
+        strategy: 'and'
+      delete:
+        roles: ['moduleA-D-1', 'moduleA-D-2']
+        strategy: 'and'
+    admin:
+      read:
+        roles: ['admin-R-1', 'admin-R-2']
+        strategy: 'or'
+      "[create,update]":
+        roles: ['admin-CU-1', 'admin-CU-2']
+        strategy: 'and'
+
