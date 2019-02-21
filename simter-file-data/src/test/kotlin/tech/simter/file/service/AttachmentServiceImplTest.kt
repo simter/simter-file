@@ -146,24 +146,6 @@ class AttachmentServiceImplTest @Autowired constructor(
   }
 
   @Test
-  fun create() {
-    // mock
-    val now = OffsetDateTime.now()
-    val attachments = List(3) {
-      Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
-        123, now, "Simter", now, "Simter", upperId = UUID.randomUUID().toString())
-    }
-    val ids = attachments.map { it.id }
-    `when`(dao.save(*attachments.toTypedArray())).thenReturn(Mono.empty())
-    // invoke
-    val actual = service.create(*attachments.toTypedArray())
-
-    // verify
-    StepVerifier.create(actual.collectList()).expectNext(ids).verifyComplete()
-    verify(dao).save(*attachments.toTypedArray())
-  }
-
-  @Test
   fun packageAttachments() {
     //      physical
     // |__ {fileRootDir}

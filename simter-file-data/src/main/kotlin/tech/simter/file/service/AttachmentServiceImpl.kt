@@ -10,6 +10,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
 import reactor.core.publisher.toMono
+import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.exception.UnauthenticatedException
@@ -22,6 +23,7 @@ import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentServiceImpl.OperationType.*
 import tech.simter.kotlin.properties.AuthorizeModuleOperations
 import tech.simter.kotlin.properties.AuthorizeRole
+import tech.simter.reactive.context.SystemContext.User
 import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.File
 import java.io.OutputStream
@@ -31,6 +33,7 @@ import java.nio.channels.CompletionHandler
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -219,7 +222,20 @@ class AttachmentServiceImpl @Autowired constructor(
   }
 
   override fun create(vararg attachments: Attachment): Flux<String> {
-    return attachmentDao.save(*attachments).thenMany(attachments.map { it.id }.toFlux())
+    // 1. verify authorize
+    return attachments.map { it.puid }.toSet().toMono().flatMap {
+      if (it.size > 1)
+        Mono.error(ForbiddenException("Created attachments has different puid"))
+      else
+        verifyAuthorize(it.firstOrNull(), Create)
+    }
+      // 2. set creator and modifier
+      .then(Mono.defer { securityService.getAuthenticatedUser() })
+      .map(Optional<User>::get).map(User::name)
+      .map { userName -> attachments.map { it.copy(creator = userName, modifier = userName) }.toTypedArray() }
+      // 3. save attachments and return ids
+      .map { attachmentDao.save(*it) }
+      .thenMany(attachments.map { it.id }.toFlux())
   }
 
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {

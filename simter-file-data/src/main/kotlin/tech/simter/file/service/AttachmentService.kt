@@ -4,7 +4,9 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDtoWithChildren
@@ -86,6 +88,8 @@ interface AttachmentService {
    * Create one or more [Attachment]
    *
    * @return[Flux] emitting id of the newly created attachments.
+   *   If [Attachment] belong to different puid, return [Flux.error] with [ForbiddenException].
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun create(vararg attachments: Attachment): Flux<String>
 
