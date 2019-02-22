@@ -16,6 +16,7 @@ import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.dto.AttachmentDtoWithUpper
 import tech.simter.file.po.Attachment
+import java.util.*
 import javax.persistence.EntityManager
 import javax.persistence.NoResultException
 import javax.persistence.PersistenceContext
@@ -30,10 +31,13 @@ import javax.persistence.Query
 @Component
 @Transactional
 class AttachmentDaoImpl @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
   @PersistenceContext private val em: EntityManager,
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
+  override fun findPuids(vararg ids: String): Flux<Optional<String>> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   @Suppress("UNCHECKED_CAST")
   override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
     if (ids.isEmpty()) return Flux.empty()

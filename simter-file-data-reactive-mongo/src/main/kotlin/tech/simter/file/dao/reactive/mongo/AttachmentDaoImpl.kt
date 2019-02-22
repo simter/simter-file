@@ -21,6 +21,7 @@ import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import java.util.*
 
 /**
  * The Reactive MongoDB implementation of [AttachmentDao].
@@ -30,10 +31,13 @@ import tech.simter.file.po.Attachment
  */
 @Component
 class AttachmentDaoImpl @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val repository: AttachmentReactiveRepository,
   private val operations: ReactiveMongoOperations
 ) : AttachmentDao {
+  override fun findPuids(vararg ids: String): Flux<Optional<String>> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
     return operations.aggregate(
       newAggregation(
