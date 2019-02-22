@@ -45,7 +45,8 @@ interface AttachmentService {
    *
    * @param[puid] the module identity
    * @param[upperId] the upperId from specify module
-   * @return [Flux] emitting attachments or a empty flux without data if none found
+   * @return [Flux] emitting attachments or a empty flux without data if none found.
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun find(puid: String, upperId: String?): Flux<Attachment>
 

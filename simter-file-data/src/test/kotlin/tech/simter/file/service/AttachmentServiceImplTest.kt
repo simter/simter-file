@@ -56,22 +56,6 @@ class AttachmentServiceImplTest @Autowired constructor(
   }
 
   @Test
-  fun findByModuleAndSubgroup() {
-    // mock
-    val puid = "puid1"
-    val subgroup = "1"
-    val expect = Collections.emptyList<Attachment>()
-    `when`(dao.find(puid, subgroup)).thenReturn(Flux.fromIterable(expect))
-
-    // invoke
-    val actual = service.find(puid, subgroup)
-
-    // verify
-    StepVerifier.create(actual.collectList()).expectNext(expect).verifyComplete()
-    verify(dao).find(puid, subgroup)
-  }
-  
-  @Test
   fun findDescendents() {
     // mock
     val id = UUID.randomUUID().toString()

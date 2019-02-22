@@ -293,7 +293,8 @@ class AttachmentServiceImpl @Autowired constructor(
   }
 
   override fun find(puid: String, upperId: String?): Flux<Attachment> {
-    return attachmentDao.find(puid, upperId)
+    return verifyAuthorize(puid, Read)
+      .thenMany(Flux.defer { attachmentDao.find(puid, upperId) })
   }
 
   override fun delete(vararg ids: String): Mono<Void> {
