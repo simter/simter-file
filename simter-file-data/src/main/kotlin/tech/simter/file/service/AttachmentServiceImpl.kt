@@ -278,7 +278,10 @@ class AttachmentServiceImpl @Autowired constructor(
 
   override fun getFullPath(id: String): Mono<String> {
     return attachmentDao.getFullPath(id)
+      .zipWith(attachmentDao.findPuids(id).next())
       .switchIfEmpty(Mono.error(NotFoundException("The attachment $id not exists")))
+      .delayUntil { verifyAuthorize(it.t2.orElse(null), Read) }
+      .map { it.t1 }
   }
 
   override fun get(id: String): Mono<Attachment> {

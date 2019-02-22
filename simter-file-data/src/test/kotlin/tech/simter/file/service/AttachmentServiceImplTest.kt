@@ -13,9 +13,7 @@ import org.springframework.test.context.TestPropertySource
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
-import reactor.core.publisher.toMono
 import reactor.test.StepVerifier
-import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
@@ -72,36 +70,7 @@ class AttachmentServiceImplTest @Autowired constructor(
     StepVerifier.create(actual.collectList()).expectNext(expect).verifyComplete()
     verify(dao).find(puid, subgroup)
   }
-
-  @Test
-  fun getFullPath() {
-    // mock
-    val id = UUID.randomUUID().toString()
-    val fullPath = "level1/level2/level3/level4"
-    `when`(dao.getFullPath(id)).thenReturn(fullPath.toMono())
-
-    // invoke
-    val actual = service.getFullPath(id)
-
-    // verify
-    StepVerifier.create(actual).expectNext(fullPath).verifyComplete()
-    verify(dao).getFullPath(id)
-  }
-
-  @Test
-  fun getFullPathNotFound() {
-    // mock
-    val id = UUID.randomUUID().toString()
-    `when`(dao.getFullPath(id)).thenReturn(Mono.empty())
-
-    // invoke
-    val actual = service.getFullPath(id)
-
-    // verify
-    StepVerifier.create(actual).verifyError(NotFoundException::class.java)
-    verify(dao).getFullPath(id)
-  }
-
+  
   @Test
   fun findDescendents() {
     // mock

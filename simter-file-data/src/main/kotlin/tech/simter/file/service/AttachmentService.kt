@@ -52,10 +52,10 @@ interface AttachmentService {
   /**
    * Get ths full path of the specific attachment.
    *
-   * If the attachment is not exists, return [Mono.error] with [NotFoundException].
-   *
    * @param[id] the attachment's id
    * @return [Mono] the full path relative to `{file-root}` path
+   *   If the attachment is not exists, return [Mono.error] with [NotFoundException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun getFullPath(id: String): Mono<String>
 
