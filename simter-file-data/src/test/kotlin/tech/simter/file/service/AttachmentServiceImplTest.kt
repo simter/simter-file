@@ -16,11 +16,9 @@ import reactor.core.publisher.toFlux
 import reactor.test.StepVerifier
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
-import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
 import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.*
-import java.time.OffsetDateTime
 import java.util.*
 import java.util.zip.ZipInputStream
 import kotlin.test.assertEquals
@@ -53,30 +51,6 @@ class AttachmentServiceImplTest @Autowired constructor(
     // verify
     StepVerifier.create(actual).expectNext(expect).verifyComplete()
     verify(dao).find(pageable)
-  }
-
-  @Test
-  fun findDescendents() {
-    // mock
-    val id = UUID.randomUUID().toString()
-    val dtos = List(3) { index ->
-      AttachmentDtoWithChildren().apply {
-        this.id = UUID.randomUUID().toString()
-        name = "name$index"
-        type = "type$index"
-        size = index.toLong()
-        modifyOn = OffsetDateTime.now()
-        modifier = "modifier$index"
-      }
-    }
-    `when`(dao.findDescendents(id)).thenReturn(dtos.toFlux())
-
-    // invoke
-    val actual = service.findDescendents(id)
-
-    // verify
-    StepVerifier.create(actual.collectList()).expectNext(dtos).verifyComplete()
-    verify(dao).findDescendents(id)
   }
 
   @Test

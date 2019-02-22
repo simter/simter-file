@@ -240,7 +240,9 @@ class AttachmentServiceImpl @Autowired constructor(
   }
 
   override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
-    return attachmentDao.findDescendents(id)
+    return attachmentDao.findPuids(id).next()
+      .flatMap { verifyAuthorize(it.orElse(null), Read) }
+      .thenMany(Flux.defer { attachmentDao.findDescendents(id) })
   }
 
   override fun update(id: String, dto: AttachmentDto4Update): Mono<Void> {

@@ -86,7 +86,8 @@ interface AttachmentService {
    * Recursively find all the children of the specific upper's [id].
    *
    * @return the children that include its children recursively.
-   *   If the upper has no children or the upper is not exists, return [Flux.empty]
+   *   If the upper has no children or the upper is not exists, return [Flux.empty].
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
 
