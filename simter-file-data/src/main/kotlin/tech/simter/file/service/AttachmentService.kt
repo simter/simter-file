@@ -74,7 +74,9 @@ interface AttachmentService {
    * If the attachment is not exists, return [Mono.error] with [NotFoundException].
    *
    * @param[id] The id of the attachment to be updated
-   * @return[Mono] signaling when operation has completed
+   * @return[Mono] signaling when operation has completed.
+   *   If modify the puid, return [Mono.error] with [ForbiddenException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun update(id: String, dto: AttachmentDto4Update): Mono<Void>
 

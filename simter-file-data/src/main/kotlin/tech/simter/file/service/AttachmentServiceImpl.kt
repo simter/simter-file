@@ -33,6 +33,7 @@ import java.nio.channels.CompletionHandler
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.time.OffsetDateTime
 import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -243,19 +244,36 @@ class AttachmentServiceImpl @Autowired constructor(
   }
 
   override fun update(id: String, dto: AttachmentDto4Update): Mono<Void> {
-    return if (dto.path == null && dto.upperId == null) {
-      attachmentDao.update(id, dto.data)
-    } else {
-      // Changed the file path, need to get the full path before and after the change and move the it
-      attachmentDao.getFullPath(id)
-        .delayUntil { attachmentDao.update(id, dto.data) }
-        .zipWith(attachmentDao.getFullPath(id))
-        .map {
-          Files.move(Paths.get("$fileRootDir/${it.t1}"), Paths.get("$fileRootDir/${it.t2}"),
-            StandardCopyOption.REPLACE_EXISTING)
+    // 1. verify authorize
+    return attachmentDao.findPuids(id).next()
+      .switchIfEmpty(Mono.error(NotFoundException("The attachment $id not exists")))
+      .flatMap {
+        val oldPuid = it.orElse(null)
+        if (oldPuid != dto.puid)
+          Mono.error(ForbiddenException("Can't Modify the puid"))
+        else
+          verifyAuthorize(oldPuid, Update)
+      }
+      // 2. set the modifyOn and modifier
+      .then(Mono.defer { securityService.getAuthenticatedUser() })
+      .map(Optional<User>::get).map(User::name)
+      .map { userName -> dto.data.plus(mapOf("modifier" to userName, "modifyOn" to OffsetDateTime.now())) }
+      // 3. update attachment and physical file
+      .flatMap { data ->
+        if (dto.path == null && dto.upperId == null) {
+          attachmentDao.update(id, data)
+        } else {
+          // Changed the file path, need to get the full path before and after the change and move the it
+          attachmentDao.getFullPath(id)
+            .delayUntil { attachmentDao.update(id, data) }
+            .zipWhen { attachmentDao.getFullPath(id) }
+            .doOnNext {
+              Files.move(Paths.get("$fileRootDir/${it.t1}"), Paths.get("$fileRootDir/${it.t2}"),
+                StandardCopyOption.REPLACE_EXISTING)
+            }
+            .then()
         }
-        .then()
-    }
+      }
   }
 
   override fun getFullPath(id: String): Mono<String> {
