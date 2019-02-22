@@ -276,7 +276,17 @@ class AttachmentServiceImpl @Autowired constructor(
   }
 
   override fun delete(vararg ids: String): Mono<Void> {
-    return attachmentDao.delete(*ids)
+    // 1. verify authorize
+    return attachmentDao.findPuids(*ids).collectList()
+      .flatMap {
+        if (it.size > 1)
+          Mono.error(ForbiddenException("Deleted attachments has different puid"))
+        else
+          verifyAuthorize(it.firstOrNull()?.orElse(null), Delete)
+      }
+      // 2. delete attachment
+      .thenMany(Flux.defer { attachmentDao.delete(*ids) })
+      // 3. delete physical file
       .doOnNext { File("$fileRootDir/$it").deleteRecursively() }
       .then()
   }

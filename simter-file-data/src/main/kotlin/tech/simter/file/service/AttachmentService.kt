@@ -63,7 +63,9 @@ interface AttachmentService {
    * If specify [Attachment] not exists then ignore and handle as success.
    *
    * @param[ids] the ids to delete
-   * @return [Mono] signaling when operation has completed
+   * @return [Mono] signaling when operation has completed.
+   *   If [Attachment] belong to different puid, return [Mono.error] with [ForbiddenException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun delete(vararg ids: String): Mono<Void>
 
