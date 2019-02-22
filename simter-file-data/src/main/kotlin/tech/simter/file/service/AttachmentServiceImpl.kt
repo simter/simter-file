@@ -283,12 +283,16 @@ class AttachmentServiceImpl @Autowired constructor(
 
   override fun uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>): Mono<Void> {
     val upperId = attachment.upperId
-    // 1. get upper full path
-    return (upperId?.let {
-      attachmentDao.getFullPath(upperId)
-        .switchIfEmpty(Mono.error(NotFoundException("The attachment $upperId not exists")))
-    } ?: Mono.just(""))
-      // 2. save physical file
+    // 1. verify authorize
+    return verifyAuthorize(attachment.puid, Create)
+      // 2. get upper full path
+      .then(Mono.defer {
+        upperId?.let {
+          attachmentDao.getFullPath(upperId)
+            .switchIfEmpty(Mono.error(NotFoundException("The attachment $upperId not exists")))
+        } ?: Mono.just("")
+      })
+      // 3. save physical file
       .flatMap { upperFullPath ->
         val file = File("$fileRootDir/$upperFullPath/${attachment.path}")
         val fileDir = file.parentFile
@@ -302,7 +306,12 @@ class AttachmentServiceImpl @Autowired constructor(
           else attachment.copy(size = file.length()).toMono()
         })
       }
-      // 3. save attachment data
+      // 4. set the creator and modifier
+      .flatMap {
+        securityService.getAuthenticatedUser().map(Optional<User>::get).map(User::name)
+          .map { userName -> it.copy(creator = userName, modifier = userName) }
+      }
+      // 5. save attachment data
       .flatMap { attachmentDao.save(it) }
   }
 

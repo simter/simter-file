@@ -125,13 +125,12 @@ interface AttachmentService {
   /**
    * create one file [attachment] and save physical file.
    *
-   * If upperId is not exists, return [Mono.error] with [NotFoundException].
-   * And if new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
-   *
    * @param[attachment] the new attachment.
    * @param[writer] a function of writes the file data to [File] and return an [Mono.empty]
-   *
    * @return[Mono] signaling when operation has completed.
+   *   If upper [Attachment] is not exists, return [Mono.error] with [NotFoundException].
+   *   If new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>): Mono<Void>
 
