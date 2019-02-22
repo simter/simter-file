@@ -24,10 +24,11 @@ import java.io.OutputStream
  */
 interface AttachmentService {
   /**
-   *  Get an [Attachment] by its id.
+   * Get an [Attachment] by its id.
    *
-   *  @param[id] the id for matching.
-   *  @return [Mono] emitting the [Attachment] with the given id or [Mono.empty] if none found.
+   * @param[id] the id for matching.
+   * @return [Mono] emitting the [Attachment] with the given id or [Mono.empty] if none found.
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun get(id: String): Mono<Attachment>
 

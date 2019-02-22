@@ -282,7 +282,7 @@ class AttachmentServiceImpl @Autowired constructor(
   }
 
   override fun get(id: String): Mono<Attachment> {
-    return attachmentDao.get(id)
+    return attachmentDao.get(id).delayUntil { verifyAuthorize(it.puid, Read) }
   }
 
   override fun find(pageable: Pageable): Mono<Page<Attachment>> {

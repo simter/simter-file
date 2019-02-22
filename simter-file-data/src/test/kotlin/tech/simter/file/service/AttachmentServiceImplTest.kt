@@ -27,7 +27,6 @@ import java.util.*
 import java.util.zip.ZipInputStream
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 /**
  * Test [AttachmentService]
@@ -43,24 +42,6 @@ class AttachmentServiceImplTest @Autowired constructor(
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String
 ) {
-  @Test
-  fun get() {
-    // mock
-    val id: String = UUID.randomUUID().toString()
-    val now = OffsetDateTime.now()
-    val attachment = Attachment(id, "/data", "Sample", "png", 123, now,
-      "Simter", now, "Simter")
-    val expected = Mono.just(attachment)
-    `when`(dao.get(id)).thenReturn(expected)
-
-    // invoke
-    val actual = service.get(id)
-
-    // verify
-    StepVerifier.create(actual).expectNext(attachment).verifyComplete()
-    verify(dao).get(id)
-  }
-
   @Test
   fun findByPageable() {
     // mock
