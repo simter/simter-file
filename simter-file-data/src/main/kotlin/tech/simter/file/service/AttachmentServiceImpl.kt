@@ -345,10 +345,13 @@ class AttachmentServiceImpl @Autowired constructor(
 
   override fun reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void> {
     val id = dto.id!!
-    // 1. get upper full path
-    return attachmentDao.getFullPath(id)
+    // 1. verify authorize
+    return attachmentDao.findPuids(id).next()
       .switchIfEmpty(Mono.error(NotFoundException("The attachment $id not exists")))
-      // 2. save physical file
+      .flatMap { verifyAuthorize(it.orElse(null), Update) }
+      // 2. get upper full path
+      .then(Mono.defer { attachmentDao.getFullPath(id) })
+      // 3. save physical file
       .doOnNext { fullPath ->
         val file = File("$fileRootDir/$fullPath")
         val fileDir = file.parentFile
@@ -362,7 +365,11 @@ class AttachmentServiceImpl @Autowired constructor(
         }
         FileCopyUtils.copy(fileData, file)
       }
-      // 3. save attachment data
-      .then(Mono.defer { attachmentDao.update(id, dto.data.filter { it.key != "id" }) })
+      // 4. set the modifyOn and modifier
+      .then(Mono.defer { securityService.getAuthenticatedUser() })
+      .map(Optional<User>::get).map(User::name)
+      .map { userName -> dto.data.plus(mapOf("modifier" to userName, "modifyOn" to OffsetDateTime.now())) }
+      // 5. save attachment data
+      .flatMap { attachmentDao.update(id, it.filter { it.key != "id" }) }
   }
 }

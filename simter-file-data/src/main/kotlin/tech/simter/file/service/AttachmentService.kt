@@ -141,13 +141,12 @@ interface AttachmentService {
   /**
    * save physical file and update the [AttachmentDto].
    *
-   * If [Attachment] is not exists, return [Mono.error] with [NotFoundException].
-   * And if new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
-   *
    * @param[dto] the [Attachment] will modify part of the value.
    * @param[fileData] the reupload file data.
-   *
    * @return[Mono] signaling when operation has completed.
+   *   If [Attachment] is not exists, return [Mono.error] with [NotFoundException].
+   *   If new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void>
 }
