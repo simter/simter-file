@@ -6,17 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Pageable
 import org.springframework.test.context.TestPropertySource
 import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
 import reactor.test.StepVerifier
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
-import tech.simter.file.po.Attachment
 import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.*
 import java.util.*
@@ -38,21 +33,6 @@ class AttachmentServiceImplTest @Autowired constructor(
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String
 ) {
-  @Test
-  fun findByPageable() {
-    // mock
-    val pageable: Pageable = PageRequest.of(0, 25)
-    val expect: Page<Attachment> = Page.empty()
-    `when`(dao.find(pageable)).thenReturn(Mono.just(expect))
-
-    // invoke
-    val actual = service.find(pageable)
-
-    // verify
-    StepVerifier.create(actual).expectNext(expect).verifyComplete()
-    verify(dao).find(pageable)
-  }
-
   @Test
   fun packageAttachments() {
     //      physical

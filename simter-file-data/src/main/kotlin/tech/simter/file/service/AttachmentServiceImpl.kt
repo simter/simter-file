@@ -291,7 +291,8 @@ class AttachmentServiceImpl @Autowired constructor(
   }
 
   override fun find(pageable: Pageable): Mono<Page<Attachment>> {
-    return attachmentDao.find(pageable)
+    return verifyAuthorize("admin", Read)
+      .then(Mono.defer { attachmentDao.find(pageable) })
   }
 
   override fun find(puid: String, upperId: String?): Flux<Attachment> {

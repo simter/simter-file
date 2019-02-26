@@ -36,7 +36,8 @@ interface AttachmentService {
    * Returns a [Page] of [Attachment]'s meeting the paging restriction provided in the [Pageable] object.
    *
    * @param[pageable] the pageable option
-   * @return [Mono] emitting a page of attachments contains data or a empty page without data if none found
+   * @return [Mono] emitting a page of attachments contains data or a empty page without data if none found.
+   *   If user don't have admin permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun find(pageable: Pageable): Mono<Page<Attachment>>
 
