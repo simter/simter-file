@@ -121,12 +121,14 @@ interface AttachmentService {
    * @param[outputStream] zip file data output position.
    * @param[ids] the attachments id.
    * @return[Mono] default name of the zip file.
-   *   if attachments is not exists, return [Mono.empty]
-   *   if attachments don't have least-common-ancestors, the name is "root.zip";
-   *   if attachments have least-common-ancestors and it is file,
+   *   If attachments is not exists, return [Mono.empty].
+   *   If attachments don't have least-common-ancestors, the name is "root.zip";
+   *   If attachments have least-common-ancestors and it is file,
    *     the name is "{least-common-ancestors.name}.{least-common-ancestors.type}.zip";
-   *   if attachments have least-common-ancestors and it is folder,
+   *   If attachments have least-common-ancestors and it is folder,
    *     the name is "{least-common-ancestors.name}.zip".
+   *   If [Attachment] belong to different puid, return [Mono.error] with [ForbiddenException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun packageAttachments(outputStream: OutputStream, vararg ids: String): Mono<String>
 

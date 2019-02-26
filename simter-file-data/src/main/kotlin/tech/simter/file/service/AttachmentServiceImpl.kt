@@ -110,8 +110,19 @@ class AttachmentServiceImpl @Autowired constructor(
   }
 
   override fun packageAttachments(outputStream: OutputStream, vararg ids: String): Mono<String> {
-    return attachmentDao.findDescendentsZipPath(*ids).collectList()
-      .flatMap { reactivePackage(outputStream, it).then(Mono.just(it)) }
+    // 1. verify authorize
+    return attachmentDao.findPuids(*ids).collectList()
+      .flatMap {
+        if (it.size > 1)
+          Mono.error(ForbiddenException("Package attachments has different puid"))
+        else
+          verifyAuthorize(it.firstOrNull()?.orElse(null), Read)
+      }
+      // 2. find descendents path info
+      .thenMany(Flux.defer { attachmentDao.findDescendentsZipPath(*ids) }).collectList()
+      // 3. package file
+      .delayUntil { reactivePackage(outputStream, it) }
+      // 4. calculate the zip file name
       .flatMap { dtos ->
         if (dtos.isNotEmpty()) {
           val att = dtos[0]

@@ -1,18 +1,25 @@
 package tech.simter.file.service
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.test.context.TestPropertySource
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
 import reactor.test.StepVerifier
+import tech.simter.exception.ForbiddenException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
+import tech.simter.file.service.AttachmentServiceImpl.OperationType.Read
 import tech.simter.reactive.security.ReactiveSecurityService
+import tech.simter.util.RandomUtils.randomString
 import java.io.*
 import java.util.*
 import java.util.zip.ZipInputStream
@@ -20,19 +27,24 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * Test [AttachmentService]
+ * Test [AttachmentService.packageAttachments]
  *
- * @author RJ
  * @author zh
  */
-@SpringBootTest(classes = [AttachmentServiceImpl::class, ModuleConfiguration::class])
+@SpringBootTest(classes = [ModuleConfiguration::class])
 @MockBean(AttachmentDao::class, ReactiveSecurityService::class)
+@SpyBean(AttachmentServiceImpl::class)
 @TestPropertySource(properties = ["simter.file.root=target/files"])
-class AttachmentServiceImplTest @Autowired constructor(
+class PackageAttachmentsMethodTest @Autowired constructor(
   private val dao: AttachmentDao,
-  private val service: AttachmentService,
+  private val service: AttachmentServiceImpl,
   @Value("\${simter.file.root}") private val fileRootDir: String
 ) {
+  @AfterEach
+  fun clean() {
+    File(fileRootDir).deleteRecursively()
+  }
+
   @Test
   fun packageAttachments() {
     //      physical
@@ -71,6 +83,7 @@ class AttachmentServiceImplTest @Autowired constructor(
     // "zip-file1.txt.zip"
     // |__ zip-file1.txt
     reset(dao)
+    reset(service)
     verifyPackage(listOf(dtos[4].apply { origin = terminus }), "zip-file1.txt.zip")
 
     // 3. attachments have least-common-ancestors and it is folder
@@ -79,12 +92,13 @@ class AttachmentServiceImplTest @Autowired constructor(
     //   |__ zip-file1.txt
     //   |__ zip-path2
     reset(dao)
+    reset(service)
     verifyPackage(dtos.subList(0, 3).map { it.apply { this.origin = dtos[0].terminus } }, "zip-path1.zip")
   }
 
   private fun randomAttachmentDto4Zip(zipPath: String, physicalPath: String, type: String): AttachmentDto4Zip {
     return AttachmentDto4Zip().also {
-      it.terminus = UUID.randomUUID().toString()
+      it.terminus = randomString()
       it.zipPath = zipPath
       it.physicalPath = physicalPath
       it.type = type
@@ -94,15 +108,20 @@ class AttachmentServiceImplTest @Autowired constructor(
   private fun verifyPackage(dtos: List<AttachmentDto4Zip>, zipName: String) {
     // prepare data and file
     val outputStream = ByteArrayOutputStream()
-    val ids = dtos.map { it.terminus!! }
-    `when`(dao.findDescendentsZipPath(*ids.toTypedArray())).thenReturn(dtos.toFlux())
+    val ids = dtos.map { it.terminus!! }.toTypedArray()
+    val puid = randomString()
+    `when`(dao.findDescendentsZipPath(*ids)).thenReturn(dtos.toFlux())
+    `when`(dao.findPuids(*ids)).thenReturn(Flux.just(Optional.of(puid)))
+    doReturn(Mono.empty<Void>()).`when`(service).verifyAuthorize(puid, Read)
 
     // invoke request
-    val actual = service.packageAttachments(outputStream, *ids.toTypedArray())
+    val actual = service.packageAttachments(outputStream, *ids)
 
     // verify method service.get invoked
     StepVerifier.create(actual).expectNext(zipName).verifyComplete()
-    verify(dao).findDescendentsZipPath(*ids.toTypedArray())
+    verify(dao).findDescendentsZipPath(*ids)
+    verify(dao).findPuids(*ids)
+    verify(service).verifyAuthorize(puid, Read)
 
     // verify zip file
     val zip = ZipInputStream(ByteArrayInputStream(outputStream.toByteArray()))
@@ -127,14 +146,53 @@ class AttachmentServiceImplTest @Autowired constructor(
   fun packageNoAttachment() {
     // mock
     val outputStream = ByteArrayOutputStream()
-    val id = UUID.randomUUID().toString()
-    `when`(dao.findDescendentsZipPath(id)).thenReturn(Flux.empty())
+    val ids = Array(3) { randomString() }
+    val puid = randomString()
+    `when`(dao.findDescendentsZipPath(*ids)).thenReturn(Flux.empty())
+    `when`(dao.findPuids(*ids)).thenReturn(Flux.just(Optional.of(puid)))
+    doReturn(Mono.empty<Void>()).`when`(service).verifyAuthorize(puid, Read)
 
     // invoke
-    val actual = service.packageAttachments(outputStream, id)
+    val actual = service.packageAttachments(outputStream, *ids)
 
     // verify
     StepVerifier.create(actual).verifyComplete()
-    verify(dao).findDescendentsZipPath(id)
+    verify(dao).findDescendentsZipPath(*ids)
+    verify(dao).findPuids(*ids)
+    verify(service).verifyAuthorize(puid, Read)
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val outputStream = ByteArrayOutputStream()
+    val ids = Array(3) { randomString() }
+    val puid = randomString()
+    `when`(dao.findPuids(*ids)).thenReturn(Flux.just(Optional.of(puid)))
+    doReturn(Mono.error<Void>(PermissionDeniedException())).`when`(service).verifyAuthorize(puid, Read)
+
+    // invoke
+    val actual = service.packageAttachments(outputStream, *ids)
+
+    // verify
+    StepVerifier.create(actual).verifyError(PermissionDeniedException::class.java)
+    verify(dao).findPuids(*ids)
+    verify(service).verifyAuthorize(puid, Read)
+  }
+
+  @Test
+  fun failedByForbidden() {
+    // mock
+    val outputStream = ByteArrayOutputStream()
+    val ids = Array(3) { randomString() }
+    val puids = Array(2) { Optional.of(randomString()) }
+    `when`(dao.findPuids(*ids)).thenReturn(puids.toFlux())
+
+    // invoke
+    val actual = service.packageAttachments(outputStream, *ids)
+
+    // verify
+    StepVerifier.create(actual).verifyError(ForbiddenException::class.java)
+    verify(dao).findPuids(*ids)
   }
 }
