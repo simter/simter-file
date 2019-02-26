@@ -1,7 +1,6 @@
 package tech.simter.file.dao.jpa
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -34,8 +33,14 @@ class AttachmentDaoImpl @Autowired constructor(
   @PersistenceContext private val em: EntityManager,
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
+  @Suppress("UNCHECKED_CAST")
   override fun findPuids(vararg ids: String): Flux<Optional<String>> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    if (ids.isEmpty()) return Flux.empty()
+    val sql = "select distinct a.puid from Attachment a where id in :ids"
+    val result = em.createQuery(sql)
+      .setParameter("ids", ids.toList())
+      .resultList as List<String?>
+    return result.map { Optional.ofNullable<String?>(it) }.toFlux()
   }
 
   @Suppress("UNCHECKED_CAST")
