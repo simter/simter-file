@@ -35,6 +35,8 @@ fun AttachmentDtoWithChildren.getOwnData(): Map<String, Any?> {
 }
 
 /**
+ * Test [AttachmentDaoImpl]
+ *
  * @author cjw
  * @author RJ
  * @author zh
@@ -457,6 +459,22 @@ class AttachmentDaoImplTest @Autowired constructor(
           }
         ), it)
       }.verifyComplete()
+  }
+
+  @Test
+  fun findPuids() {
+    // prepare data
+    val now = OffsetDateTime.now()
+    val pos = List(10) {
+      Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
+        123, now, "Simter", now, "Simter", puid = if (it < 2) null else "puid${it / 2}")
+    }
+    StepVerifier.create(operations.insertAll(pos)).expectNextCount(10).verifyComplete()
+
+    // invoke and verify
+    StepVerifier.create(dao.findPuids(*pos.map { it.id }.toTypedArray()).collectList().map { it.toSet() })
+      .expectNext(pos.map { Optional.ofNullable(it.puid) }.toSet())
+      .verifyComplete()
   }
 
   /** build test file method */
