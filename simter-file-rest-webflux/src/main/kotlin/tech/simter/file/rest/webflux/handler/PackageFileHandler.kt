@@ -2,6 +2,7 @@ package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ByteArrayResource
+import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -10,10 +11,12 @@ import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.ServerResponse.notFound
-import org.springframework.web.reactive.function.server.ServerResponse.ok
+import org.springframework.web.reactive.function.server.ServerResponse.*
 import reactor.core.publisher.Mono
+import tech.simter.exception.ForbiddenException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.service.AttachmentService
+import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.io.ByteArrayOutputStream
 
 /**
@@ -26,6 +29,7 @@ import java.io.ByteArrayOutputStream
  * > {id} can be {id1,id2,...}, but the user need to make sure that {id} is not truncated
  *
  * Response: (if found)
+ *
  * ```
  * 200 OK
  * Content-Type        : application/octet-stream
@@ -35,7 +39,14 @@ import java.io.ByteArrayOutputStream
  * {FILE-DATA}
  * ```
  *
+ * Response: (if permission denied or across module)
+ * 
+ * ```
+ * 403 Forbidden
+ * ```
+ *
  * Response: (if not found)
+ *
  * ```
  * 404 Not Found
  * ```
@@ -59,9 +70,16 @@ class PackageFileHandler @Autowired constructor(
           .contentLength(data.size.toLong())
           .header("Content-Disposition", "attachment; filename=\"${it.second}\"")
           .body(BodyInserters.fromResource(ByteArrayResource(data)))
-
       }
       .switchIfEmpty(notFound().build())
+      .onErrorResume(PermissionDeniedException::class.java) {
+        if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
+        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+      }
+      .onErrorResume(ForbiddenException::class.java) {
+        if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
+        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+      }
   }
 
   companion object {
