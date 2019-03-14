@@ -1,6 +1,7 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
@@ -8,11 +9,12 @@ import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.ServerResponse.notFound
-import org.springframework.web.reactive.function.server.ServerResponse.ok
+import org.springframework.web.reactive.function.server.ServerResponse.*
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
+import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 
 /**
  * The [HandlerFunction] for find single [Attachment] info.
@@ -32,6 +34,12 @@ import tech.simter.file.service.AttachmentService
  * {id, path, name, type, size, createOn, creator, fileName, puid, upperId}
  * ```
  *
+ * Response: (if permission denied)
+ *
+ * ```
+ * 403 Forbidden
+ * ```
+ *
  * Response: (if not found)
  *
  * ```
@@ -42,6 +50,7 @@ import tech.simter.file.service.AttachmentService
  *
  * @author JF
  * @author RJ
+ * @author zh
  */
 @Component
 class AttachmentFormHandler @Autowired constructor(
@@ -51,6 +60,10 @@ class AttachmentFormHandler @Autowired constructor(
     return attachmentService.get(request.pathVariable("id"))
       .flatMap { ok().contentType(MediaType.APPLICATION_JSON_UTF8).syncBody(it) } // found
       .switchIfEmpty(notFound().build())                                          // not found
+      .onErrorResume(PermissionDeniedException::class.java) {
+        if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
+        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+      }
   }
 
   companion object {
