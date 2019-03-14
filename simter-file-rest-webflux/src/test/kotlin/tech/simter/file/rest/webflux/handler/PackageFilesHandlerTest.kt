@@ -1,7 +1,6 @@
 package tech.simter.file.rest.webflux.handler
 
 import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argThat
 import com.nhaarman.mockito_kotlin.eq
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
@@ -18,6 +17,8 @@ import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
+import tech.simter.exception.ForbiddenException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.rest.webflux.handler.PackageFilesHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.util.*
@@ -37,7 +38,7 @@ internal class PackageFilesHandlerTest @Autowired constructor(
   handler: PackageFilesHandler
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
-  
+
   @Test
   fun setZipName() {
     val ids = List(3) { UUID.randomUUID().toString() }
@@ -73,7 +74,7 @@ internal class PackageFilesHandlerTest @Autowired constructor(
   fun notFound() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.packageAttachments(any(), argThat { this == id })).thenReturn(Mono.empty())
+    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.empty())
 
     // invoke
     client.post().uri("/zip?name=test")
@@ -81,6 +82,36 @@ internal class PackageFilesHandlerTest @Autowired constructor(
       .exchange().expectStatus().isNotFound
 
     // verify
-    verify(service).packageAttachments(any(), argThat { this == id })
+    verify(service).packageAttachments(any(), eq(id))
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.error(PermissionDeniedException()))
+
+    // invoke
+    client.post().uri("/zip?name=test")
+      .contentType(APPLICATION_FORM_URLENCODED).syncBody("id=$id")
+      .exchange().expectStatus().isForbidden
+
+    // verify
+    verify(service).packageAttachments(any(), eq(id))
+  }
+
+  @Test
+  fun failedByAcrossModule() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.error(ForbiddenException()))
+
+    // invoke
+    client.post().uri("/zip?name=test")
+      .contentType(APPLICATION_FORM_URLENCODED).syncBody("id=$id")
+      .exchange().expectStatus().isForbidden
+
+    // verify
+    verify(service).packageAttachments(any(), eq(id))
   }
 }
