@@ -11,15 +11,17 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Flux
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.po.Attachment
 import tech.simter.file.rest.webflux.handler.FindModuleAttachmentsHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.time.OffsetDateTime
 
 /**
- * Test FindModuleAttachmentsHandler.
+ * Test [FindModuleAttachmentsHandler].
  *
  * @author JW
+ * @author zh
  */
 @SpringJUnitConfig(FindModuleAttachmentsHandler::class)
 @EnableWebFlux
@@ -61,6 +63,18 @@ internal class FindModuleAttachmentsHandlerTest @Autowired constructor(
       .jsonPath("$[0].upperId").isEqualTo(upperId.toString())
 
     // verify
+    verify(service).find(puid, upperId)
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val puid = "puid1"
+    val upperId = "1"
+    `when`(service.find(puid, upperId)).thenReturn(Flux.error(PermissionDeniedException()))
+
+    // invoke and verify
+    client.get().uri("/parent/$puid/$upperId").exchange().expectStatus().isForbidden
     verify(service).find(puid, upperId)
   }
 }
