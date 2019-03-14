@@ -11,7 +11,9 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
+import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.rest.webflux.Utils.randomString
 import tech.simter.file.rest.webflux.handler.UpdateAttachmentHandler.Companion.REQUEST_PREDICATE
@@ -43,7 +45,7 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
   }
 
   @Test
-  fun success() {
+  fun `Success`() {
     val dto = randomAttachmentDto4Update()
     `when`(service.update(id, dto)).thenReturn(Mono.empty())
 
@@ -70,6 +72,40 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
       .syncBody(dto.data)
       .exchange()
       .expectStatus().isNotFound
+
+    // verify
+    verify(service).update(id, dto)
+  }
+
+  @Test
+  fun `Failed by permission denied`() {
+    // mock
+    val dto = randomAttachmentDto4Update()
+    `when`(service.update(id, dto)).thenReturn(Mono.error(PermissionDeniedException("")))
+
+    // invoke request
+    client.patch().uri(url)
+      .contentType(APPLICATION_JSON_UTF8)
+      .syncBody(dto.data)
+      .exchange()
+      .expectStatus().isForbidden
+
+    // verify
+    verify(service).update(id, dto)
+  }
+
+  @Test
+  fun `Failed by across module`() {
+    // mock
+    val dto = randomAttachmentDto4Update()
+    `when`(service.update(id, dto)).thenReturn(Mono.error(ForbiddenException("")))
+
+    // invoke request
+    client.patch().uri(url)
+      .contentType(APPLICATION_JSON_UTF8)
+      .syncBody(dto.data)
+      .exchange()
+      .expectStatus().isForbidden
 
     // verify
     verify(service).update(id, dto)
