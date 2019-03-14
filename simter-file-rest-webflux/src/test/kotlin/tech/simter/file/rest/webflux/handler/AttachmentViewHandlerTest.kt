@@ -14,6 +14,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.po.Attachment
 import tech.simter.file.rest.webflux.handler.AttachmentViewHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
@@ -21,9 +22,10 @@ import java.time.OffsetDateTime
 import java.util.*
 
 /**
- * Test AttachmentViewHandler.
+ * Test [AttachmentViewHandler].
  *
  * @author JF
+ * @author zh
  */
 @SpringJUnitConfig(AttachmentViewHandler::class)
 @EnableWebFlux
@@ -57,6 +59,23 @@ internal class AttachmentViewHandlerTest @Autowired constructor(
       .jsonPath("$.pageNo").isEqualTo(pageNo)     // verify page-no
       .jsonPath("$.pageSize").isEqualTo(pageSize) // verify page-size
       .jsonPath("$.rows[0].id").isEqualTo(id)    // verify Attachment.id
+
+    // verify
+    verify(service).find(pageable)
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val pageNo = 0
+    val pageSize = 25
+    val pageable = PageRequest.of(pageNo, pageSize)
+    `when`<Mono<Page<Attachment>>>(service.find(pageable)).thenReturn(Mono.error<Page<Attachment>>(PermissionDeniedException()))
+
+    // invoke
+    client.get().uri("/attachment?page-no=$pageNo&page-size=$pageSize")
+      .exchange()
+      .expectStatus().isForbidden
 
     // verify
     verify(service).find(pageable)

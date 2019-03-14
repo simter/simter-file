@@ -2,6 +2,7 @@ package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
@@ -9,9 +10,12 @@ import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
+import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 
 /**
  * The [HandlerFunction] for find multiple [Attachment] info.
@@ -22,7 +26,7 @@ import tech.simter.file.service.AttachmentService
  * GET {context-path}/attachment?page-no=:pageNo&page-size=:pageSize
  * ```
  *
- * Response:
+ * Response: (if found)
  *
  * ```
  * 200 OK
@@ -34,9 +38,16 @@ import tech.simter.file.service.AttachmentService
  * }
  * ```
  *
+ * Response: (if permission denied)
+ *
+ * ```
+ * 403 Forbidden
+ * ```
+ *
  * [More](https://github.com/simter/simter-file/wiki/Attachment-View)
  *
  * @author JF
+ * @author zh
  */
 @Component
 class AttachmentViewHandler @Autowired constructor(
@@ -63,6 +74,10 @@ class AttachmentViewHandler @Autowired constructor(
         ServerResponse.ok()
           .contentType(MediaType.APPLICATION_JSON_UTF8)
           .syncBody(it)
+      }
+      .onErrorResume(PermissionDeniedException::class.java) {
+        if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
+        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
       }
   }
 
