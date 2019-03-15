@@ -4,10 +4,12 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.exception.NotFoundException
+import tech.simter.file.dto.AttachmentDto
 import tech.simter.file.dto.AttachmentDto4Update
-import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import java.io.File
 import java.io.OutputStream
 
 /**
@@ -43,14 +45,6 @@ interface AttachmentService {
    * @return [Flux] emitting attachments or a empty flux without data if none found
    */
   fun find(puid: String, upperId: String?): Flux<Attachment>
-
-  /**
-   * Create or update one or more [Attachment].
-   *
-   * @param[attachments] the attachments to save or update
-   * @return [Mono] signaling when operation has completed
-   */
-  fun save(vararg attachments: Attachment): Mono<Void>
 
   /**
    * Get ths full path of the specific attachment.
@@ -94,7 +88,7 @@ interface AttachmentService {
    * @return[Flux] emitting id of the newly created attachments.
    */
   fun create(vararg attachments: Attachment): Flux<String>
-  
+
   /**
    * Package attachments and their descendant attachments.
    *   if attachments don't have least-common-ancestors, the zip structure is
@@ -123,4 +117,30 @@ interface AttachmentService {
    *     the name is "{least-common-ancestors.name}.zip".
    */
   fun packageAttachments(outputStream: OutputStream, vararg ids: String): Mono<String>
+
+  /**
+   * create one file [attachment] and save physical file.
+   *
+   * If upperId is not exists, return [Mono.error] with [NotFoundException].
+   * And if new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
+   *
+   * @param[attachment] the new attachment.
+   * @param[writer] a function of writes the file data to [File] and return an [Mono.empty]
+   *
+   * @return[Mono] signaling when operation has completed.
+   */
+  fun uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>): Mono<Void>
+
+  /**
+   * save physical file and update the [AttachmentDto].
+   *
+   * If [Attachment] is not exists, return [Mono.error] with [NotFoundException].
+   * And if new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
+   *
+   * @param[dto] the [Attachment] will modify part of the value.
+   * @param[fileData] the reupload file data.
+   *
+   * @return[Mono] signaling when operation has completed.
+   */
+  fun reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void>
 }

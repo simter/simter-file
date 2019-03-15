@@ -5,11 +5,14 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+import org.springframework.util.FileCopyUtils
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toFlux
+import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.dao.AttachmentDao
+import tech.simter.file.dto.AttachmentDto
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
@@ -191,13 +194,57 @@ class AttachmentServiceImpl @Autowired constructor(
     return attachmentDao.find(puid, upperId)
   }
 
-  override fun save(vararg attachments: Attachment): Mono<Void> {
-    return attachmentDao.save(*attachments)
-  }
-
   override fun delete(vararg ids: String): Mono<Void> {
     return attachmentDao.delete(*ids)
       .doOnNext { File("$fileRootDir/$it").deleteRecursively() }
       .then()
+  }
+
+  override fun uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>): Mono<Void> {
+    val upperId = attachment.upperId
+    // 1. get upper full path
+    return (upperId?.let {
+      attachmentDao.getFullPath(upperId)
+        .switchIfEmpty(Mono.error(NotFoundException("The attachment $upperId not exists")))
+    } ?: Mono.just(""))
+      // 2. save physical file
+      .flatMap { upperFullPath ->
+        val file = File("$fileRootDir/$upperFullPath/${attachment.path}")
+        val fileDir = file.parentFile
+        if (!fileDir.exists()) {
+          if (!fileDir.mkdirs())  // create file directory if not exists
+            throw IllegalAccessException("Failed to create parents dir: ${fileDir.absolutePath}")
+        }
+        if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
+        writer(file).then(Mono.defer {
+          if (attachment.size != -1L) attachment.toMono()
+          else attachment.copy(size = file.length()).toMono()
+        })
+      }
+      // 3. save attachment data
+      .flatMap { attachmentDao.save(it) }
+  }
+
+  override fun reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void> {
+    val id = dto.id!!
+    // 1. get upper full path
+    return attachmentDao.getFullPath(id)
+      .switchIfEmpty(Mono.error(NotFoundException("The attachment $id not exists")))
+      // 2. save physical file
+      .doOnNext { fullPath ->
+        val file = File("$fileRootDir/$fullPath")
+        val fileDir = file.parentFile
+        if (!fileDir.exists()) {
+          if (!fileDir.mkdirs())  // create file directory if not exists
+            throw IllegalAccessException("Failed to create parents dir: ${fileDir.absolutePath}")
+        }
+        if (!file.exists()) {
+          if (!file.createNewFile())
+            throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
+        }
+        FileCopyUtils.copy(fileData, file)
+      }
+      // 3. save attachment data
+      .then(Mono.defer { attachmentDao.update(id, dto.data.filter { it.key != "id" }) })
   }
 }

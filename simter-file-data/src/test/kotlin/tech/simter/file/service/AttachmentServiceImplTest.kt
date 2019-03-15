@@ -92,22 +92,6 @@ class AttachmentServiceImplTest @Autowired constructor(
   }
 
   @Test
-  fun save() {
-    // mock
-    val now = OffsetDateTime.now()
-    val attachment = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
-      123, now, "Simter", now, "Simter")
-    `when`(dao.save(attachment)).thenReturn(Mono.empty())
-
-    // invoke
-    val actual = service.save(attachment)
-
-    // verify
-    StepVerifier.create(actual).expectNext().verifyComplete()
-    verify(dao).save(attachment)
-  }
-
-  @Test
   fun getFullPath() {
     // mock
     val id = UUID.randomUUID().toString()

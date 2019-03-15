@@ -1,7 +1,7 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.codec.multipart.FormFieldPart
@@ -14,13 +14,13 @@ import org.springframework.web.reactive.function.server.RequestPredicates.conten
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.noContent
+import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
+import tech.simter.exception.NotFoundException
 import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
-import java.io.File
+import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.net.URI
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.HashMap
 
@@ -58,14 +58,21 @@ import kotlin.collections.HashMap
  * Location : {context-path}/{id}
  * ```
  *
+ * If not Found the upper
+ * ```
+ * 404 Not Found
+ *
+ * Upper not exists
+ * ```
+ *
  * [More](https://github.com/simter/simter-file/wiki/Upload-One-File-By-Form)
  *
  * @author JF
  * @author RJ
+ * @author zh
  */
 @Component
 class UploadFileByFormHandler @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
@@ -76,15 +83,10 @@ class UploadFileByFormHandler @Autowired constructor(
       // 1. extract data in request body
       .map {
         // build Map by data in list
-        val formDataMap = HashMap<String, Any>()
+        val formDataMap = HashMap<String, Any?>()
         for (part in it) {
-          if (part is FormFieldPart && "puid" == part.name()) {
-            formDataMap["puid"] = if (part.value() != "") part.value() else ""
-          }
-          if (part is FormFieldPart && "upperId" == part.name()) {
-            formDataMap["upperId"] = if (part.value().matches(Regex("\\d+"))) part.value() else "EMPTY"
-          }
           if (part is FilePart) formDataMap["fileData"] = part
+          else if (part is FormFieldPart) formDataMap[part.name()] = part.value()
         }
         formDataMap
       }
@@ -93,34 +95,18 @@ class UploadFileByFormHandler @Autowired constructor(
         // get the FilePart by the Map
         val fileData = it["fileData"] as FilePart
         // convert to Attachment instance
-        val attachment = toAttachment(fileData.headers().contentLength, fileData.filename(), it["puid"] as String, it["upperId"] as String)
-
-        val file = File("$fileRootDir/${attachment.path}")
-        val fileDir = file.parentFile
-        if (!fileDir.exists()) {
-          if (!fileDir.mkdirs())  // create file directory if not exists
-            throw IllegalAccessException("Failed to create parents dir: ${fileDir.absolutePath}")
-        }
-        if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
-
-        // save to disk
-        fileData.transferTo(file)
-          .then(Mono.just(if (attachment.size != -1L) attachment else attachment.copy(size = file.length())))
+        val attachment = createAttachment(newId(), fileData.headers().contentLength, fileData.filename(),
+          it["puid"] as String?, it["upperId"] as String?)
+        attachmentService.uploadFile(attachment) { file ->
+          fileData.transferTo(file)
+        }.thenReturn(attachment.id)
       }
-      // 3. save attachment
-      .flatMap { attachmentService.save(it).thenReturn(it) }
-      // 4. return response
-      .flatMap { noContent().location(URI.create("/${it.id}")).build() }
-  }
-
-  private fun toAttachment(fileSize: Long, filename: String, puid: String, upperId: String): Attachment {
-    val id = newId()
-    val now = OffsetDateTime.now()
-    val lastDotIndex = filename.lastIndexOf(".")
-    val type = filename.substring(lastDotIndex + 1)
-    val path = "${now.format(DateTimeFormatter.ofPattern("yyyyMM"))}/${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$type"
-    return Attachment(id = id, path = path, name = filename.substring(0, lastDotIndex), type = type, size = fileSize,                               // file size
-      createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", puid = puid, upperId = upperId)
+      // 3. return response
+      .flatMap { noContent().location(URI.create("/$it")).build() }
+      .onErrorResume(NotFoundException::class.java) {
+        if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
+        else status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+      }
   }
 
   /** Generate a new [Attachment] id */
