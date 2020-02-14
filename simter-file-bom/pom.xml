@@ -24,6 +24,11 @@
       </dependency>
       <dependency>
         <groupId>tech.simter.file</groupId>
+        <artifactId>simter-file-dao-r2dbc</artifactId>
+        <version>${simter-file.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>tech.simter.file</groupId>
         <artifactId>simter-file-dao-jpa</artifactId>
         <version>${simter-file.version}</version>
       </dependency>
