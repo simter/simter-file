@@ -1,6 +1,6 @@
 package tech.simter.file.dao.reactive.mongo
 
-import tech.simter.file.dto.AttachmentDto4Zip
+import tech.simter.file.core.domain.AttachmentDto4Zip
 
 fun AttachmentDto4Zip.generateId() {
   id = origin?.let { "\"$origin\"-\"$terminus\"" } ?: "null-\"$terminus\""

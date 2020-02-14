@@ -12,9 +12,9 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.dto.AttachmentDto4Create
-import tech.simter.file.po.Attachment
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.domain.AttachmentDto4Create
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.time.OffsetDateTime
 import java.util.*
@@ -78,7 +78,8 @@ class CreateAttachmentsHandler @Autowired constructor(
   fun toAttachment(dto: AttachmentDto4Create): Attachment {
     val id = dto.id ?: UUID.randomUUID().toString()
     val now = OffsetDateTime.now()
-    return Attachment(id = id, path = dto.path ?: id, name = dto.name!!, type = dto.type ?: "",
+    return Attachment(id = id, path = dto.path
+      ?: id, name = dto.name!!, type = dto.type ?: "",
       size = 0, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter",
       puid = dto.puid ?: "", upperId = dto.upperId ?: "EMPTY")
   }

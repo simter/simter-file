@@ -15,11 +15,11 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.util.FileCopyUtils
 import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
-import tech.simter.file.dao.AttachmentDao
-import tech.simter.file.dto.AttachmentDto4Update
-import tech.simter.file.dto.AttachmentDto4Zip
-import tech.simter.file.dto.AttachmentDtoWithChildren
-import tech.simter.file.po.Attachment
+import tech.simter.file.core.AttachmentDao
+import tech.simter.file.core.domain.AttachmentDto4Update
+import tech.simter.file.core.domain.AttachmentDto4Zip
+import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.core.domain.Attachment
 import java.io.File
 import java.time.OffsetDateTime
 import java.util.*

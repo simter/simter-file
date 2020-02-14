@@ -16,8 +16,8 @@ import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.po.Attachment
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter

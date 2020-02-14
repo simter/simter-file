@@ -12,8 +12,8 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.*
 import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.po.Attachment
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 
 /**

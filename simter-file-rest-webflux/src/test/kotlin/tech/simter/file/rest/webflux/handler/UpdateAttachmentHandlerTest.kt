@@ -14,10 +14,10 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.dto.AttachmentDto4Update
+import tech.simter.file.core.domain.AttachmentDto4Update
 import tech.simter.file.rest.webflux.Utils.randomString
 import tech.simter.file.rest.webflux.handler.UpdateAttachmentHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
 import java.util.*
 
 /**

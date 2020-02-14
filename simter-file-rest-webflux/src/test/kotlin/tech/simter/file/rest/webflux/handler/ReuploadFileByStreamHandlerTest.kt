@@ -16,9 +16,9 @@ import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.dto.AttachmentDto
+import tech.simter.file.core.domain.AttachmentDto
 import tech.simter.file.rest.webflux.handler.ReuploadFileByStreamHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
 import java.util.*
 
 /**

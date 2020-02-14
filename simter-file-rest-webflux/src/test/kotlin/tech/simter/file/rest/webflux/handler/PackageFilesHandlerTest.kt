@@ -20,7 +20,7 @@ import reactor.core.publisher.toMono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.rest.webflux.handler.PackageFilesHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
 import java.util.*
 
 /**

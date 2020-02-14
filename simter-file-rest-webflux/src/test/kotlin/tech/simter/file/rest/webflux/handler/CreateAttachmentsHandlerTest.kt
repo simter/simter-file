@@ -15,11 +15,11 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.dto.AttachmentDto4Create
+import tech.simter.file.core.domain.AttachmentDto4Create
 import tech.simter.file.rest.webflux.Utils.randomInt
 import tech.simter.file.rest.webflux.Utils.randomString
 import tech.simter.file.rest.webflux.handler.CreateAttachmentsHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
 import java.util.*
 
 /**

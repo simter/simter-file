@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.server.RequestPredicates.DELETE
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import tech.simter.exception.ForbiddenException

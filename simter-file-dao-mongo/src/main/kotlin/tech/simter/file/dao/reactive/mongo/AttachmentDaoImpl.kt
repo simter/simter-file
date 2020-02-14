@@ -16,10 +16,10 @@ import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
-import tech.simter.file.dao.AttachmentDao
-import tech.simter.file.dto.AttachmentDto4Zip
-import tech.simter.file.dto.AttachmentDtoWithChildren
-import tech.simter.file.po.Attachment
+import tech.simter.file.core.AttachmentDao
+import tech.simter.file.core.domain.AttachmentDto4Zip
+import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.core.domain.Attachment
 import java.util.*
 
 

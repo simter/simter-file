@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.rest.webflux.handler.DeleteFilesHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
 import java.util.*
 
 /**

@@ -16,8 +16,8 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.dto.AttachmentDto
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.domain.AttachmentDto
+import tech.simter.file.core.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.net.URLDecoder
 

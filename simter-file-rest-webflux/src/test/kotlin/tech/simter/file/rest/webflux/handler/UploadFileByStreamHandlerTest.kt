@@ -21,7 +21,7 @@ import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.rest.webflux.handler.UploadFileByStreamHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
 import java.io.File
 import java.util.*
 import kotlin.test.assertEquals
