@@ -1,5 +1,22 @@
 # simter-file changelog
 
+## 0.5.0 2020-02-14
+
+For older merge release.
+
+- [PR#64] Add access control (there are too much commits)
+- [PR#63]
+    - Design and implement `AttachmentService.uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>) : Mono<Void>`
+    - Design and implement `AttachmentService.reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void>`
+    - Remove `AttachmentService.save(vararg attachments: Attachment): Mono<Void>`
+    - Refactor `UploadFileByFormHandler`
+    - Refactor `ReuploadFileByStreamHandler`
+- [PR#62] Add reactive mongo dao implementation
+
+[PR#64]: https://github.com/simter/simter-file/pull/64
+[PR#63]: https://github.com/simter/simter-file/pull/63
+[PR#62]: https://github.com/simter/simter-file/pull/62
+
 ## 0.4.0 2019-01-14
 
 - Upgrade to simter-build-1.1.0 and simter-dependencies-1.1.0
