@@ -9,7 +9,7 @@
     <!-- lookup parent from repository -->
     <relativePath/>
   </parent>
-  <artifactId>simter-file-build</artifactId>
+  <artifactId>simter-file</artifactId>
   <version>${revision}</version>
   <packaging>pom</packaging>
   <description>Builder</description>
