@@ -1,4 +1,4 @@
-package tech.simter.file.dao.jpa
+package tech.simter.file.impl.dao.jpa
 
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.ComponentScan

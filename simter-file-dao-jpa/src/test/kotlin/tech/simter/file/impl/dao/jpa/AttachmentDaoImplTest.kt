@@ -1,4 +1,4 @@
-package tech.simter.file.dao.jpa
+package tech.simter.file.impl.dao.jpa
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

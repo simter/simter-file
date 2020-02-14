@@ -1,4 +1,4 @@
-package tech.simter.file.dao.jpa
+package tech.simter.file.impl.dao.jpa
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page

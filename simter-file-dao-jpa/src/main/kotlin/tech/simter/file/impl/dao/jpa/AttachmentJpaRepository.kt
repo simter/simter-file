@@ -1,4 +1,4 @@
-package tech.simter.file.dao.jpa
+package tech.simter.file.impl.dao.jpa
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository
