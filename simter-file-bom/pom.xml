@@ -25,7 +25,7 @@
       </dependency>
       <dependency>
         <groupId>tech.simter.file</groupId>
-        <artifactId>simter-file-data-jpa</artifactId>
+        <artifactId>simter-file-dao-jpa</artifactId>
         <version>${simter-file.version}</version>
       </dependency>
       <dependency>

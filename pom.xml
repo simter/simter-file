@@ -23,7 +23,7 @@
     <module>simter-file-bom</module>
     <module>simter-file-parent</module>
     <module>simter-file-core</module>
-    <module>simter-file-data-jpa</module>
+    <module>simter-file-dao-jpa</module>
     <module>simter-file-data-reactive-mongo</module>
     <module>simter-file-rest-webflux</module>
     <module>simter-file-starter</module>

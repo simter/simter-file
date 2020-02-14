@@ -7,7 +7,7 @@
     <version>${revision}</version>
     <relativePath>../simter-file-parent</relativePath>
   </parent>
-  <artifactId>simter-file-data-jpa</artifactId>
+  <artifactId>simter-file-dao-jpa</artifactId>
   <packaging>jar</packaging>
   <description>Dao Implementation By JPA</description>
   <developers>
