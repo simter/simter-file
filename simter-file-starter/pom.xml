@@ -138,7 +138,7 @@
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
-          <artifactId>simter-file-data-reactive-mongo</artifactId>
+          <artifactId>simter-file-dao-mongo</artifactId>
         </dependency>
         <dependency>
           <groupId>de.flapdoodle.embed</groupId>
@@ -161,7 +161,7 @@
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
-          <artifactId>simter-file-data-reactive-mongo</artifactId>
+          <artifactId>simter-file-dao-mongo</artifactId>
         </dependency>
       </dependencies>
     </profile>

@@ -7,7 +7,7 @@
     <version>${revision}</version>
     <relativePath>../simter-file-parent</relativePath>
   </parent>
-  <artifactId>simter-file-data-reactive-mongo</artifactId>
+  <artifactId>simter-file-dao-mongo</artifactId>
   <packaging>jar</packaging>
   <description>Dao Implementation By Reactive MongoDB</description>
   <developers>
