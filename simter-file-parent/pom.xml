@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>tech.simter.file</groupId>
-    <artifactId>simter-file-dependencies</artifactId>
+    <artifactId>simter-file-bom</artifactId>
     <version>${revision}</version>
-    <relativePath>../simter-file-dependencies</relativePath>
+    <relativePath>../simter-file-bom</relativePath>
   </parent>
   <artifactId>simter-file-parent</artifactId>
   <packaging>pom</packaging>
@@ -21,7 +21,7 @@
       <!-- simter-file -->
       <dependency>
         <groupId>tech.simter.file</groupId>
-        <artifactId>simter-file-dependencies</artifactId>
+        <artifactId>simter-file-bom</artifactId>
         <version>${simter-file.version}</version>
         <type>pom</type>
         <scope>import</scope>

@@ -20,7 +20,7 @@
     <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
   </properties>
   <modules>
-    <module>simter-file-dependencies</module>
+    <module>simter-file-bom</module>
     <module>simter-file-parent</module>
     <module>simter-file-data</module>
     <module>simter-file-data-jpa</module>
