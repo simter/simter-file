@@ -7,8 +7,7 @@ import java.util.*
  *
  * @author zh
  */
-object Utils {
-
+object TestHelper {
   /** random [Int] in open interval from [start] and [end]]*/
   fun randomInt(start: Int = 0, end: Int = 100) = Random().nextInt(end + 1 - start) + start
 

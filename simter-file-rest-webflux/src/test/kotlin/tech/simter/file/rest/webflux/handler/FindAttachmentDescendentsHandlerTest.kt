@@ -14,8 +14,8 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
-import tech.simter.file.rest.webflux.Utils.randomInt
-import tech.simter.file.rest.webflux.Utils.randomString
+import tech.simter.file.rest.webflux.TestHelper.randomInt
+import tech.simter.file.rest.webflux.TestHelper.randomString
 import tech.simter.file.rest.webflux.handler.FindAttachmentDescendentsHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
 import java.util.*
