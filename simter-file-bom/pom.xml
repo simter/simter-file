@@ -20,7 +20,7 @@
     <dependencies>
       <dependency>
         <groupId>tech.simter.file</groupId>
-        <artifactId>simter-file-data</artifactId>
+        <artifactId>simter-file-core</artifactId>
         <version>${simter-file.version}</version>
       </dependency>
       <dependency>
