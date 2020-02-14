@@ -10,12 +10,6 @@
   <artifactId>simter-file-bom</artifactId>
   <packaging>pom</packaging>
   <description>BOM</description>
-  <developers>
-    <developer>
-      <name>RJ.Hwang</name>
-      <email>rongjihuang@gmail.com</email>
-    </developer>
-  </developers>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -25,12 +19,12 @@
       </dependency>
       <dependency>
         <groupId>tech.simter.file</groupId>
-        <artifactId>simter-file-dao-jpa</artifactId>
+        <artifactId>simter-file-dao-mongo</artifactId>
         <version>${simter-file.version}</version>
       </dependency>
       <dependency>
         <groupId>tech.simter.file</groupId>
-        <artifactId>simter-file-dao-mongo</artifactId>
+        <artifactId>simter-file-dao-jpa</artifactId>
         <version>${simter-file.version}</version>
       </dependency>
       <dependency>
@@ -38,44 +32,16 @@
         <artifactId>simter-file-rest-webflux</artifactId>
         <version>${simter-file.version}</version>
       </dependency>
-      <dependency>
-        <groupId>tech.simter.file</groupId>
-        <artifactId>simter-file-starter</artifactId>
-        <version>${simter-file.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>flatten-maven-plugin</artifactId>
-        <inherited>true</inherited>
-        <executions>
-          <execution>
-            <!-- Flatten and simplify our own POM for install/deploy -->
-            <id>flatten</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>flatten</goal>
-            </goals>
-            <configuration>
-              <flattenMode>clean</flattenMode>
-              <pomElements>
-                <parent>resolve</parent>
-                <name>keep</name>
-                <description>keep</description>
-                <dependencyManagement>keep</dependencyManagement>
-                <dependencies>keep</dependencies>
-                <pluginManagement>keep</pluginManagement>
-                <developers>keep</developers>
-                <properties>interpolate</properties>
-                <profiles>remove</profiles>
-              </pomElements>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+  <url>https://github.com/simter/simter-file/tree/master/simter-file-bom</url>
+  <scm>
+    <url>https://github.com/simter/simter-file.git</url>
+  </scm>
+  <developers>
+    <developer>
+      <name>RJ.Hwang</name>
+      <email>rongjihuang@gmail.com</email>
+    </developer>
+  </developers>
 </project>
