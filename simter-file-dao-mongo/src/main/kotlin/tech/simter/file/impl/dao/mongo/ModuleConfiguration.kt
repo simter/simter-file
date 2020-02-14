@@ -1,4 +1,4 @@
-package tech.simter.file.impl.dao.reactive.mongo
+package tech.simter.file.impl.dao.mongo
 
 import org.springframework.boot.autoconfigure.domain.EntityScan
 import org.springframework.context.annotation.ComponentScan

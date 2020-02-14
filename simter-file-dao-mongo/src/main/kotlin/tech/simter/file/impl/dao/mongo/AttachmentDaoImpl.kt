@@ -1,4 +1,4 @@
-package tech.simter.file.impl.dao.reactive.mongo
+package tech.simter.file.impl.dao.mongo
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page

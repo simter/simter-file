@@ -1,4 +1,4 @@
-package tech.simter.file.impl.dao.reactive.mongo
+package tech.simter.file.impl.dao.mongo
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals

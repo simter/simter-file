@@ -1,4 +1,4 @@
-package tech.simter.file.impl.dao.reactive.mongo
+package tech.simter.file.impl.dao.mongo
 
 data class AttachmentUppersPath(private val id: String,
                                 private val aggregate: List<Path>) {

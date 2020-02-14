@@ -1,4 +1,4 @@
-package tech.simter.file.impl.dao.reactive.mongo
+package tech.simter.file.impl.dao.mongo
 
 import org.springframework.data.mongodb.core.ReactiveMongoOperations
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
