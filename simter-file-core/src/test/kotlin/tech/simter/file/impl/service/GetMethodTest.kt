@@ -15,7 +15,7 @@ import reactor.test.StepVerifier
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.impl.service.AttachmentServiceImpl.OperationType.Read
-import tech.simter.file.impl.service.TestUtils.randomAttachment
+import tech.simter.file.impl.service.TestHelper.randomAttachment
 import tech.simter.reactive.security.ReactiveSecurityService
 
 /**

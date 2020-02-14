@@ -6,7 +6,7 @@ import tech.simter.util.RandomUtils.randomInt
 import tech.simter.util.RandomUtils.randomString
 import java.time.OffsetDateTime
 
-object TestUtils {
+object TestHelper {
   fun randomAuthenticatedUser(
     id: Int = randomInt(),
     account: String = randomString(),

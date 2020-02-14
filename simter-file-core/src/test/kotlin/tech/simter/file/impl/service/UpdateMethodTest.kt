@@ -22,7 +22,7 @@ import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.AttachmentDto4Update
 import tech.simter.file.impl.service.AttachmentServiceImpl.OperationType.Update
-import tech.simter.file.impl.service.TestUtils.randomAuthenticatedUser
+import tech.simter.file.impl.service.TestHelper.randomAuthenticatedUser
 import tech.simter.reactive.security.ReactiveSecurityService
 import tech.simter.util.RandomUtils.randomString
 import java.io.File
