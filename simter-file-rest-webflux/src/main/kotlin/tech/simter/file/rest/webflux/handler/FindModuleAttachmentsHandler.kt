@@ -26,7 +26,7 @@ import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
  * GET {context-path}/parent/:puid/:upperId
  * ```
  *
- * Response:
+ * Response: (if found)
  *
  * ```
  * 200 OK
@@ -35,9 +35,16 @@ import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
  * [{id, path, name, type, size, createOn, creator, fileName, puid, upperId}, ...]
  * ```
  *
+ * Response: (if permission denied)
+ *
+ * ```
+ * 403 Forbidden
+ * ```
+ *
  * [More](https://github.com/simter/simter-file/wiki/Find-Module-Attachments)
  *
  * @author JW
+ * @author zh
  */
 @Component
 class FindModuleAttachmentsHandler @Autowired constructor(

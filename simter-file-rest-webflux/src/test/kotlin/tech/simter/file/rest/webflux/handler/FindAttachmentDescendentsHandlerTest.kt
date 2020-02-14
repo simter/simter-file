@@ -12,6 +12,7 @@ import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.rest.webflux.Utils.randomInt
 import tech.simter.file.rest.webflux.Utils.randomString
@@ -89,4 +90,13 @@ internal class FindAttachmentDescendentsHandlerTest @Autowired constructor(
     verify(service).findDescendents(id)
   }
 
+  @Test
+  fun `Failed by permission denied`() {
+    // mock
+    `when`(service.findDescendents(id)).thenReturn(Flux.error(PermissionDeniedException()))
+
+    // invoke and verify
+    client.get().uri(url).exchange().expectStatus().isForbidden
+    verify(service).findDescendents(id)
+  }
 }

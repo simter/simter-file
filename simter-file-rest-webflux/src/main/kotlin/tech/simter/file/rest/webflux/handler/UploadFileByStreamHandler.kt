@@ -1,8 +1,7 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus.CREATED
-import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.http.HttpStatus.*
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.stereotype.Component
 import org.springframework.util.FileCopyUtils
@@ -16,6 +15,7 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.po.Attachment
 import tech.simter.file.service.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
@@ -36,14 +36,21 @@ import java.util.*
  * {file-data}
  * ```
  *
- * Response:
+ * Response: (if created)
  *
  * ```
  * 201 Created
  * {id}
  * ```
  *
- * If not Found the upper
+ * Response: (if permission denied)
+ *
+ * ```
+ * 403 Forbidden
+ * ```
+ *
+ * Response: (if not found upper)
+ *
  * ```
  * 404 Not Found
  *
@@ -77,6 +84,10 @@ class UploadFileByStreamHandler @Autowired constructor(
       .onErrorResume(NotFoundException::class.java) {
         if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
         else status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+      }
+      .onErrorResume(PermissionDeniedException::class.java) {
+        if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
+        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
       }
   }
 

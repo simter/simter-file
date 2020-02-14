@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import java.util.*
 
 /**
  * The [Attachment] Dao Interface.
@@ -94,4 +95,12 @@ interface AttachmentDao {
    * @param[ids] the attachments id.
    */
   fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip>
+
+  /**
+   * Find and returns [Attachment]s distinct puid collection.
+   * If not found, return [Flux.empty]
+   *
+   * @param[ids] the attachments id.
+   */
+  fun findPuids(vararg ids: String): Flux<Optional<String>>
 }

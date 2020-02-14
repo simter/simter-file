@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.rest.webflux.handler.UploadFileByStreamHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.io.File
@@ -108,6 +109,36 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
       .syncBody(fileData)
       .exchange()
       .expectStatus().isNotFound
+
+    // verify
+    verify(service).uploadFile(argThat {
+      assertEquals(id, this.id)
+      assertEquals(upperId, this.upperId)
+      assertEquals(fileSize, this.size)
+      assertNull(this.puid)
+      true
+    }, any())
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val fileName = "logback-test.xml"
+    val file = ClassPathResource(fileName)
+    val fileData = file.file.readBytes()
+    val upperId = UUID.randomUUID().toString()
+    val id = UUID.randomUUID().toString()
+    val fileSize = file.contentLength()
+    `when`(service.uploadFile(any(), any())).thenReturn(Mono.error(PermissionDeniedException()))
+    doReturn(id).`when`(handler).newId()
+
+    // invoke request
+    client.post().uri("/?upper=$upperId&filename=$fileName")
+      .contentType(APPLICATION_OCTET_STREAM)
+      .contentLength(fileSize)
+      .syncBody(fileData)
+      .exchange()
+      .expectStatus().isForbidden
 
     // verify
     verify(service).uploadFile(argThat {

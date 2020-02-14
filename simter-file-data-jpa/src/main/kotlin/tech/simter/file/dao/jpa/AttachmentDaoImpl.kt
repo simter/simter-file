@@ -1,7 +1,6 @@
 package tech.simter.file.dao.jpa
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -16,6 +15,7 @@ import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.dto.AttachmentDtoWithUpper
 import tech.simter.file.po.Attachment
+import java.util.*
 import javax.persistence.EntityManager
 import javax.persistence.NoResultException
 import javax.persistence.PersistenceContext
@@ -30,10 +30,19 @@ import javax.persistence.Query
 @Component
 @Transactional
 class AttachmentDaoImpl @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
   @PersistenceContext private val em: EntityManager,
   private val repository: AttachmentJpaRepository
 ) : AttachmentDao {
+  @Suppress("UNCHECKED_CAST")
+  override fun findPuids(vararg ids: String): Flux<Optional<String>> {
+    if (ids.isEmpty()) return Flux.empty()
+    val sql = "select distinct a.puid from Attachment a where id in :ids"
+    val result = em.createQuery(sql)
+      .setParameter("ids", ids.toList())
+      .resultList as List<String?>
+    return result.map { Optional.ofNullable<String?>(it) }.toFlux()
+  }
+
   @Suppress("UNCHECKED_CAST")
   override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
     if (ids.isEmpty()) return Flux.empty()

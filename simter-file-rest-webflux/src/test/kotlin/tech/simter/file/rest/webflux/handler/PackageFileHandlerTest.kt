@@ -14,6 +14,8 @@ import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
+import tech.simter.exception.ForbiddenException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.rest.webflux.handler.PackageFileHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.util.*
@@ -68,6 +70,34 @@ internal class PackageFileHandlerTest @Autowired constructor(
     // invoke
     client.get().uri("/zip/$id?name=test")
       .exchange().expectStatus().isNotFound
+
+    // verify
+    verify(service).packageAttachments(any(), eq(id))
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.error(PermissionDeniedException()))
+
+    // invoke
+    client.get().uri("/zip/$id?name=test")
+      .exchange().expectStatus().isForbidden
+
+    // verify
+    verify(service).packageAttachments(any(), eq(id))
+  }
+
+  @Test
+  fun failedByAcrossModule() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.error(ForbiddenException()))
+
+    // invoke
+    client.get().uri("/zip/$id?name=test")
+      .exchange().expectStatus().isForbidden
 
     // verify
     verify(service).packageAttachments(any(), eq(id))

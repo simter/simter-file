@@ -13,6 +13,8 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
+import tech.simter.exception.ForbiddenException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.rest.webflux.handler.DeleteNumerousFilesHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
 import java.util.*
@@ -42,6 +44,32 @@ internal class DeleteNumerousFilesHandlerTest @Autowired constructor(
     client.method(DELETE).uri("/")
       .contentType(APPLICATION_JSON_UTF8).syncBody(ids)
       .exchange().expectStatus().isNoContent
+
+    // verify
+    Mockito.verify(service).delete(*ids)
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val ids = Array(4) { UUID.randomUUID().toString() }
+    `when`(service.delete(*ids)).thenReturn(Mono.error(PermissionDeniedException()))
+
+    // invoke
+    client.delete().uri("/${ids.joinToString(",")}").exchange().expectStatus().isForbidden
+
+    // verify
+    Mockito.verify(service).delete(*ids)
+  }
+
+  @Test
+  fun failedByAcrossModule() {
+    // mock
+    val ids = Array(4) { UUID.randomUUID().toString() }
+    `when`(service.delete(*ids)).thenReturn(Mono.error(ForbiddenException()))
+
+    // invoke
+    client.delete().uri("/${ids.joinToString(",")}").exchange().expectStatus().isForbidden
 
     // verify
     Mockito.verify(service).delete(*ids)

@@ -11,6 +11,7 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.po.Attachment
 import tech.simter.file.rest.webflux.handler.AttachmentFormHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
@@ -18,10 +19,11 @@ import java.time.OffsetDateTime
 import java.util.*
 
 /**
- * Test AttachmentFormHandler.
+ * Test [AttachmentFormHandler].
  *
  * @author JF
  * @author RJ
+ * @author zh
  */
 @SpringJUnitConfig(AttachmentFormHandler::class)
 @EnableWebFlux
@@ -60,6 +62,19 @@ internal class AttachmentFormHandlerTest @Autowired constructor(
 
     // invoke
     client.get().uri("/attachment/$id").exchange().expectStatus().isNotFound
+
+    // verify
+    verify(service).get(id)
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(service.get(id)).thenReturn(Mono.error(PermissionDeniedException()))
+
+    // invoke
+    client.get().uri("/attachment/$id").exchange().expectStatus().isForbidden
 
     // verify
     verify(service).get(id)

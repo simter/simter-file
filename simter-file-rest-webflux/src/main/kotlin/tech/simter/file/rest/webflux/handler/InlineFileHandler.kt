@@ -3,6 +3,7 @@ package tech.simter.file.rest.webflux.handler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
+import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.HandlerFunction
@@ -13,7 +14,9 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.*
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.service.AttachmentService
+import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 
 /**
  * The [HandlerFunction] for inline file.
@@ -35,6 +38,12 @@ import tech.simter.file.service.AttachmentService
  * :FILE-DATA
  * ```
  *
+ * Response: (if permission denied)
+ *
+ * ```
+ * 403 Forbidden
+ * ```
+ *
  * Response: (if not found)
  *
  * ```
@@ -44,6 +53,7 @@ import tech.simter.file.service.AttachmentService
  * [More](https://github.com/simter/simter-file/wiki/Watch-Attachment-Inline)
  *
  * @author JW
+ * @author zh
  */
 @Component
 class InlineFileHandler @Autowired constructor(
@@ -67,6 +77,10 @@ class InlineFileHandler @Autowired constructor(
       }
       // not found
       .switchIfEmpty(notFound().build())
+      .onErrorResume(PermissionDeniedException::class.java) {
+        if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
+        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+      }
   }
 
   companion object {

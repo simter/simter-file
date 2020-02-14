@@ -17,6 +17,7 @@ import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.po.Attachment
 import tech.simter.file.rest.webflux.handler.DownloadFileHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.service.AttachmentService
@@ -24,10 +25,11 @@ import java.time.OffsetDateTime
 import java.util.*
 
 /**
- * Test DownloadFileHandler.
+ * Test [DownloadFileHandler].
  *
  * @author JF
  * @author RJ
+ * @author zh
  */
 @SpringJUnitConfig(DownloadFileHandler::class)
 @EnableWebFlux
@@ -86,5 +88,18 @@ internal class DownloadFileHandlerTest @Autowired constructor(
     // verify
     verify(service).get(id)
     verify(service).getFullPath(id)
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val id = UUID.randomUUID().toString()
+    `when`(service.get(id)).thenReturn(Mono.error(PermissionDeniedException()))
+
+    // invoke
+    client.get().uri("/$id").exchange().expectStatus().isForbidden
+
+    // verify
+    verify(service).get(id)
   }
 }

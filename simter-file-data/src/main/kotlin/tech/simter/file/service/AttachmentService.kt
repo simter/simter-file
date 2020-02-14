@@ -4,7 +4,9 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto
 import tech.simter.file.dto.AttachmentDto4Update
 import tech.simter.file.dto.AttachmentDtoWithChildren
@@ -22,10 +24,11 @@ import java.io.OutputStream
  */
 interface AttachmentService {
   /**
-   *  Get an [Attachment] by its id.
+   * Get an [Attachment] by its id.
    *
-   *  @param[id] the id for matching.
-   *  @return [Mono] emitting the [Attachment] with the given id or [Mono.empty] if none found.
+   * @param[id] the id for matching.
+   * @return [Mono] emitting the [Attachment] with the given id or [Mono.empty] if none found.
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun get(id: String): Mono<Attachment>
 
@@ -33,7 +36,8 @@ interface AttachmentService {
    * Returns a [Page] of [Attachment]'s meeting the paging restriction provided in the [Pageable] object.
    *
    * @param[pageable] the pageable option
-   * @return [Mono] emitting a page of attachments contains data or a empty page without data if none found
+   * @return [Mono] emitting a page of attachments contains data or a empty page without data if none found.
+   *   If user don't have admin permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun find(pageable: Pageable): Mono<Page<Attachment>>
 
@@ -42,17 +46,18 @@ interface AttachmentService {
    *
    * @param[puid] the module identity
    * @param[upperId] the upperId from specify module
-   * @return [Flux] emitting attachments or a empty flux without data if none found
+   * @return [Flux] emitting attachments or a empty flux without data if none found.
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun find(puid: String, upperId: String?): Flux<Attachment>
 
   /**
    * Get ths full path of the specific attachment.
    *
-   * If the attachment is not exists, return [Mono.error] with [NotFoundException].
-   *
    * @param[id] the attachment's id
    * @return [Mono] the full path relative to `{file-root}` path
+   *   If the attachment is not exists, return [Mono.error] with [NotFoundException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun getFullPath(id: String): Mono<String>
 
@@ -61,7 +66,9 @@ interface AttachmentService {
    * If specify [Attachment] not exists then ignore and handle as success.
    *
    * @param[ids] the ids to delete
-   * @return [Mono] signaling when operation has completed
+   * @return [Mono] signaling when operation has completed.
+   *   If [Attachment] belong to different puid, return [Mono.error] with [ForbiddenException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun delete(vararg ids: String): Mono<Void>
 
@@ -70,7 +77,9 @@ interface AttachmentService {
    * If the attachment is not exists, return [Mono.error] with [NotFoundException].
    *
    * @param[id] The id of the attachment to be updated
-   * @return[Mono] signaling when operation has completed
+   * @return[Mono] signaling when operation has completed.
+   *   If modify the puid, return [Mono.error] with [ForbiddenException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun update(id: String, dto: AttachmentDto4Update): Mono<Void>
 
@@ -78,7 +87,8 @@ interface AttachmentService {
    * Recursively find all the children of the specific upper's [id].
    *
    * @return the children that include its children recursively.
-   *   If the upper has no children or the upper is not exists, return [Flux.empty]
+   *   If the upper has no children or the upper is not exists, return [Flux.empty].
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
 
@@ -86,6 +96,8 @@ interface AttachmentService {
    * Create one or more [Attachment]
    *
    * @return[Flux] emitting id of the newly created attachments.
+   *   If [Attachment] belong to different puid, return [Flux.error] with [ForbiddenException].
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun create(vararg attachments: Attachment): Flux<String>
 
@@ -109,38 +121,38 @@ interface AttachmentService {
    * @param[outputStream] zip file data output position.
    * @param[ids] the attachments id.
    * @return[Mono] default name of the zip file.
-   *   if attachments is not exists, return [Mono.empty]
-   *   if attachments don't have least-common-ancestors, the name is "root.zip";
-   *   if attachments have least-common-ancestors and it is file,
+   *   If attachments is not exists, return [Mono.empty].
+   *   If attachments don't have least-common-ancestors, the name is "root.zip";
+   *   If attachments have least-common-ancestors and it is file,
    *     the name is "{least-common-ancestors.name}.{least-common-ancestors.type}.zip";
-   *   if attachments have least-common-ancestors and it is folder,
+   *   If attachments have least-common-ancestors and it is folder,
    *     the name is "{least-common-ancestors.name}.zip".
+   *   If [Attachment] belong to different puid, return [Mono.error] with [ForbiddenException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun packageAttachments(outputStream: OutputStream, vararg ids: String): Mono<String>
 
   /**
    * create one file [attachment] and save physical file.
    *
-   * If upperId is not exists, return [Mono.error] with [NotFoundException].
-   * And if new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
-   *
    * @param[attachment] the new attachment.
    * @param[writer] a function of writes the file data to [File] and return an [Mono.empty]
-   *
    * @return[Mono] signaling when operation has completed.
+   *   If upper [Attachment] is not exists, return [Mono.error] with [NotFoundException].
+   *   If new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
+   *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
   fun uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>): Mono<Void>
 
   /**
    * save physical file and update the [AttachmentDto].
    *
-   * If [Attachment] is not exists, return [Mono.error] with [NotFoundException].
-   * And if new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
-   *
    * @param[dto] the [Attachment] will modify part of the value.
    * @param[fileData] the reupload file data.
-   *
    * @return[Mono] signaling when operation has completed.
+   *   If [Attachment] is not exists, return [Mono.error] with [NotFoundException].
+   *   If new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
+   *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
   fun reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void>
 }

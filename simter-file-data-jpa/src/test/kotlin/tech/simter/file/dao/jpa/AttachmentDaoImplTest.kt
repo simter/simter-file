@@ -507,6 +507,24 @@ class AttachmentDaoImplTest @Autowired constructor(
     }.verifyComplete()
   }
 
+  @Test
+  fun findPuids() {
+    // prepare data
+    val now = OffsetDateTime.now()
+    val pos = List(10) {
+      Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
+        123, now, "Simter", now, "Simter", puid = if (it < 2) null else "puid${it / 2}")
+    }
+      .apply { forEach { em.persist(it) } }
+    em.flush()
+    em.clear()
+
+    // invoke and verify
+    StepVerifier.create(dao.findPuids(*pos.map { it.id }.toTypedArray()).collectList())
+      .expectNext(pos.map { it.puid }.toSet().map { Optional.ofNullable(it) })
+      .verifyComplete()
+  }
+
   /** build test file method */
   private fun buildTestFiles(attachments: List<Attachment>) {
     attachments.forEach {

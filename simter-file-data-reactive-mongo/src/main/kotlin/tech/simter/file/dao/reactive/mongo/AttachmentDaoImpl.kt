@@ -1,7 +1,6 @@
 package tech.simter.file.dao.reactive.mongo
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -21,6 +20,8 @@ import tech.simter.file.dao.AttachmentDao
 import tech.simter.file.dto.AttachmentDto4Zip
 import tech.simter.file.dto.AttachmentDtoWithChildren
 import tech.simter.file.po.Attachment
+import java.util.*
+
 
 /**
  * The Reactive MongoDB implementation of [AttachmentDao].
@@ -30,10 +31,16 @@ import tech.simter.file.po.Attachment
  */
 @Component
 class AttachmentDaoImpl @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
   private val repository: AttachmentReactiveRepository,
   private val operations: ReactiveMongoOperations
 ) : AttachmentDao {
+  override fun findPuids(vararg ids: String): Flux<Optional<String>> {
+    val query = Query.query(Criteria.where("_id").`in`(*ids))
+      .also { it.fields().include("puid").exclude("_id") }
+    return operations.find(query, AttachmentPuid::class.java, operations.getCollectionName(Attachment::class.java))
+      .map { Optional.ofNullable(it.puid) }.distinct()
+  }
+
   override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
     return operations.aggregate(
       newAggregation(

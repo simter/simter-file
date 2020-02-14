@@ -13,6 +13,8 @@ import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
+import tech.simter.exception.ForbiddenException
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.dto.AttachmentDto4Create
 import tech.simter.file.rest.webflux.Utils.randomInt
 import tech.simter.file.rest.webflux.Utils.randomString
@@ -45,7 +47,7 @@ internal class CreateAttachmentsHandlerTest @Autowired constructor(
   }
 
   @Test
-  fun `create multiple`() {
+  fun createMultiple() {
     // mock
     val dtos = List(randomInt(1, 3)) { randomAttachmentDto4Create() }
     val ids = dtos.map { it.id!! }
@@ -61,6 +63,34 @@ internal class CreateAttachmentsHandlerTest @Autowired constructor(
           jsonPath("$[$index]").isEqualTo(id)
         }
       }
+
+    // verify
+    verify(service).create(anyVararg())
+  }
+
+  @Test
+  fun failedByPermissionDenied() {
+    // mock
+    val dtos = List(randomInt(1, 3)) { randomAttachmentDto4Create() }
+    `when`(service.create(anyVararg())).thenReturn(Flux.error(PermissionDeniedException()))
+
+    // invoke
+    client.post().uri("/attachment").contentType(APPLICATION_JSON_UTF8).syncBody(dtos.map { it.data })
+      .exchange().expectStatus().isForbidden
+
+    // verify
+    verify(service).create(anyVararg())
+  }
+
+  @Test
+  fun failedByAcrossModule() {
+    // mock
+    val dtos = List(randomInt(1, 3)) { randomAttachmentDto4Create() }
+    `when`(service.create(anyVararg())).thenReturn(Flux.error(ForbiddenException()))
+
+    // invoke
+    client.post().uri("/attachment").contentType(APPLICATION_JSON_UTF8).syncBody(dtos.map { it.data })
+      .exchange().expectStatus().isForbidden
 
     // verify
     verify(service).create(anyVararg())
