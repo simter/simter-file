@@ -51,6 +51,7 @@ import tech.simter.file.impl.domain.AttachmentUpdateInfoImpl
  * ```
  *
  * @author zh
+ * @author RJ
  */
 @Component
 class UpdateAttachmentHandler @Autowired constructor(

@@ -54,6 +54,7 @@ import tech.simter.file.core.AttachmentService
  *
  * @author JW
  * @author zh
+ * @author RJ
  */
 @Component
 class InlineFileHandler @Autowired constructor(

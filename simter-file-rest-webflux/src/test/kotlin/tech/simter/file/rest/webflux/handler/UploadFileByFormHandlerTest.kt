@@ -10,22 +10,20 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA
 import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
-import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
-import org.springframework.web.reactive.config.EnableWebFlux
-import org.springframework.web.reactive.function.server.RouterFunctions.route
+import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentService
-import tech.simter.file.rest.webflux.handler.UploadFileByFormHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.io.File
 import java.util.*
 
@@ -36,18 +34,16 @@ import java.util.*
  * @author RJ
  * @author zh
  */
-@SpringJUnitConfig(UploadFileByFormHandler::class)
-@EnableWebFlux
-@MockBean(AttachmentService::class)
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
 @SpyBean(UploadFileByFormHandler::class)
 @TestPropertySource(properties = ["simter.file.root=target/files"])
-internal class UploadFileByFormHandlerTest @Autowired constructor(
+class UploadFileByFormHandlerTest @Autowired constructor(
+  private val client: WebTestClient,
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String,
-  private val byFormHandler: UploadFileByFormHandler
+  private val handler: UploadFileByFormHandler
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, byFormHandler)).build()
-
   @AfterEach
   fun clean() {
     File(fileRootDir).deleteRecursively()
@@ -70,7 +66,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     }.build()
     beCreatedFile.parentFile.mkdirs()
     `when`(service.uploadFile(any(), any())).thenReturn(Mono.empty())
-    doReturn(id).`when`(byFormHandler).newId()
+    doReturn(id).`when`(handler).newId()
 
     // invoke request
     client.post().uri("/")
@@ -110,7 +106,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     }.build()
     beCreatedFile.parentFile.mkdirs()
     `when`(service.uploadFile(any(), any())).thenReturn(Mono.error(NotFoundException("not Found upper")))
-    doReturn(id).`when`(byFormHandler).newId()
+    doReturn(id).`when`(handler).newId()
 
     // invoke request
     client.post().uri("/")
@@ -145,7 +141,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     }.build()
     beCreatedFile.parentFile.mkdirs()
     `when`(service.uploadFile(any(), any())).thenReturn(Mono.error(PermissionDeniedException()))
-    doReturn(id).`when`(byFormHandler).newId()
+    doReturn(id).`when`(handler).newId()
 
     // invoke request
     client.post().uri("/")

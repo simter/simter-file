@@ -40,6 +40,7 @@ import tech.simter.file.core.AttachmentService
  * ```
  *
  * @author zh
+ * @author RJ
  */
 @Component
 class DeleteNumerousFilesHandler @Autowired constructor(

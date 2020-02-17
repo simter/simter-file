@@ -59,7 +59,7 @@ class AttachmentFormHandler @Autowired constructor(
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return attachmentService.get(request.pathVariable("id"))
       .flatMap { ok().contentType(APPLICATION_JSON).bodyValue(it) } // found
-      .switchIfEmpty(notFound().build())                                          // not found
+      .switchIfEmpty(notFound().build())                            // not found
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
         else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)

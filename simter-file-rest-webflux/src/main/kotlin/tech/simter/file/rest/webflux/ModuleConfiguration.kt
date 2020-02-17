@@ -8,11 +8,9 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.MediaType.TEXT_PLAIN
-import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
+import tech.simter.file.PACKAGE
 import tech.simter.file.rest.webflux.handler.*
-
-private const val MODULE = "tech.simter.file.rest.webflux"
 
 /**
  * All configuration for this module.
@@ -22,8 +20,8 @@ private const val MODULE = "tech.simter.file.rest.webflux"
  *
  * @author RJ
  */
-@Configuration("$MODULE.ModuleConfiguration")
-@ComponentScan(MODULE)
+@Configuration("$PACKAGE.rest.webflux.ModuleConfiguration")
+@ComponentScan
 class ModuleConfiguration @Autowired constructor(
   @Value("\${module.version.simter-file:UNKNOWN}") private val version: String,
   @Value("\${module.rest-context-path.simter-file:/file}") private val contextPath: String,
@@ -51,8 +49,8 @@ class ModuleConfiguration @Autowired constructor(
   }
 
   /** Register a `RouterFunction<ServerResponse>` with all routers for this module */
-  @Bean("$MODULE.Routes")
-  @ConditionalOnMissingBean(name = ["$MODULE.Routes"])
+  @Bean("$PACKAGE.rest.webflux.Routes")
+  @ConditionalOnMissingBean(name = ["$PACKAGE.rest.webflux.Routes"])
   fun fileRoutes() = router {
     contextPath.nest {
       // POST /
@@ -65,7 +63,7 @@ class ModuleConfiguration @Autowired constructor(
       AttachmentViewHandler.REQUEST_PREDICATE.invoke(attachmentViewHandler::handle)
       // GET /attachment/{id}
       AttachmentFormHandler.REQUEST_PREDICATE.invoke(attachmentFormHandler::handle)
-      // GET /attachment/{id}/descendent
+      // GET /attachment/{id}/descendant
       FindAttachmentDescendantsHandler.REQUEST_PREDICATE.invoke(findAttachmentDescendantsHandler::handle)
       // GET /zip/{id}?name=:name
       PackageFileHandler.REQUEST_PREDICATE.invoke(packageFileHandler::handle)
@@ -86,9 +84,7 @@ class ModuleConfiguration @Autowired constructor(
       // DELETE
       DeleteNumerousFilesHandler.REQUEST_PREDICATE.invoke(deleteNumerousFilesHandler::handle)
       // GET /
-      GET("/", { ok().contentType(TEXT_PLAIN).syncBody("simter-file-$version") })
-      // OPTIONS /*
-      OPTIONS("/**", { ServerResponse.noContent().build() })
+      GET("/") { ok().contentType(TEXT_PLAIN).bodyValue("simter-file-$version") }
     }
   }
 }

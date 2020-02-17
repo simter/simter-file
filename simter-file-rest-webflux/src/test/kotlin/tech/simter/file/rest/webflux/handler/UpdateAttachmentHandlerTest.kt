@@ -4,12 +4,10 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
-import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
-import org.springframework.web.reactive.config.EnableWebFlux
-import org.springframework.web.reactive.function.server.RouterFunctions.route
+import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
@@ -18,22 +16,21 @@ import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.AttachmentUpdateInfo
 import tech.simter.file.impl.domain.AttachmentUpdateInfoImpl
 import tech.simter.file.rest.webflux.TestHelper.randomString
-import tech.simter.file.rest.webflux.handler.UpdateAttachmentHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.util.*
 
 /**
  * Test [UpdateAttachmentHandler].
  *
  * @author zh
+ * @author RJ
  */
-@SpringJUnitConfig(UpdateAttachmentHandler::class)
-@EnableWebFlux
-@MockBean(AttachmentService::class)
-internal class UpdateAttachmentHandlerTest @Autowired constructor(
-  private val service: AttachmentService,
-  handler: UpdateAttachmentHandler
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
+class UpdateAttachmentHandlerTest @Autowired constructor(
+  private val client: WebTestClient,
+  private val service: AttachmentService
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
   private val id = UUID.randomUUID().toString()
   private val url = "/attachment/$id"
 

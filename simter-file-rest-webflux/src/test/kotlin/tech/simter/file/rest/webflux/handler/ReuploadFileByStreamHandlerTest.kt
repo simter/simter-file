@@ -5,37 +5,31 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
-import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
-import org.springframework.web.reactive.config.EnableWebFlux
-import org.springframework.web.reactive.function.server.RouterFunctions.route
+import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.AttachmentDto
-import tech.simter.file.rest.webflux.handler.ReuploadFileByStreamHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.util.*
 
 /**
  * Test [ReuploadFileByStreamHandler].
  *
  * @author zh
+ * @author RJ
  */
-@SpringJUnitConfig(ReuploadFileByStreamHandler::class)
-@EnableWebFlux
-@MockBean(AttachmentService::class)
-@SpyBean(ReuploadFileByStreamHandler::class)
-internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
-  private val service: AttachmentService,
-  handler: ReuploadFileByStreamHandler
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
+class ReuploadFileByStreamHandlerTest @Autowired constructor(
+  private val client: WebTestClient,
+  private val service: AttachmentService
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
-
   @Test
   fun `Reupload by no file name`() {
     // mock

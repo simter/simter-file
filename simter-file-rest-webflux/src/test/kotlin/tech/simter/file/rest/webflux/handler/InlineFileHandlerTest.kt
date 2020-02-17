@@ -7,21 +7,19 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.MediaType
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
-import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
-import org.springframework.web.reactive.config.EnableWebFlux
-import org.springframework.web.reactive.function.server.RouterFunctions.route
+import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.impl.domain.AttachmentImpl
-import tech.simter.file.rest.webflux.handler.InlineFileHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -30,18 +28,16 @@ import java.util.*
  *
  * @author JW
  * @author zh
+ * @author RJ
  */
-@SpringJUnitConfig(InlineFileHandler::class)
-@EnableWebFlux
-@MockBean(AttachmentService::class)
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
 @TestPropertySource(properties = ["simter.file.root=src/test"])
-internal class InlineFileHandlerTest @Autowired constructor(
+class InlineFileHandlerTest @Autowired constructor(
+  private val client: WebTestClient,
   private val service: AttachmentService,
-  @Value("\${simter.file.root}") private val fileRootDir: String,
-  handler: InlineFileHandler
+  @Value("\${simter.file.root}") private val fileRootDir: String
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
-
   @Test
   fun found() {
     // mock service return value

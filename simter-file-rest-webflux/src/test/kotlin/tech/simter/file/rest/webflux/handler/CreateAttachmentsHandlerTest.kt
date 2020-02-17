@@ -5,13 +5,10 @@ import com.nhaarman.mockitokotlin2.verify
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
-import org.springframework.web.reactive.config.EnableWebFlux
-import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Flux
 import reactor.kotlin.core.publisher.toFlux
 import tech.simter.exception.ForbiddenException
@@ -21,7 +18,7 @@ import tech.simter.file.core.domain.AttachmentCreateInfo
 import tech.simter.file.impl.domain.AttachmentCreateInfoImpl
 import tech.simter.file.rest.webflux.TestHelper.randomInt
 import tech.simter.file.rest.webflux.TestHelper.randomString
-import tech.simter.file.rest.webflux.handler.CreateAttachmentsHandler.Companion.REQUEST_PREDICATE
+import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.util.*
 
 /**
@@ -29,15 +26,12 @@ import java.util.*
  *
  * @author zh
  */
-@SpringJUnitConfig(CreateAttachmentsHandler::class)
-@EnableWebFlux
-@MockBean(AttachmentService::class)
-internal class CreateAttachmentsHandlerTest @Autowired constructor(
-  private val service: AttachmentService,
-  handler: CreateAttachmentsHandler
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
+class CreateAttachmentsHandlerTest @Autowired constructor(
+  private val client: WebTestClient,
+  private val service: AttachmentService
 ) {
-  private val client: WebTestClient = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
-
   private fun randomAttachmentDto4Create(): AttachmentCreateInfo {
     return AttachmentCreateInfoImpl(
       id = UUID.randomUUID().toString(),

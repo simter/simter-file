@@ -43,6 +43,7 @@ import tech.simter.file.core.AttachmentService
  * ```
  *
  * @author zh
+ * @author RJ
  */
 @Component
 class FindAttachmentDescendantsHandler @Autowired constructor(

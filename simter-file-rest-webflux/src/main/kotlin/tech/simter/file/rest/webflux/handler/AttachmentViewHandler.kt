@@ -48,6 +48,7 @@ import tech.simter.file.core.domain.Attachment
  *
  * @author JF
  * @author zh
+ * @author RJ
  */
 @Component
 class AttachmentViewHandler @Autowired constructor(

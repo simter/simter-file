@@ -62,6 +62,7 @@ import java.util.*
  *
  * @author JW
  * @author zh
+ * @author RJ
  */
 @Component
 class UploadFileByStreamHandler @Autowired constructor(
