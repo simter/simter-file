@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.repository.support.SimpleReactiveMongoRe
 import org.springframework.data.repository.query.ReactiveQueryByExampleExecutor
 import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import org.springframework.data.repository.reactive.ReactiveSortingRepository
-import tech.simter.file.core.domain.Attachment
+import tech.simter.file.impl.dao.mongo.po.AttachmentPo
 
 /**
  * See interfaces [ReactiveSortingRepository], [ReactiveQueryByExampleExecutor], [ReactiveCrudRepository], [ReactiveMongoOperations].
@@ -15,4 +15,4 @@ import tech.simter.file.core.domain.Attachment
  *
  * @author RJ
  */
-interface AttachmentReactiveRepository : ReactiveCrudRepository<Attachment, String>
+interface AttachmentReactiveRepository : ReactiveCrudRepository<AttachmentPo, String>

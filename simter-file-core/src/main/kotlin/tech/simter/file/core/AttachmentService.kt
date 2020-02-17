@@ -7,10 +7,10 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.AttachmentDto
-import tech.simter.file.core.domain.AttachmentDto4Update
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.domain.AttachmentDto
+import tech.simter.file.core.domain.AttachmentUpdateInfo
+import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import java.io.File
 import java.io.OutputStream
 
@@ -73,7 +73,7 @@ interface AttachmentService {
   fun delete(vararg ids: String): Mono<Void>
 
   /**
-   * Update part of [AttachmentDto4Update] field in [Attachment] by id.
+   * Update part of [AttachmentUpdateInfo] field in [Attachment] by id.
    * If the attachment is not exists, return [Mono.error] with [NotFoundException].
    *
    * @param[id] The id of the attachment to be updated
@@ -81,7 +81,7 @@ interface AttachmentService {
    *   If modify the puid, return [Mono.error] with [ForbiddenException].
    *   If user don't have permission, return [Mono.error] with [PermissionDeniedException].
    */
-  fun update(id: String, dto: AttachmentDto4Update): Mono<Void>
+  fun update(id: String, dto: AttachmentUpdateInfo): Mono<Void>
 
   /**
    * Recursively find all the children of the specific upper's [id].
@@ -90,7 +90,7 @@ interface AttachmentService {
    *   If the upper has no children or the upper is not exists, return [Flux.empty].
    *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
-  fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
+  fun findDescendants(id: String): Flux<AttachmentDtoWithChildren>
 
   /**
    * Create one or more [Attachment]

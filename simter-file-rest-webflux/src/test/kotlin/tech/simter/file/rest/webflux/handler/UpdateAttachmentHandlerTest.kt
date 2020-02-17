@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.AttachmentDto4Update
+import tech.simter.file.core.domain.AttachmentUpdateInfo
 import tech.simter.file.rest.webflux.TestHelper.randomString
 import tech.simter.file.rest.webflux.handler.UpdateAttachmentHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
@@ -36,8 +36,8 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
   private val id = UUID.randomUUID().toString()
   private val url = "/attachment/$id"
 
-  private fun randomAttachmentDto4Update(): AttachmentDto4Update {
-    return AttachmentDto4Update().apply {
+  private fun randomAttachmentDto4Update(): AttachmentUpdateInfo {
+    return AttachmentUpdateInfo().apply {
       name = randomString("name")
       upperId = UUID.randomUUID().toString()
       puid = randomString("puid")

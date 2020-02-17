@@ -1,53 +1,72 @@
 package tech.simter.file.core.domain
 
-import com.fasterxml.jackson.annotation.JsonIgnore
-import org.springframework.data.mongodb.core.mapping.Document
 import java.time.OffsetDateTime
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.Table
-import javax.persistence.UniqueConstraint
 
 /**
- * The meta information of the upload file.
+ * The physical file information.
+ *
  * @author RJ
  * @author JF
  */
-@Entity
-@Table(name = "st_attachment", uniqueConstraints = [UniqueConstraint(columnNames = ["path", "upperId"])])
-@Document(collection = "st_attachment")
-data class Attachment(
-  /** UUID */
-  @javax.persistence.Id
-  @org.springframework.data.annotation.Id
-  @Column(nullable = false, length = 36)
-  val id: String,
-  /** The relative path that store the actual physical file */
-  @Column(nullable = false) val path: String,
-  /** File name without extension */
-  @Column(nullable = false) val name: String,
-  /** If it is a file, the type is file extension without dot symbol.
-   *  and if it is a folder, the type is ":d".
-   */
-  @Column(nullable = false, length = 10) val type: String,
-  /** The byte unit file length */
-  @Column(nullable = false) val size: Long,
-  /** Created time */
-  @Column(nullable = false) val createOn: OffsetDateTime,
-  /** The account do the created */
-  @Column(nullable = false) val creator: String,
-  /** Last modify time */
-  @Column(nullable = false) val modifyOn: OffsetDateTime,
-  /** The account do the last modify */
-  @Column(nullable = false) val modifier: String,
-  /** The unique id of the parent module */
-  @Column(nullable = true, length = 36) val puid: String? = null,
-  /** The upperId of the parent module */
-  @Column(nullable = true, length = 36) val upperId: String? = null) {
+interface Attachment :
+  AttachmentIdentityProperties,
+  AttachmentRequiredProperties,
+  AttachmentStoreProperties,
+  AttachmentLinkProperties,
+  AttachmentCreationProperties,
+  AttachmentModificationProperties,
+  AttachmentRedundancyProperties {
+  override val fileName: String
+    get() = "$name${if (type == ":d") "" else ".$type"}"
+}
 
-  /** File name with extension */
-  @JsonIgnore
-  @javax.persistence.Transient
-  @org.springframework.data.annotation.Transient
-  val fileName = "$name${if (type == ":d") "" else ".$type"}"
+interface AttachmentIdentityProperties {
+  val id: String
+}
+
+interface AttachmentRequiredProperties {
+  /** File name without extension */
+  val name: String
+  /**
+   * If it is a file, the type is file extension without dot symbol.
+   * and if it is a folder, the type is ":d".
+   */
+  val type: String
+  /** The byte unit file size */
+  val size: Long
+}
+
+interface AttachmentStoreProperties {
+  /** The relative path that store the actual physical file */
+  val path: String
+}
+
+interface AttachmentLinkProperties {
+  /** The unique id of the parent module */
+  val puid: String?
+  /** The upperId of the parent module */
+  val upperId: String?
+}
+
+interface AttachmentCreationProperties {
+  /** The created datetime */
+  val createOn: OffsetDateTime
+  /** The creator */
+  val creator: String
+}
+
+interface AttachmentModificationProperties {
+  /** The last modify datetime */
+  val modifyOn: OffsetDateTime
+  /** The last modifier */
+  val modifier: String
+}
+
+interface AttachmentRedundancyProperties {
+  /**
+   * The file name with extension.
+   *
+   * If it's a directory, return "".
+   */
+  val fileName: String
 }

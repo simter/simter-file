@@ -1,43 +1,38 @@
 package tech.simter.file.impl.service
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argThat
-import com.nhaarman.mockito_kotlin.eq
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.core.io.ClassPathResource
-import org.springframework.test.context.TestPropertySource
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
-import reactor.test.StepVerifier
+import reactor.kotlin.core.publisher.toMono
+import reactor.kotlin.test.test
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentDao
+import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.AttachmentDto
+import tech.simter.file.impl.TestHelper.randomAuthenticatedUser
+import tech.simter.file.impl.UnitTestConfiguration
 import tech.simter.file.impl.service.AttachmentServiceImpl.OperationType.Update
-import tech.simter.file.impl.service.TestHelper.randomAuthenticatedUser
 import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.File
 import java.time.OffsetDateTime
 import java.util.*
-import kotlin.test.assertTrue
 
 /**
  * Test [AttachmentService.reuploadFile]
  *
  * @author zh
+ * @author RJ
  */
-@SpringBootTest(classes = [AttachmentServiceImpl::class, ModuleConfiguration::class])
-@MockBean(AttachmentDao::class, ReactiveSecurityService::class)
-@SpyBean(AttachmentServiceImpl::class)
-@TestPropertySource(properties = ["simter.file.root=target/files"])
+@SpringBootTest(classes = [UnitTestConfiguration::class])
 class ReuploadFileMethodTest @Autowired constructor(
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val dao: AttachmentDao,
@@ -63,35 +58,37 @@ class ReuploadFileMethodTest @Autowired constructor(
     val fileDate = file.file.readBytes()
     val attachment = randomAttachment(size = fileDate.size.toLong())
     val user = randomAuthenticatedUser()
-    `when`(dao.findPuids(attachment.id!!)).thenReturn(Flux.just(Optional.ofNullable<String>(null)))
-    doReturn(Mono.empty<Void>()).`when`(service).verifyAuthorize(null, Update)
-    `when`(dao.getFullPath(attachment.id!!)).thenReturn("test.xml".toMono())
-    `when`(dao.update(eq(attachment.id!!), any())).thenReturn(Mono.empty())
-    `when`(securityService.getAuthenticatedUser()).thenReturn(Optional.of(user).toMono())
+    every { dao.findPuids(attachment.id!!) } returns Flux.just(Optional.ofNullable<String>(null))
+    every { service.verifyAuthorize(null, Update) } returns Mono.empty()
+    every { dao.getFullPath(attachment.id!!) } returns "test.xml".toMono()
+    every { dao.update(eq(attachment.id!!), any()) } returns Mono.empty()
+    every { securityService.getAuthenticatedUser() } returns Optional.of(user).toMono()
 
     // invoke
     val actual = service.reuploadFile(attachment, fileDate)
 
     // 1. verify service.save method invoked
-    StepVerifier.create(actual).verifyComplete()
-    verify(dao).findPuids(attachment.id!!)
-    verify(dao).getFullPath(attachment.id!!)
-    verify(dao).update(eq(attachment.id!!), argThat {
-      val data = attachment.data
-      this.map {
-        val key = it.key
-        val value = it.value
-        when {
-          data.containsKey(key) -> data[key] == value
-          key == "modifier" -> user.name == value
-          key == "modifyOn" -> !OffsetDateTime.now().isAfter(value as OffsetDateTime)
-          key == "id" -> true
-          else -> false
-        }
-      }.any()
-    })
-    verify(securityService).getAuthenticatedUser()
-    verify(service).verifyAuthorize(null, Update)
+    actual.test().verifyComplete()
+    verify {
+      dao.findPuids(attachment.id!!)
+      dao.getFullPath(attachment.id!!)
+      dao.update(eq(attachment.id!!), match { m ->
+        val data = attachment.data
+        m.map {
+          val key = it.key
+          val value = it.value
+          when {
+            data.containsKey(key) -> data[key] == value
+            key == "modifier" -> user.name == value
+            key == "modifyOn" -> !OffsetDateTime.now().isAfter(value as OffsetDateTime)
+            key == "id" -> true
+            else -> false
+          }
+        }.any()
+      })
+      securityService.getAuthenticatedUser()
+      service.verifyAuthorize(null, Update)
+    }
 
     // 2. verify the saved file exists
     val testFile = File("$fileRootDir/test.xml")
@@ -102,29 +99,31 @@ class ReuploadFileMethodTest @Autowired constructor(
   fun failedByPermissionDenied() {
     // mock
     val attachment = randomAttachment()
-    `when`(dao.findPuids(attachment.id!!)).thenReturn(Flux.just(Optional.ofNullable<String>(null)))
-    doReturn(Mono.error<Void>(PermissionDeniedException())).`when`(service).verifyAuthorize(null, Update)
+    every { dao.findPuids(attachment.id!!) } returns Flux.just(Optional.ofNullable<String>(null))
+    every { service.verifyAuthorize(null, Update) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     val actual = service.reuploadFile(attachment, byteArrayOf())
 
     // verify
-    StepVerifier.create(actual).verifyError(PermissionDeniedException::class.java)
-    verify(dao).findPuids(attachment.id!!)
-    verify(service).verifyAuthorize(null, Update)
+    actual.test().verifyError(PermissionDeniedException::class.java)
+    verify {
+      dao.findPuids(attachment.id!!)
+      service.verifyAuthorize(null, Update)
+    }
   }
 
   @Test
   fun failedByNotFound() {
     // mock
     val attachment = randomAttachment()
-    `when`(dao.findPuids(attachment.id!!)).thenReturn(Flux.empty())
+    every { dao.findPuids(attachment.id!!) } returns Flux.empty()
 
     // invoke
     val actual = service.reuploadFile(attachment, byteArrayOf())
 
     // verify
-    StepVerifier.create(actual).verifyError(NotFoundException::class.java)
-    verify(dao).findPuids(attachment.id!!)
+    actual.test().verifyError(NotFoundException::class.java)
+    verify { dao.findPuids(attachment.id!!) }
   }
 }

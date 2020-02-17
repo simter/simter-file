@@ -12,7 +12,7 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.AttachmentDto4Create
+import tech.simter.file.core.domain.AttachmentCreateInfo
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
@@ -61,7 +61,7 @@ class CreateAttachmentsHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    return request.bodyToFlux<AttachmentDto4Create>().map { toAttachment(it) }
+    return request.bodyToFlux<AttachmentCreateInfo>().map { toAttachment(it) }
       .collectList().map { it.toTypedArray() }
       .flatMap { attachmentService.create(*it).collectList() }
       .flatMap { status(CREATED).contentType(APPLICATION_JSON_UTF8).syncBody(it) }
@@ -75,7 +75,7 @@ class CreateAttachmentsHandler @Autowired constructor(
       }
   }
 
-  fun toAttachment(dto: AttachmentDto4Create): Attachment {
+  fun toAttachment(dto: AttachmentCreateInfo): Attachment {
     val id = dto.id ?: UUID.randomUUID().toString()
     val now = OffsetDateTime.now()
     return Attachment(id = id, path = dto.path

@@ -1,7 +1,6 @@
 package tech.simter.file.core.domain
 
-import tech.simter.file.core.domain.DynamicBean
-import tech.simter.file.core.domain.Attachment
+import tech.simter.kotlin.beans.AbstractDynamicBean
 import javax.persistence.Entity
 import javax.persistence.Id
 
@@ -11,7 +10,7 @@ import javax.persistence.Id
  * @author zh
  * */
 @Entity
-class AttachmentDto4FullPath : DynamicBean() {
+class AttachmentDto4FullPath : AbstractDynamicBean() {
   @get:Id
   var id: String? by holder
   var fullPath: String? by holder

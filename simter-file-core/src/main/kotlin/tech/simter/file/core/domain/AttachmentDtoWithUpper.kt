@@ -1,8 +1,6 @@
 package tech.simter.file.core.domain
 
 import org.springframework.data.annotation.AccessType
-import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto
 import javax.persistence.Entity
 
 /**

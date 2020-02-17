@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.AttachmentDto4Update
+import tech.simter.file.core.domain.AttachmentUpdateInfo
 import tech.simter.file.core.AttachmentService
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 
@@ -57,7 +57,7 @@ class UpdateAttachmentHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    return request.bodyToMono<AttachmentDto4Update>()
+    return request.bodyToMono<AttachmentUpdateInfo>()
       .flatMap { attachmentService.update(request.pathVariable("id"), it) }
       .then(noContent().build())
       .onErrorResume(NotFoundException::class.java) {

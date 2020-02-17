@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.core.domain.AttachmentDto4Update
+import tech.simter.file.core.domain.AttachmentUpdateInfo
 import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.core.domain.Attachment
@@ -221,7 +221,7 @@ class AttachmentDaoImplTest @Autowired constructor(
   @Test
   fun updateByNone() {
     // prepare data
-    val dto = AttachmentDto4Update().apply {
+    val dto = AttachmentUpdateInfo().apply {
       name = "newName"
       path = "/new-data"
     }
@@ -293,7 +293,7 @@ class AttachmentDaoImplTest @Autowired constructor(
     val po = Attachment(UUID.randomUUID().toString(), "/data1", "Sample1", "png",
       123, now, "Simter", now, "Simter")
     StepVerifier.create(operations.insert(po)).expectNextCount(1).verifyComplete()
-    val dto = AttachmentDto4Update().apply {
+    val dto = AttachmentUpdateInfo().apply {
       name = "newName"
       path = "/new-data"
       upperId = null

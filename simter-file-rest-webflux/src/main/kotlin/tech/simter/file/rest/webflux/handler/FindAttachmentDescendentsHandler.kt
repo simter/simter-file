@@ -49,7 +49,7 @@ class FindAttachmentDescendentsHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    return attachmentService.findDescendents(request.pathVariable("id")).collectList()
+    return attachmentService.findDescendants(request.pathVariable("id")).collectList()
       .flatMap { ok().contentType(APPLICATION_JSON_UTF8).syncBody(it) }
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()

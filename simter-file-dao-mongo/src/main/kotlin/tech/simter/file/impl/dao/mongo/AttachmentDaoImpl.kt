@@ -12,16 +12,16 @@ import org.springframework.data.mongodb.core.query.Query
 import org.springframework.data.mongodb.core.query.Update
 import org.springframework.data.mongodb.core.remove
 import org.springframework.data.mongodb.core.updateMulti
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
+import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
-import tech.simter.file.core.domain.Attachment
+import tech.simter.file.impl.dao.mongo.po.AttachmentPo
 import java.util.*
-
 
 /**
  * The Reactive MongoDB implementation of [AttachmentDao].
@@ -29,7 +29,7 @@ import java.util.*
  * @author RJ
  * @author zh
  */
-@Component
+@Repository
 class AttachmentDaoImpl @Autowired constructor(
   private val repository: AttachmentReactiveRepository,
   private val operations: ReactiveMongoOperations
@@ -63,16 +63,11 @@ class AttachmentDaoImpl @Autowired constructor(
   @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
   override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
     return if (data.isEmpty()) Mono.empty()
-    else operations.updateMulti(
+    else operations.updateMulti<AttachmentPo>(
       // Filter out the specified Attachment
       Query.query(Criteria.where("id").`is`(id)),
       // Set update fields
-      Update().also { update ->
-        data.forEach { k, v ->
-          update.set(k, v)
-        }
-      },
-      Attachment::class
+      Update().also { update -> data.forEach { (k, v) -> update.set(k, v) } }
     ).flatMap {
       if (it.matchedCount > 0) Mono.empty<Void>()
       else Mono.error(NotFoundException())
@@ -110,29 +105,32 @@ class AttachmentDaoImpl @Autowired constructor(
       .singleOrEmpty().map(AttachmentUppersPath::fullPath)
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun get(id: String): Mono<Attachment> {
-    return repository.findById(id)
+    return repository.findById(id) as Mono<Attachment>
   }
 
   override fun find(pageable: Pageable): Mono<Page<Attachment>> {
     val query = Query().with(pageable)
     val zip: Mono<Page<Attachment>> = Mono.zip(
       operations.find(query, Attachment::class.java).collectList(),
-      operations.count(query, Attachment::class.java),
-      { content, total -> PageImpl(content, pageable, total) }
-    )
+      operations.count(query, Attachment::class.java)
+    ) { content, total -> PageImpl(content, pageable, total) }
     return zip.defaultIfEmpty(Page.empty<Attachment>(pageable))
   }
 
   override fun find(puid: String, upperId: String?): Flux<Attachment> {
     val condition = Criteria.where("puid").`is`(puid)
     if (null != upperId) condition.and("upperId").`is`(upperId)
-    return operations.find(Query.query(condition).with(Sort(Sort.Direction.DESC, "createOn")), Attachment::class.java)
+    return operations.find(
+      Query.query(condition).with(Sort.by(Sort.Direction.DESC, "createOn")),
+      Attachment::class.java
+    )
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {
     return if (attachments.isEmpty()) Mono.empty()
-    else repository.saveAll(attachments.asIterable()).then()
+    else repository.saveAll(attachments.asIterable().map { AttachmentPo.from(it) }).then()
   }
 
   override fun delete(vararg ids: String): Flux<String> {
@@ -168,9 +166,8 @@ class AttachmentDaoImpl @Autowired constructor(
               .map(AttachmentDescendentsId::descendents).flatMapIterable { it }.collectList()
               // 2.2. Delete attachments and theirs descendants
               .flatMap {
-                operations.remove(
-                  Query.query(Criteria.where("id").`in`(*it.toSet().toTypedArray())),
-                  Attachment::class
+                operations.remove<AttachmentPo>(
+                  Query.query(Criteria.where("id").`in`(*it.toSet().toTypedArray()))
                 )
               }
         }.flatMapIterable { it }

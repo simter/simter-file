@@ -1,11 +1,11 @@
 package tech.simter.file.core.domain
 
-import tech.simter.file.core.domain.DynamicBean
+import tech.simter.kotlin.beans.AbstractDynamicBean
 import javax.persistence.Entity
 import javax.persistence.Id
 
 @Entity
-class AttachmentDto4Zip : DynamicBean() {
+class AttachmentDto4Zip : AbstractDynamicBean() {
   /**
    * the origin is nullable, so cannot set terminus and origin to joint the primary key
    * if origin is null, id = "null-$terminus"

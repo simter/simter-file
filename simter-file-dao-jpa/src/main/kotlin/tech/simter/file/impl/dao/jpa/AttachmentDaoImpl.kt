@@ -3,18 +3,15 @@ package tech.simter.file.impl.dao.jpa
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toFlux
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.core.domain.AttachmentDto4FullPath
-import tech.simter.file.core.domain.AttachmentDto4Zip
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
-import tech.simter.file.core.domain.AttachmentDtoWithUpper
-import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.domain.*
+import tech.simter.file.impl.dao.jpa.po.AttachmentPo
 import java.util.*
 import javax.persistence.EntityManager
 import javax.persistence.NoResultException
@@ -27,7 +24,7 @@ import javax.persistence.Query
  * @author RJ
  * @author zh
  */
-@Component
+@Repository
 @Transactional
 class AttachmentDaoImpl @Autowired constructor(
   @PersistenceContext private val em: EntityManager,
@@ -119,7 +116,7 @@ class AttachmentDaoImpl @Autowired constructor(
     } else {
       val result = em
         .createQuery("update Attachment set ${data.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
-        .apply { data.forEach { key, value -> setParameter(key, value) } }
+        .apply { data.forEach { (key, value) -> setParameter(key, value) } }
         .setParameter("id", id)
         .executeUpdate()
       em.clear()
@@ -173,8 +170,9 @@ class AttachmentDaoImpl @Autowired constructor(
     return Mono.justOrEmpty(repository.findById(id))
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun find(pageable: Pageable): Mono<Page<Attachment>> {
-    return Mono.justOrEmpty(repository.findAll(pageable))
+    return Mono.justOrEmpty(repository.findAll(pageable) as Page<Attachment>)
   }
 
   @Suppress("UNCHECKED_CAST")
@@ -191,7 +189,7 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {
-    repository.saveAll(attachments.asIterable())
+    repository.saveAll(attachments.asIterable().map { AttachmentPo.from(it) })
     return Mono.empty()
   }
 

@@ -15,7 +15,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.AttachmentDto4Create
+import tech.simter.file.core.domain.AttachmentCreateInfo
 import tech.simter.file.rest.webflux.TestHelper.randomInt
 import tech.simter.file.rest.webflux.TestHelper.randomString
 import tech.simter.file.rest.webflux.handler.CreateAttachmentsHandler.Companion.REQUEST_PREDICATE
@@ -36,8 +36,8 @@ internal class CreateAttachmentsHandlerTest @Autowired constructor(
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
 
-  private fun randomAttachmentDto4Create(): AttachmentDto4Create {
-    return AttachmentDto4Create().apply {
+  private fun randomAttachmentDto4Create(): AttachmentCreateInfo {
+    return AttachmentCreateInfo().apply {
       id = UUID.randomUUID().toString()
       name = randomString("name")
       upperId = UUID.randomUUID().toString()

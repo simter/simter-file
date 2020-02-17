@@ -1,7 +1,7 @@
 package tech.simter.file.core.domain
 
 /**
- * The dto of the [Attachment] basic information plus descendents information
+ * The dto of the [Attachment] basic information plus descendants information
  *
  * @author zh
  * */
@@ -29,18 +29,18 @@ class AttachmentDtoWithChildren : AttachmentDto() {
   }
 
   fun generateChildren(children: List<AttachmentDtoWithUpper>): AttachmentDtoWithChildren {
-    var descendents = children
+    var descendants = children
     this.children = listOf()
     val queue = mutableListOf(this)
     while (queue.isNotEmpty()) {
       val top = queue.removeAt(0)
-      descendents.groupBy { if (top.id == it.upperId) "children" else "other" }
+      descendants.groupBy { if (top.id == it.upperId) "children" else "other" }
         .also {
-          descendents = it["other"] ?: listOf()
-          (it["children"] ?: listOf()).map { AttachmentDtoWithChildren().copy(it) }
-            .also {
-              top.children = it
-              queue.addAll(it)
+          descendants = it["other"] ?: listOf()
+          (it["children"] ?: listOf()).map { c -> AttachmentDtoWithChildren().copy(c) }
+            .also { children ->
+              top.children = children
+              queue.addAll(children)
             }
         }
     }

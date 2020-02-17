@@ -1,6 +1,7 @@
 package tech.simter.file.impl.service
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -8,23 +9,18 @@ import org.springframework.stereotype.Component
 import org.springframework.util.FileCopyUtils
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toFlux
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toMono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
-import tech.simter.exception.PermissionDeniedException
-import tech.simter.exception.UnauthenticatedException
+import tech.simter.file.*
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.AttachmentService
-import tech.simter.file.core.domain.AttachmentDto
-import tech.simter.file.core.domain.AttachmentDto4Update
-import tech.simter.file.core.domain.AttachmentDto4Zip
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
-import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.domain.*
+import tech.simter.file.impl.domain.AttachmentImpl
 import tech.simter.file.impl.service.AttachmentServiceImpl.OperationType.*
-import tech.simter.kotlin.properties.AuthorizeModuleOperations
-import tech.simter.kotlin.properties.AuthorizeRole
 import tech.simter.reactive.context.SystemContext.User
+import tech.simter.reactive.security.ModuleAuthorizer
 import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.File
 import java.io.OutputStream
@@ -40,7 +36,7 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 /**
- * The attachment service implementation.
+ * The Service implementation of [AttachmentService].
  *
  * @author cjw
  * @author RJ
@@ -48,66 +44,41 @@ import java.util.zip.ZipOutputStream
  */
 @Component
 class AttachmentServiceImpl @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
+  @Value("\${simter.file.root}")
+  private val fileRootDir: String,
+  @Qualifier("$DEFAULT_MODULE_AUTHORIZER_KEY.authorizer")
+  private val defaultModuleAuthorizer: ModuleAuthorizer,
+  @Qualifier("$SUB_MODULES_AUTHORIZER_KEY.authorizer")
+  private val subModuleAuthorizerMap: Map<String, ModuleAuthorizer>,
+  @Value("$ADMIN_ROLE_KEY: $DEFAULT_ADMIN_ROLE")
+  private val adminRole: String,
   val attachmentDao: AttachmentDao,
-  authorizeModuleOperationProperties: AuthorizeModuleOperations,
   val securityService: ReactiveSecurityService
 ) : AttachmentService {
-  private val authorizeModuleOperations = authorizeModuleOperationProperties.operations!!
-    .map { module ->
-      module.key to module.value.flatMap { authorizeOperation ->
-        authorizeOperation.key.split(",").map { it to authorizeOperation.value }
-      }.toMap()
-    }.toMap()
-
-  enum class OperationType {
-    Read, Create, Update, Delete
+  enum class OperationType(val key: String) {
+    Read(OPERATION_READ),
+    Create(OPERATION_CREATE),
+    Update(OPERATION_UPDATE),
+    Delete(OPERATION_DELETE)
   }
 
-  private val operationDescribe =
-    hashMapOf(Read to "read", Create to "create", Update to "update", Delete to "delete")
-
-  private val hasAdmin = authorizeModuleOperations.containsKey("admin")
-
   /**
-   * 1. If [module] is not "admin" and no admin configuration,
-   *   verify module or default(no module configuration) [AuthorizeRole]
-   * 2. If [module] is not "admin" and has admin configuration,
-   *   verify module or default(no module configuration) [AuthorizeRole],
-   *   verify admin [AuthorizeRole] if authentication failed.
-   * 3. If [module] is "admin" and no admin configuration, authentication failed.
-   * 4. If [module] is "admin" and has admin configuration, verify admin [AuthorizeRole].
-   * 5. According to [strategy][AuthorizeRole.strategy],
-   *   verify whether the system-context has any [roles][AuthorizeRole.roles] or has all roles [roles][AuthorizeRole.roles].
-   *
-   * @return[Mono.empty]
-   *   return [Mono.error] with [UnauthenticatedException] if without a authenticated system-context.
-   *   return a [Mono.error] with [PermissionDeniedException] if has a authenticated system-context but it has'ont specified roles.
+   * 1. If current user is admin, use [defaultModuleAuthorizer] to checkout module permission.
+   * 2. If has a sub-module authorizer in [subModuleAuthorizerMap], use this authorizer to checkout module permission.
+   * 3. otherwise use [defaultModuleAuthorizer] to checkout permission.
    */
   fun verifyAuthorize(module: String?, operation: OperationType): Mono<Void> {
-    val verifier: (Map<String, AuthorizeRole>?) -> Mono<Void> = {
-      it?.get(operationDescribe[operation]!!)?.let {
-        if (it.strategy == AuthorizeRole.Strategy.And)
-          securityService.verifyHasAllRole(*it.roles.toTypedArray())
-        else
-          securityService.verifyHasAnyRole(*it.roles.toTypedArray())
-      } ?: Mono.empty()
-    }
-    return when {
-      module != "admin" && hasAdmin -> {
-        verifier(authorizeModuleOperations[module] ?: authorizeModuleOperations["default"])
-          .onErrorResume(PermissionDeniedException::class.java) { verifier(authorizeModuleOperations["admin"]) }
+    val o = operation.key
+    return securityService.hasAnyRole(adminRole)
+      .flatMap { isAdmin ->
+        when {
+          // verify by admin access-control
+          isAdmin || !subModuleAuthorizerMap.containsKey(module) ->
+            defaultModuleAuthorizer.verifyHasPermission(o)
+          // verify by sub-module access-control
+          else -> subModuleAuthorizerMap[module]!!.verifyHasPermission(o)
+        }
       }
-      module != "admin" -> {
-        verifier(authorizeModuleOperations[module] ?: authorizeModuleOperations["default"])
-      }
-      hasAdmin -> {
-        verifier(authorizeModuleOperations["admin"])
-      }
-      else -> {
-        Mono.error(PermissionDeniedException())
-      }
-    }
   }
 
   override fun packageAttachments(outputStream: OutputStream, vararg ids: String): Mono<String> {
@@ -245,19 +216,19 @@ class AttachmentServiceImpl @Autowired constructor(
       // 2. set creator and modifier
       .then(Mono.defer { securityService.getAuthenticatedUser() })
       .map(Optional<User>::get).map(User::name)
-      .map { userName -> attachments.map { it.copy(creator = userName, modifier = userName) }.toTypedArray() }
+      .map { userName -> attachments.map { AttachmentImpl.from(it).copy(creator = userName, modifier = userName) }.toTypedArray() }
       // 3. save attachments and return ids
       .map { attachmentDao.save(*it) }
       .thenMany(attachments.map { it.id }.toFlux())
   }
 
-  override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
+  override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
     return attachmentDao.findPuids(id).next()
       .flatMap { verifyAuthorize(it.orElse(null), Read) }
       .thenMany(Flux.defer { attachmentDao.findDescendents(id) })
   }
 
-  override fun update(id: String, dto: AttachmentDto4Update): Mono<Void> {
+  override fun update(id: String, dto: AttachmentUpdateInfo): Mono<Void> {
     // 1. verify authorize
     return attachmentDao.findPuids(id).next()
       .switchIfEmpty(Mono.error(NotFoundException("The attachment $id not exists")))
@@ -350,13 +321,13 @@ class AttachmentServiceImpl @Autowired constructor(
         if (!file.createNewFile()) throw IllegalAccessException("Failed to create file: ${file.absolutePath}")
         writer(file).then(Mono.defer {
           if (attachment.size != -1L) attachment.toMono()
-          else attachment.copy(size = file.length()).toMono()
+          else AttachmentImpl.from(attachment).copy(size = file.length()).toMono()
         })
       }
       // 4. set the creator and modifier
       .flatMap {
         securityService.getAuthenticatedUser().map(Optional<User>::get).map(User::name)
-          .map { userName -> it.copy(creator = userName, modifier = userName) }
+          .map { userName -> AttachmentImpl.from(it).copy(creator = userName, modifier = userName) }
       }
       // 5. save attachment data
       .flatMap { attachmentDao.save(it) }
@@ -389,6 +360,6 @@ class AttachmentServiceImpl @Autowired constructor(
       .map(Optional<User>::get).map(User::name)
       .map { userName -> dto.data.plus(mapOf("modifier" to userName, "modifyOn" to OffsetDateTime.now())) }
       // 5. save attachment data
-      .flatMap { attachmentDao.update(id, it.filter { it.key != "id" }) }
+      .flatMap { info -> attachmentDao.update(id, info.filter { it.key != "id" }) }
   }
 }

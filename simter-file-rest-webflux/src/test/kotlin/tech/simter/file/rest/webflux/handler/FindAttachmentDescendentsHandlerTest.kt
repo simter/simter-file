@@ -52,7 +52,7 @@ internal class FindAttachmentDescendentsHandlerTest @Autowired constructor(
   fun `Find some`() {
     // mock
     val dtos = List(randomInt(1, 3)) { randomAttachmentDtoWithChildren(1, 2) }
-    `when`(service.findDescendents(id)).thenReturn(dtos.toFlux())
+    `when`(service.findDescendants(id)).thenReturn(dtos.toFlux())
 
     // invoke and verify
     client.get().uri(url).exchange()
@@ -74,29 +74,29 @@ internal class FindAttachmentDescendentsHandlerTest @Autowired constructor(
           }
         }
       }
-    verify(service).findDescendents(id)
+    verify(service).findDescendants(id)
   }
 
   @Test
   fun `Found nothing`() {
     // mock
-    `when`(service.findDescendents(id)).thenReturn(Flux.empty())
+    `when`(service.findDescendants(id)).thenReturn(Flux.empty())
 
     // invoke and verify
     client.get().uri(url).exchange()
       .expectHeader().contentType(APPLICATION_JSON_UTF8)
       .expectStatus().isOk
       .expectBody().jsonPath("$").isEmpty
-    verify(service).findDescendents(id)
+    verify(service).findDescendants(id)
   }
 
   @Test
   fun `Failed by permission denied`() {
     // mock
-    `when`(service.findDescendents(id)).thenReturn(Flux.error(PermissionDeniedException()))
+    `when`(service.findDescendants(id)).thenReturn(Flux.error(PermissionDeniedException()))
 
     // invoke and verify
     client.get().uri(url).exchange().expectStatus().isForbidden
-    verify(service).findDescendents(id)
+    verify(service).findDescendants(id)
   }
 }

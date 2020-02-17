@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import org.slf4j.LoggerFactory
-import tech.simter.file.core.domain.Attachment
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -16,8 +15,17 @@ class AttachmentTest {
 
   @Test
   fun test() {
-    val attachment1 = Attachment(UUID.randomUUID().toString(), "/data", "Sample", "png",
-      123, OffsetDateTime.now(), "Simter", OffsetDateTime.now(), "Simter")
+    val attachment1 = AttachmentImpl(
+      id = UUID.randomUUID().toString(),
+      path = "/data",
+      name = "Sample",
+      type = "png",
+      size = 123,
+      createOn = OffsetDateTime.now(),
+      creator = "Simter",
+      modifyOn = OffsetDateTime.now(),
+      modifier = "Simter"
+    )
     logger.debug(attachment1.toString())
     assertEquals(attachment1.fileName, "Sample.png")
     assertEquals(attachment1, attachment1.copy())
