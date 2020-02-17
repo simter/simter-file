@@ -34,7 +34,7 @@ class FindDescendantsMethodTest @Autowired constructor(
     val puid = randomString()
     every { service.verifyAuthorize(puid, Read) } returns Mono.empty()
     every { dao.findPuids(id) } returns Flux.just(Optional.ofNullable<String?>(puid))
-    every { dao.findDescendents(id) } returns Flux.empty()
+    every { dao.findDescendants(id) } returns Flux.empty()
 
     // invoke
     val actual = service.findDescendants(id)
@@ -44,7 +44,7 @@ class FindDescendantsMethodTest @Autowired constructor(
     verify {
       service.verifyAuthorize(puid, Read)
       dao.findPuids(id)
-      dao.findDescendents(id)
+      dao.findDescendants(id)
     }
   }
 

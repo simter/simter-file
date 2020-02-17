@@ -75,7 +75,7 @@ interface AttachmentDao {
    * @return the children that include its children recursively.
    *   If the upper has no children or the upper is not exists, return [Flux.empty]
    */
-  fun findDescendents(id: String): Flux<AttachmentDtoWithChildren>
+  fun findDescendants(id: String): Flux<AttachmentDtoWithChildren>
 
   /**
    *  Update part of the fields in the attachment
@@ -88,14 +88,14 @@ interface AttachmentDao {
   fun update(id: String, data: Map<String, Any?>): Mono<Void>
 
   /**
-   * Find [AttachmentDto4Zip] from the descendents of attachments and attachments.
+   * Find [AttachmentDto4Zip] from the descendants of attachments and attachments.
    *   If not found, return [Flux.empty].
    *   [AttachmentDto4Zip.zipPath] is logical path relatively to the recent common ancestor of file attachments
    *     and it not include the file suffix .
    *   [AttachmentDto4Zip.physicalPath] is the physical path of the file.
    * @param[ids] the attachments id.
    */
-  fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip>
+  fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip>
 
   /**
    * Find and returns [Attachment]s distinct puid collection.

@@ -41,7 +41,7 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
     if (ids.isEmpty()) return Flux.empty()
     val sql = """
       with recursive
@@ -126,7 +126,7 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
+  override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
     val sql = """
       with recursive n(id, path, name, type, size, modify_on, modifier, upper_id)
       as (
@@ -138,12 +138,12 @@ class AttachmentDaoImpl @Autowired constructor(
       )
       select id, path, name, type, size, modify_on, modifier, upper_id from n
     """.trimIndent()
-    val descendents = em.createNativeQuery(sql, AttachmentDtoWithUpper::class.java)
+    val descendants = em.createNativeQuery(sql, AttachmentDtoWithUpper::class.java)
       .setParameter("id", id)
       .resultList as List<AttachmentDtoWithUpper>
     return AttachmentDtoWithChildren().apply {
       this.id = id
-      generateChildren(descendents)
+      generateChildren(descendants)
     }.children!!.toFlux()
   }
 

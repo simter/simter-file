@@ -108,7 +108,7 @@ class PackageAttachmentsMethodTest @Autowired constructor(
     val outputStream = ByteArrayOutputStream()
     val ids = dtos.map { it.terminus!! }.toTypedArray()
     val puid = randomString()
-    every { dao.findDescendentsZipPath(*ids) } returns dtos.toFlux()
+    every { dao.findDescendantsZipPath(*ids) } returns dtos.toFlux()
     every { dao.findPuids(*ids) } returns Flux.just(Optional.of(puid))
     every { service.verifyAuthorize(puid, Read) } returns Mono.empty()
 
@@ -118,7 +118,7 @@ class PackageAttachmentsMethodTest @Autowired constructor(
     // verify method service.get invoked
     actual.test().expectNext(zipName).verifyComplete()
     verify {
-      dao.findDescendentsZipPath(*ids)
+      dao.findDescendantsZipPath(*ids)
       dao.findPuids(*ids)
       service.verifyAuthorize(puid, Read)
     }
@@ -148,7 +148,7 @@ class PackageAttachmentsMethodTest @Autowired constructor(
     val outputStream = ByteArrayOutputStream()
     val ids = Array(3) { randomString() }
     val puid = randomString()
-    every { dao.findDescendentsZipPath(*ids) } returns Flux.empty()
+    every { dao.findDescendantsZipPath(*ids) } returns Flux.empty()
     every { dao.findPuids(*ids) } returns Flux.just(Optional.of(puid))
     every { service.verifyAuthorize(puid, Read) } returns Mono.empty()
 
@@ -158,7 +158,7 @@ class PackageAttachmentsMethodTest @Autowired constructor(
     // verify
     actual.test().verifyComplete()
     verify {
-      dao.findDescendentsZipPath(*ids)
+      dao.findDescendantsZipPath(*ids)
       dao.findPuids(*ids)
       service.verifyAuthorize(puid, Read)
     }

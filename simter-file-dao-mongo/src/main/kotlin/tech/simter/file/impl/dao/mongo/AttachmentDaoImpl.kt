@@ -41,7 +41,7 @@ class AttachmentDaoImpl @Autowired constructor(
       .map { Optional.ofNullable(it.puid) }.distinct()
   }
 
-  override fun findDescendentsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
     return operations.aggregate(
       newAggregation(
         // Filter out the specified Attachment
@@ -74,7 +74,7 @@ class AttachmentDaoImpl @Autowired constructor(
     }
   }
 
-  override fun findDescendents(id: String): Flux<AttachmentDtoWithChildren> {
+  override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
     return operations.aggregate(
       newAggregation(
         // Filter out the specified Attachment

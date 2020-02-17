@@ -264,11 +264,11 @@ class AttachmentDaoImplTest @Autowired constructor(
   @Test
   fun notFoundDescendentsZipPath() {
     // nothing
-    StepVerifier.create(dao.findDescendentsZipPath()).verifyComplete()
+    StepVerifier.create(dao.findDescendantsZipPath()).verifyComplete()
 
     // none found
-    StepVerifier.create(dao.findDescendentsZipPath(UUID.randomUUID().toString())).verifyComplete()
-    StepVerifier.create(dao.findDescendentsZipPath(*Array(3) { UUID.randomUUID().toString() })).verifyComplete()
+    StepVerifier.create(dao.findDescendantsZipPath(UUID.randomUUID().toString())).verifyComplete()
+    StepVerifier.create(dao.findDescendantsZipPath(*Array(3) { UUID.randomUUID().toString() })).verifyComplete()
   }
 
   @Test
@@ -299,7 +299,7 @@ class AttachmentDaoImplTest @Autowired constructor(
     // Invoke and verify
 
     // verify least-common-ancestor's id is null
-    StepVerifier.create(dao.findDescendentsZipPath("111", "200").collectList())
+    StepVerifier.create(dao.findDescendantsZipPath("111", "200").collectList())
       .consumeNextWith {
         assertEquals(listOf(
           AttachmentDto4Zip().apply {
@@ -321,7 +321,7 @@ class AttachmentDaoImplTest @Autowired constructor(
         ), it)
       }.verifyComplete()
     // verify least-common-ancestor's id in parameter ids
-    StepVerifier.create(dao.findDescendentsZipPath("110", "111").collectList())
+    StepVerifier.create(dao.findDescendantsZipPath("110", "111").collectList())
       .consumeNextWith {
         assertEquals(listOf(
           AttachmentDto4Zip().apply {
@@ -351,7 +351,7 @@ class AttachmentDaoImplTest @Autowired constructor(
         ), it)
       }.verifyComplete()
     // verify least-common-ancestor's id not in parameter ids
-    StepVerifier.create(dao.findDescendentsZipPath("111", "121").collectList())
+    StepVerifier.create(dao.findDescendantsZipPath("111", "121").collectList())
       .consumeNextWith {
         assertEquals(listOf(
           AttachmentDto4Zip().apply {
@@ -373,7 +373,7 @@ class AttachmentDaoImplTest @Autowired constructor(
         ), it)
       }.verifyComplete()
     // verify parameter ids is single id and it is a file
-    StepVerifier.create(dao.findDescendentsZipPath("111").collectList())
+    StepVerifier.create(dao.findDescendantsZipPath("111").collectList())
       .consumeNextWith {
         assertEquals(listOf(
           AttachmentDto4Zip().apply {
@@ -387,7 +387,7 @@ class AttachmentDaoImplTest @Autowired constructor(
         ), it)
       }.verifyComplete()
     // verify parameter ids is single id and it is a folder
-    StepVerifier.create(dao.findDescendentsZipPath("110").collectList())
+    StepVerifier.create(dao.findDescendantsZipPath("110").collectList())
       .consumeNextWith {
         assertEquals(listOf(
           AttachmentDto4Zip().apply {
@@ -449,7 +449,7 @@ class AttachmentDaoImplTest @Autowired constructor(
   }
 
   @Test
-  fun notFoundDescendents() {
+  fun notFoundDescendants() {
     // prepare data
     val now = OffsetDateTime.now()
     val po = Attachment(UUID.randomUUID().toString(), "/data1", "Sample1", "png",
@@ -459,13 +459,13 @@ class AttachmentDaoImplTest @Autowired constructor(
 
     // invoke and verify
     // none attachment
-    StepVerifier.create(dao.findDescendents(UUID.randomUUID().toString())).verifyComplete()
-    // none descendents
-    StepVerifier.create(dao.findDescendents(po.id)).verifyComplete()
+    StepVerifier.create(dao.findDescendants(UUID.randomUUID().toString())).verifyComplete()
+    // none descendants
+    StepVerifier.create(dao.findDescendants(po.id)).verifyComplete()
   }
 
   @Test
-  fun findDescendents() {
+  fun findDescendants() {
     // prepare data
     //            po100
     //       /            \
@@ -495,7 +495,7 @@ class AttachmentDaoImplTest @Autowired constructor(
     em.flush()
 
     // invoke and verify
-    StepVerifier.create(dao.findDescendents(po100.id)).consumeNextWith { actual ->
+    StepVerifier.create(dao.findDescendants(po100.id)).consumeNextWith { actual ->
       assertEquals(AttachmentDtoWithChildren().copy(po110).getOwnData(), actual.getOwnData())
       assertEquals(AttachmentDtoWithChildren().copy(po111).getOwnData(), actual.children!![0].getOwnData())
       assertEquals(AttachmentDtoWithChildren().copy(po112).getOwnData(), actual.children!![1].getOwnData())

@@ -91,7 +91,7 @@ class AttachmentServiceImpl @Autowired constructor(
           verifyAuthorize(it.firstOrNull()?.orElse(null), Read)
       }
       // 2. find descendents path info
-      .thenMany(Flux.defer { attachmentDao.findDescendentsZipPath(*ids) }).collectList()
+      .thenMany(Flux.defer { attachmentDao.findDescendantsZipPath(*ids) }).collectList()
       // 3. package file
       .delayUntil { reactivePackage(outputStream, it) }
       // 4. calculate the zip file name
@@ -225,7 +225,7 @@ class AttachmentServiceImpl @Autowired constructor(
   override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
     return attachmentDao.findPuids(id).next()
       .flatMap { verifyAuthorize(it.orElse(null), Read) }
-      .thenMany(Flux.defer { attachmentDao.findDescendents(id) })
+      .thenMany(Flux.defer { attachmentDao.findDescendants(id) })
   }
 
   override fun update(id: String, dto: AttachmentUpdateInfo): Mono<Void> {
