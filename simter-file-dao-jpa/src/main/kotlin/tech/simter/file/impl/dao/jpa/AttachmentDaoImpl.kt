@@ -33,7 +33,7 @@ class AttachmentDaoImpl @Autowired constructor(
   @Suppress("UNCHECKED_CAST")
   override fun findPuids(vararg ids: String): Flux<Optional<String>> {
     if (ids.isEmpty()) return Flux.empty()
-    val sql = "select distinct a.puid from Attachment a where id in :ids"
+    val sql = "select distinct a.puid from AttachmentPo a where id in (:ids) order by a.puid asc nulls first"
     val result = em.createQuery(sql)
       .setParameter("ids", ids.toList())
       .resultList as List<String?>
@@ -48,61 +48,57 @@ class AttachmentDaoImpl @Autowired constructor(
       -- Below the subtree is subtree from root to "ids"
       -- e: subtree of edge plus edge from "ids" to it
       e(id, upper_id) as (
-        select id, id from st_attachment where id in :ids
+        select id as id, id as upper_id from st_attachment where id in (:ids)
         union
-        select a.id, a.upper_id from st_attachment as a
-        join e on a.id = e.upper_id
-      ),
+        select a.id, a.upper_id from st_attachment as a join e on a.id = e.upper_id
+      )
       -- o：e's node of out-degree
-      o(id, count) as (
-        select upper_id, count(0) from e group by upper_id
-      ),
+      , o(id, count) as (
+        select upper_id as id, count(0) as count from e group by upper_id
+      )
       -- c: "ids" of common-ancestor
-      c(id, upper_id, least) as(
-        select o.id, o.id, count <> 1 from o where  o.id is null
+      , c(id, upper_id, least) as(
+        select o.id as id, o.id as upper_id, count <> 1 as least from o where  o.id is null
         union
-        select e.id, e.upper_id, count <> 1 or e.id in :ids
-        from e join o on e.id = o.id
-        join c on (e.upper_id = c.id or (c.id is null and e.upper_id is null))
-          and c.least = false
-      ),
+        select e.id, e.upper_id, count <> 1 or e.id in (:ids)
+          from e join o on e.id = o.id
+          join c on (e.upper_id = c.id or (c.id is null and e.upper_id is null))
+            and c.least = false
+      )
       -- l: "ids" of least-common-ancestor
-      l(id, upper_id)
-      as (
-        select id, upper_id from c where least = true
-      ),
+      , l(id, upper_id) as (
+        select id as id, upper_id as upper_id from c where least = true
+      )
       -- a: path from "ids" of all ancestors to "ids"
-      a(id, upper_id, physical_path, zip_path, type)
-      as(
-        select id, upper_id, concat(path, ''), concat(name, ''), type
-        from st_attachment as a where id in :ids
+      , a(id, upper_id, physical_path, zip_path, type) as (
+        select id as id, upper_id as upper_id, concat(path, '') as physical_path, concat(name, '') as zip_path, type as type
+          from st_attachment as a where id in (:ids)
         union
         select a.id, s.upper_id, concat(path, '/', physical_path), concat(name, '/', zip_path), a.type
-        from st_attachment as s
-        join a on a.upper_id = s.id
+          from st_attachment as s
+          join a on a.upper_id = s.id
       )
       -- d: zip_path from "ids" of least-common-ancestor to "ids" of all descendant
-      , d(id, lca_id, zip_path, type)
-      as(
-        select a.id, l.id, a.zip_path, a.type
-        from a
-        join l on a.upper_id = l.upper_id or (a.upper_id is null and l.upper_id is null)
+      , d(id, lca_id, zip_path, type) as (
+        select a.id as id, l.id as lca_id, a.zip_path as zip_path, a.type as type
+          from a
+          join l on a.upper_id = l.upper_id or (a.upper_id is null and l.upper_id is null)
         union
         select a.id, d.lca_id, concat(zip_path, '/', name), a.type
-        from st_attachment as a join d on a.upper_id = d.id
+          from st_attachment as a join d on a.upper_id = d.id
       )
        -- d2: physical_path from "ids" of root to "ids" of all descendant
-      , d2(id, physical_path)
-      as(
-        select a.id, a.physical_path
-        from a where a.upper_id is null
+      , d2(id, physical_path) as (
+        select a.id as id, a.physical_path as physical_path
+          from a where a.upper_id is null
         union
         select a.id, concat(physical_path, '/', path)
-        from st_attachment as a join d2 as d on a.upper_id = d.id
+          from st_attachment as a join d2 as d on a.upper_id = d.id
       )
       select d.id as terminus, lca_id as origin, physical_path, zip_path, type,
         concat(case when lca_id is null then 'null' else concat('"', lca_id, '"') end, '-"', d.id, '"') as id
       from d, d2 where d.id = d2.id
+      order by d.zip_path asc
     """.trimIndent()
     val dtos = em.createNativeQuery(sql, AttachmentDto4Zip::class.java)
       .setParameter("ids", ids.toList())
@@ -115,7 +111,7 @@ class AttachmentDaoImpl @Autowired constructor(
       Mono.empty()
     } else {
       val result = em
-        .createQuery("update Attachment set ${data.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
+        .createQuery("update AttachmentPo set ${data.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
         .apply { data.forEach { (key, value) -> setParameter(key, value) } }
         .setParameter("id", id)
         .executeUpdate()
@@ -179,11 +175,11 @@ class AttachmentDaoImpl @Autowired constructor(
   override fun find(puid: String, upperId: String?): Flux<Attachment> {
     val hasSubgroup = null != upperId
     val sql = """
-      select a from Attachment a
+      select a from AttachmentPo a
       where puid = :puid ${if (hasSubgroup) "and upperId = :upperId" else ""}
       order by createOn desc
     """.trimIndent()
-    val query: Query = em.createQuery(sql, Attachment::class.java).setParameter("puid", puid)
+    val query: Query = em.createQuery(sql, AttachmentPo::class.java).setParameter("puid", puid)
     if (hasSubgroup) query.setParameter("upperId", upperId)
     return Flux.fromIterable(query.resultList as List<Attachment>)
   }
@@ -199,12 +195,12 @@ class AttachmentDaoImpl @Autowired constructor(
       // Query the full path of the attachments
       val fullPathSql = """
         with recursive p(id, path, upper_id) as (
-          select id, concat(path, ''), upper_id from st_attachment where id in :ids
+          select id, concat(path, ''), upper_id from st_attachment where id in (:ids)
           union
           select p.id, concat(a.path, '/', p.path), a.upper_id from st_attachment as a
           join p on a.id = p.upper_id
           -- If the ancestors of attachment in the attachments list, ignored the attachment
-          where p.upper_id not in :ids
+          where p.upper_id not in (:ids)
         )
         select id, path as full_path from p where upper_id is null
       """.trimIndent()
@@ -215,7 +211,7 @@ class AttachmentDaoImpl @Autowired constructor(
       // Delete attachments and all theirs descendants
       val nodeSql = """
         with recursive u(id, upper_id ) as (
-          select id, upper_id  from st_attachment where id in :ids
+          select id, upper_id  from st_attachment where id in (:ids)
           union
           select a.id, a.upper_id from st_attachment as a join u on a.upper_id = u.id
         )
@@ -223,7 +219,7 @@ class AttachmentDaoImpl @Autowired constructor(
       """.trimIndent()
       val nodeDtos = em.createNativeQuery(nodeSql).setParameter("ids", ids.toList()).resultList
       if (nodeDtos.isNotEmpty()) {
-        em.createNativeQuery("delete from st_attachment where id in :ids")
+        em.createNativeQuery("delete from st_attachment where id in (:ids)")
           .setParameter("ids", nodeDtos).executeUpdate()
       }
       fullPathDaos.map { it.fullPath!! }.toFlux()

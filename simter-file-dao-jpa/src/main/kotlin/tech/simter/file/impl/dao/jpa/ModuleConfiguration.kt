@@ -14,5 +14,5 @@ import tech.simter.file.PACKAGE
 @Configuration("$PACKAGE.impl.dao.jpa.ModuleConfiguration")
 @ComponentScan
 @EnableJpaRepositories
-@EntityScan("$PACKAGE.impl.dao.jpa.po")
+@EntityScan("$PACKAGE.impl.dao.jpa.po", "$PACKAGE.core.domain")
 class ModuleConfiguration
