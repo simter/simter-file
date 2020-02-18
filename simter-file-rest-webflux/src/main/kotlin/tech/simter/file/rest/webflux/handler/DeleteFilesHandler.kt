@@ -1,19 +1,19 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus.FORBIDDEN
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
 import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.DELETE
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
-import reactor.core.publisher.Mono
-import tech.simter.file.core.AttachmentService
-import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.web.reactive.function.server.ServerResponse.status
+import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
+import tech.simter.file.core.AttachmentService
 
 /**
  * The [HandlerFunction] for delete files.
@@ -50,11 +50,11 @@ class DeleteFilesHandler @Autowired constructor(
       .then(ServerResponse.noContent().build())
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
       .onErrorResume(ForbiddenException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
   }
 

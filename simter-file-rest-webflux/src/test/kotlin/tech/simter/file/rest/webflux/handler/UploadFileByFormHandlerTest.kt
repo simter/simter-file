@@ -1,8 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argThat
-import com.nhaarman.mockito_kotlin.doReturn
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argThat
+import com.nhaarman.mockitokotlin2.doReturn
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -24,8 +24,8 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.rest.webflux.handler.UploadFileByFormHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
+import tech.simter.file.rest.webflux.handler.UploadFileByFormHandler.Companion.REQUEST_PREDICATE
 import java.io.File
 import java.util.*
 
@@ -62,7 +62,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
     val puid = "text"
-    val beCreatedFile = File("fileRootDir/text.xml")
+    val beCreatedFile = File("$fileRootDir/text.xml")
     val parts = MultipartBodyBuilder().also {
       it.part("fileData", file)
       it.part("upperId", upperId)
@@ -76,7 +76,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     client.post().uri("/")
       .contentType(MULTIPART_FORM_DATA)
       .contentLength(fileSize)
-      .syncBody(parts)
+      .bodyValue(parts)
       .exchange()
       .expectStatus().isNoContent
       .expectHeader().valueEquals("Location", "/$id")
@@ -103,7 +103,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     val upperId = UUID.randomUUID().toString()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    val beCreatedFile = File("fileRootDir/text.xml")
+    val beCreatedFile = File("$fileRootDir/text.xml")
     val parts = MultipartBodyBuilder().also {
       it.part("fileData", file)
       it.part("upperId", upperId)
@@ -116,7 +116,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     client.post().uri("/")
       .contentType(MULTIPART_FORM_DATA)
       .contentLength(fileSize)
-      .syncBody(parts)
+      .bodyValue(parts)
       .exchange()
       .expectStatus().isNotFound
 
@@ -138,7 +138,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     val upperId = UUID.randomUUID().toString()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    val beCreatedFile = File("fileRootDir/text.xml")
+    val beCreatedFile = File("$fileRootDir/text.xml")
     val parts = MultipartBodyBuilder().also {
       it.part("fileData", file)
       it.part("upperId", upperId)
@@ -151,7 +151,7 @@ internal class UploadFileByFormHandlerTest @Autowired constructor(
     client.post().uri("/")
       .contentType(MULTIPART_FORM_DATA)
       .contentLength(fileSize)
-      .syncBody(parts)
+      .bodyValue(parts)
       .exchange()
       .expectStatus().isForbidden
 

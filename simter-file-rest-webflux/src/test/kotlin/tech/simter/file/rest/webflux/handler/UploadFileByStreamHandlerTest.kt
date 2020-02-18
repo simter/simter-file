@@ -1,8 +1,9 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argThat
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.argThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,14 +21,10 @@ import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.rest.webflux.handler.UploadFileByStreamHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
+import tech.simter.file.rest.webflux.handler.UploadFileByStreamHandler.Companion.REQUEST_PREDICATE
 import java.io.File
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
-
 
 /**
  * Test UploadFileByStreamHandler.
@@ -62,7 +59,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
     val puid = "text"
-    val beCreatedFile = File("fileRootDir/text.xml")
+    val beCreatedFile = File("$fileRootDir/text.xml")
     beCreatedFile.parentFile.mkdirs()
     `when`(service.uploadFile(any(), any())).thenReturn(Mono.empty())
     doReturn(id).`when`(handler).newId()
@@ -71,7 +68,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     client.post().uri("/?puid=$puid&upper=$upperId&filename=$fileName")
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isCreated
       .expectBody().jsonPath("$").isEqualTo(id)
@@ -106,7 +103,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     client.post().uri("/?upper=$upperId&filename=$fileName")
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isNotFound
 
@@ -136,7 +133,7 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     client.post().uri("/?upper=$upperId&filename=$fileName")
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isForbidden
 

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.HandlerFunction
@@ -17,7 +18,6 @@ import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentService
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import kotlin.text.Charsets.ISO_8859_1
 
 /**
@@ -82,7 +82,7 @@ class DownloadFileHandler @Autowired constructor(
       .switchIfEmpty(notFound().build())
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
   }
 

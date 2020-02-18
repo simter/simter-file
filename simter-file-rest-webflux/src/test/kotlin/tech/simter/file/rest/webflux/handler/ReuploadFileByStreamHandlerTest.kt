@@ -1,6 +1,6 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockitokotlin2.any
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.core.io.ClassPathResource
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
 import org.springframework.web.reactive.config.EnableWebFlux
@@ -16,9 +16,9 @@ import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
+import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.AttachmentDto
 import tech.simter.file.rest.webflux.handler.ReuploadFileByStreamHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.core.AttachmentService
 import java.util.*
 
 /**
@@ -51,9 +51,9 @@ internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
 
     // invoke
     client.patch().uri("/$id")
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(file.file.readBytes())
+      .bodyValue(file.file.readBytes())
       .exchange()
       .expectStatus().isNoContent
 
@@ -81,9 +81,9 @@ internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
     // invoke
     client.patch().uri("/$id")
       .header("Content-Disposition", "attachment; name=\"filedata\"; filename=\"$name.$ext\"")
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(file.file.readBytes())
+      .bodyValue(file.file.readBytes())
       .exchange()
       .expectStatus().isNoContent
 
@@ -111,9 +111,9 @@ internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
     // invoke
     client.patch().uri("/$id")
       .header("Content-Disposition", "attachment; name=\"filedata\"; filename=\"$name.$ext\"")
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isNotFound
 
@@ -135,9 +135,9 @@ internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
     // invoke
     client.patch().uri("/$id")
       .header("Content-Disposition", "attachment; name=\"filedata\"; filename=\"$name.$ext\"")
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isForbidden
 

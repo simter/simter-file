@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
@@ -14,8 +13,8 @@ import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.rest.webflux.handler.DeleteFilesHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
+import tech.simter.file.rest.webflux.handler.DeleteFilesHandler.Companion.REQUEST_PREDICATE
 import java.util.*
 
 /**
@@ -30,7 +29,6 @@ import java.util.*
 @TestPropertySource(properties = ["simter.file.root=target/files"])
 internal class DeleteFilesHandlerTest @Autowired constructor(
   private val service: AttachmentService,
-  @Value("\${simter.file.root}") private val fileRootDir: String,
   handler: DeleteFilesHandler
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()

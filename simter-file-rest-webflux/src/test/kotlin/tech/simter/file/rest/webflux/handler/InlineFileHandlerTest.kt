@@ -16,11 +16,12 @@ import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFu
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.Attachment
-import tech.simter.file.rest.webflux.handler.InlineFileHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.impl.domain.AttachmentImpl
+import tech.simter.file.rest.webflux.handler.InlineFileHandler.Companion.REQUEST_PREDICATE
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -50,7 +51,7 @@ internal class InlineFileHandlerTest @Autowired constructor(
     val id = UUID.randomUUID().toString()
     val now = OffsetDateTime.now()
     val fileSize = FileSystemResource("$fileRootDir/resources/$fileName").contentLength()
-    val attachment = Attachment(id, "$name.$ext", name, ext, fileSize,
+    val attachment: Attachment = AttachmentImpl(id, "$name.$ext", name, ext, fileSize,
       now, "Simter", now, "Simter", "0")
     val expected = Mono.just(attachment)
     `when`(service.get(id)).thenReturn(expected)

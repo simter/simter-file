@@ -8,16 +8,17 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.Attachment
-import tech.simter.file.rest.webflux.handler.AttachmentViewHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.impl.domain.AttachmentImpl
+import tech.simter.file.rest.webflux.handler.AttachmentViewHandler.Companion.REQUEST_PREDICATE
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -44,7 +45,7 @@ internal class AttachmentViewHandlerTest @Autowired constructor(
     val id = UUID.randomUUID().toString()
     val now = OffsetDateTime.now()
     val list = ArrayList<Attachment>()
-    list.add(Attachment(id, "/path", "name", "type", 100,
+    list.add(AttachmentImpl(id, "/path", "name", "type", 100,
       now, "Simter", now, "Simter", "0"))
     val pageable = PageRequest.of(pageNo, pageSize)
     `when`<Mono<Page<Attachment>>>(service.find(pageable)).thenReturn(Mono.just<Page<Attachment>>(PageImpl(list, pageable, list.size.toLong())))
@@ -53,7 +54,7 @@ internal class AttachmentViewHandlerTest @Autowired constructor(
     client.get().uri("/attachment?page-no=0&page-size=25")
       .exchange()
       .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+      .expectHeader().contentType(APPLICATION_JSON)
       .expectBody()
       .jsonPath("$.count").isEqualTo(list.size) // verify count
       .jsonPath("$.pageNo").isEqualTo(pageNo)     // verify page-no

@@ -37,7 +37,7 @@ class ModuleConfiguration @Autowired constructor(
   private val deleteFilesHandler: DeleteFilesHandler,
   private val reuploadFileByStreamHandler: ReuploadFileByStreamHandler,
   private val updateAttachmentHandler: UpdateAttachmentHandler,
-  private val findAttachmentDescendentsHandler: FindAttachmentDescendentsHandler,
+  private val findAttachmentDescendantsHandler: FindAttachmentDescendantsHandler,
   private val createAttachmentsHandler: CreateAttachmentsHandler,
   private val deleteNumerousFilesHandler: DeleteNumerousFilesHandler,
   private val packageFilesHandler: PackageFilesHandler,
@@ -66,7 +66,7 @@ class ModuleConfiguration @Autowired constructor(
       // GET /attachment/{id}
       AttachmentFormHandler.REQUEST_PREDICATE.invoke(attachmentFormHandler::handle)
       // GET /attachment/{id}/descendent
-      FindAttachmentDescendentsHandler.REQUEST_PREDICATE.invoke(findAttachmentDescendentsHandler::handle)
+      FindAttachmentDescendantsHandler.REQUEST_PREDICATE.invoke(findAttachmentDescendantsHandler::handle)
       // GET /zip/{id}?name=:name
       PackageFileHandler.REQUEST_PREDICATE.invoke(packageFileHandler::handle)
       // POST /zip?name=:name

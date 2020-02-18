@@ -5,7 +5,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.http.MediaType.APPLICATION_JSON_UTF8
+import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
 import org.springframework.web.reactive.config.EnableWebFlux
@@ -14,10 +14,11 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
+import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.AttachmentUpdateInfo
+import tech.simter.file.impl.domain.AttachmentUpdateInfoImpl
 import tech.simter.file.rest.webflux.TestHelper.randomString
 import tech.simter.file.rest.webflux.handler.UpdateAttachmentHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.core.AttachmentService
 import java.util.*
 
 /**
@@ -37,7 +38,7 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
   private val url = "/attachment/$id"
 
   private fun randomAttachmentDto4Update(): AttachmentUpdateInfo {
-    return AttachmentUpdateInfo().apply {
+    return AttachmentUpdateInfoImpl().apply {
       name = randomString("name")
       upperId = UUID.randomUUID().toString()
       puid = randomString("puid")
@@ -45,14 +46,14 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
   }
 
   @Test
-  fun `Success`() {
+  fun success() {
     val dto = randomAttachmentDto4Update()
     `when`(service.update(id, dto)).thenReturn(Mono.empty())
 
     // invoke request
     client.patch().uri(url)
-      .contentType(APPLICATION_JSON_UTF8)
-      .syncBody(dto.data)
+      .contentType(APPLICATION_JSON)
+      .bodyValue(dto.data)
       .exchange()
       .expectStatus().isNoContent
 
@@ -68,8 +69,8 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
 
     // invoke request
     client.patch().uri(url)
-      .contentType(APPLICATION_JSON_UTF8)
-      .syncBody(dto.data)
+      .contentType(APPLICATION_JSON)
+      .bodyValue(dto.data)
       .exchange()
       .expectStatus().isNotFound
 
@@ -85,8 +86,8 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
 
     // invoke request
     client.patch().uri(url)
-      .contentType(APPLICATION_JSON_UTF8)
-      .syncBody(dto.data)
+      .contentType(APPLICATION_JSON)
+      .bodyValue(dto.data)
       .exchange()
       .expectStatus().isForbidden
 
@@ -102,8 +103,8 @@ internal class UpdateAttachmentHandlerTest @Autowired constructor(
 
     // invoke request
     client.patch().uri(url)
-      .contentType(APPLICATION_JSON_UTF8)
-      .syncBody(dto.data)
+      .contentType(APPLICATION_JSON)
+      .bodyValue(dto.data)
       .exchange()
       .expectStatus().isForbidden
 

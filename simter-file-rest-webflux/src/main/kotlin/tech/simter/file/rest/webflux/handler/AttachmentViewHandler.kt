@@ -3,7 +3,8 @@ package tech.simter.file.rest.webflux.handler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus.FORBIDDEN
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
 import org.springframework.web.reactive.function.server.RequestPredicate
@@ -13,9 +14,8 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.AttachmentService
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
+import tech.simter.file.core.domain.Attachment
 
 /**
  * The [HandlerFunction] for find multiple [Attachment] info.
@@ -72,12 +72,12 @@ class AttachmentViewHandler @Autowired constructor(
       .flatMap {
         // return response
         ServerResponse.ok()
-          .contentType(MediaType.APPLICATION_JSON_UTF8)
-          .syncBody(it)
+          .contentType(APPLICATION_JSON)
+          .bodyValue(it)
       }
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
   }
 

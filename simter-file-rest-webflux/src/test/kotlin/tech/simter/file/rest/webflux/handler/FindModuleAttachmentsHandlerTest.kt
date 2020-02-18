@@ -5,16 +5,17 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Flux
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.Attachment
-import tech.simter.file.rest.webflux.handler.FindModuleAttachmentsHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.impl.domain.AttachmentImpl
+import tech.simter.file.rest.webflux.handler.FindModuleAttachmentsHandler.Companion.REQUEST_PREDICATE
 import java.time.OffsetDateTime
 
 /**
@@ -39,7 +40,7 @@ internal class FindModuleAttachmentsHandlerTest @Autowired constructor(
     val upperId = "1"
     val now = OffsetDateTime.now()
     `when`<Flux<Attachment>>(service.find(puid, upperId)).thenReturn(Flux.just(
-      Attachment(
+      AttachmentImpl(
         id = "1",
         path = "path/",
         name = "name",
@@ -57,10 +58,10 @@ internal class FindModuleAttachmentsHandlerTest @Autowired constructor(
     client.get().uri("/parent/$puid/$upperId")
       .exchange()
       .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+      .expectHeader().contentType(APPLICATION_JSON)
       .expectBody()
       .jsonPath("$[0].puid").isEqualTo(puid)
-      .jsonPath("$[0].upperId").isEqualTo(upperId.toString())
+      .jsonPath("$[0].upperId").isEqualTo(upperId)
 
     // verify
     verify(service).find(puid, upperId)

@@ -5,36 +5,36 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.http.MediaType.APPLICATION_JSON_UTF8
+import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Flux
-import reactor.core.publisher.toFlux
+import reactor.kotlin.core.publisher.toFlux
 import tech.simter.exception.PermissionDeniedException
+import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.rest.webflux.TestHelper.randomInt
 import tech.simter.file.rest.webflux.TestHelper.randomString
-import tech.simter.file.rest.webflux.handler.FindAttachmentDescendentsHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.core.AttachmentService
+import tech.simter.file.rest.webflux.handler.FindAttachmentDescendantsHandler.Companion.REQUEST_PREDICATE
 import java.util.*
 
 /**
- * Test [FindAttachmentDescendentsHandler].
+ * Test [FindAttachmentDescendantsHandler].
  *
  * @author zh
  */
-@SpringJUnitConfig(FindAttachmentDescendentsHandler::class)
+@SpringJUnitConfig(FindAttachmentDescendantsHandler::class)
 @EnableWebFlux
 @MockBean(AttachmentService::class)
-internal class FindAttachmentDescendentsHandlerTest @Autowired constructor(
+internal class FindAttachmentDescendantsHandlerTest @Autowired constructor(
   private val service: AttachmentService,
-  handler: FindAttachmentDescendentsHandler
+  handler: FindAttachmentDescendantsHandler
 ) {
   private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
   private val id = UUID.randomUUID().toString()
-  private val url = "/attachment/$id/descendent"
+  private val url = "/attachment/$id/descendant"
   private fun randomAttachmentDtoWithChildren(depth: Int, maxDegree: Int): AttachmentDtoWithChildren {
     return AttachmentDtoWithChildren().apply {
       id = UUID.randomUUID().toString()
@@ -56,7 +56,7 @@ internal class FindAttachmentDescendentsHandlerTest @Autowired constructor(
 
     // invoke and verify
     client.get().uri(url).exchange()
-      .expectHeader().contentType(APPLICATION_JSON_UTF8)
+      .expectHeader().contentType(APPLICATION_JSON)
       .expectStatus().isOk
       .expectBody().apply {
         dtos.forEachIndexed { index, dto ->
@@ -84,7 +84,7 @@ internal class FindAttachmentDescendentsHandlerTest @Autowired constructor(
 
     // invoke and verify
     client.get().uri(url).exchange()
-      .expectHeader().contentType(APPLICATION_JSON_UTF8)
+      .expectHeader().contentType(APPLICATION_JSON)
       .expectStatus().isOk
       .expectBody().jsonPath("$").isEmpty
     verify(service).findDescendants(id)

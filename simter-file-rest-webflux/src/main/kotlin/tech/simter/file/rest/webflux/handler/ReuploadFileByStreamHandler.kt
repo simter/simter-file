@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.HttpStatus.NOT_FOUND
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
 import org.springframework.web.reactive.function.server.RequestPredicate
@@ -16,9 +17,8 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.AttachmentDto
 import tech.simter.file.core.AttachmentService
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
+import tech.simter.file.core.domain.AttachmentDto
 import java.net.URLDecoder
 
 /**
@@ -79,11 +79,11 @@ class ReuploadFileByStreamHandler @Autowired constructor(
       .then(noContent().build())
       .onErrorResume(NotFoundException::class.java) {
         if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
-        else status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(NOT_FOUND).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
   }
 

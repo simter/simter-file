@@ -5,16 +5,16 @@ import org.mockito.Mockito.`when`
 import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunctions.route
 import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.domain.Attachment
-import tech.simter.file.rest.webflux.handler.AttachmentFormHandler.Companion.REQUEST_PREDICATE
 import tech.simter.file.core.AttachmentService
+import tech.simter.file.impl.domain.AttachmentImpl
+import tech.simter.file.rest.webflux.handler.AttachmentFormHandler.Companion.REQUEST_PREDICATE
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -39,7 +39,7 @@ internal class AttachmentFormHandlerTest @Autowired constructor(
     // mock
     val id = UUID.randomUUID().toString()
     val now = OffsetDateTime.now()
-    val attachment = Attachment(id, "/path", "name", "type", 100,
+    val attachment = AttachmentImpl(id, "/path", "name", "type", 100,
       now, "Simter", now, "Simter", "0")
     `when`(service.get(id)).thenReturn(Mono.just(attachment))
 
@@ -47,7 +47,7 @@ internal class AttachmentFormHandlerTest @Autowired constructor(
     client.get().uri("/attachment/$id")
       .exchange()
       .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON_UTF8)
+      .expectHeader().contentType(APPLICATION_JSON)
       .expectBody().jsonPath("$.id").isEqualTo(id)
 
     // verify
