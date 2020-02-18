@@ -94,6 +94,7 @@ interface AttachmentDao {
    *     and it not include the file suffix .
    *   [AttachmentDto4Zip.physicalPath] is the physical path of the file.
    * @param[ids] the attachments id.
+   * @return order by [AttachmentDto4Zip.zipPath] asc
    */
   fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip>
 
