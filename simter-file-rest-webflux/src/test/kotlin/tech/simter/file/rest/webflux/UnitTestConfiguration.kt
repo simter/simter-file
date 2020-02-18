@@ -1,7 +1,7 @@
 package tech.simter.file.rest.webflux
 
+import com.ninjasquad.springmockk.MockkBean
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -51,5 +51,5 @@ import tech.simter.file.core.AttachmentService
   // this module
   tech.simter.file.rest.webflux.ModuleConfiguration::class
 )
-@MockBean(AttachmentService::class)
+@MockkBean(AttachmentService::class)
 class UnitTestConfiguration

@@ -1,10 +1,10 @@
 package tech.simter.file.rest.webflux.handler
 
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
@@ -50,8 +50,8 @@ class InlineFileHandlerTest @Autowired constructor(
     val attachment: Attachment = AttachmentImpl(id, "$name.$ext", name, ext, fileSize,
       now, "Simter", now, "Simter", "0")
     val expected = Mono.just(attachment)
-    `when`(service.get(id)).thenReturn(expected)
-    `when`(service.getFullPath(id)).thenReturn("resources/$name.$ext".toMono())
+    every { service.get(id) } returns expected
+    every { service.getFullPath(id) } returns "resources/$name.$ext".toMono()
 
     // invoke request
     val result = client.get().uri("/inline/$id")
@@ -67,35 +67,39 @@ class InlineFileHandlerTest @Autowired constructor(
     assertEquals(result.responseBody!!.size.toLong(), fileSize)
 
     // verify method service.get invoked
-    verify(service).get(id)
-    verify(service).getFullPath(id)
+    verify {
+      service.get(id)
+      service.getFullPath(id)
+    }
   }
 
   @Test
   fun notFound() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.get(id)).thenReturn(Mono.empty())
-    `when`(service.getFullPath(id)).thenReturn(Mono.empty())
+    every { service.get(id) } returns Mono.empty()
+    every { service.getFullPath(id) } returns Mono.empty()
 
     // invoke
     client.get().uri("/inline/$id").exchange().expectStatus().isNotFound
 
     // verify
-    verify(service).get(id)
-    verify(service).getFullPath(id)
+    verify {
+      service.get(id)
+      service.getFullPath(id)
+    }
   }
 
   @Test
   fun failedByPermissionDenied() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.get(id)).thenReturn(Mono.error(PermissionDeniedException()))
+    every { service.get(id) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.get().uri("/inline/$id").exchange().expectStatus().isForbidden
 
     // verify
-    verify(service).get(id)
+    verify { service.get(id) }
   }
 }

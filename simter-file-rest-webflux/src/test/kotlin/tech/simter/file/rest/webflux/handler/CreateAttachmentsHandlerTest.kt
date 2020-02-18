@@ -1,9 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockitokotlin2.anyVararg
-import com.nhaarman.mockitokotlin2.verify
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -25,6 +24,7 @@ import java.util.*
  * Test [CreateAttachmentsHandler].
  *
  * @author zh
+ * @author RJ
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
@@ -49,7 +49,7 @@ class CreateAttachmentsHandlerTest @Autowired constructor(
     // mock
     val dtos = List(randomInt(1, 3)) { randomAttachmentDto4Create() }
     val ids = dtos.map { it.id }
-    `when`(service.create(anyVararg())).thenReturn(ids.toFlux())
+    every { service.create(*anyVararg()) } returns ids.toFlux()
 
     // invoke
     client.post().uri("/attachment").contentType(APPLICATION_JSON).bodyValue(dtos)//.map { it.data })
@@ -63,34 +63,34 @@ class CreateAttachmentsHandlerTest @Autowired constructor(
       }
 
     // verify
-    verify(service).create(anyVararg())
+    verify { service.create(*anyVararg()) }
   }
 
   @Test
   fun failedByPermissionDenied() {
     // mock
     val dtos = List(randomInt(1, 3)) { randomAttachmentDto4Create() }
-    `when`(service.create(anyVararg())).thenReturn(Flux.error(PermissionDeniedException()))
+    every { service.create(*anyVararg()) } returns Flux.error(PermissionDeniedException())
 
     // invoke
     client.post().uri("/attachment").contentType(APPLICATION_JSON).bodyValue(dtos)//.map { it.data })
       .exchange().expectStatus().isForbidden
 
     // verify
-    verify(service).create(anyVararg())
+    verify { service.create(*anyVararg()) }
   }
 
   @Test
   fun failedByAcrossModule() {
     // mock
     val dtos = List(randomInt(1, 3)) { randomAttachmentDto4Create() }
-    `when`(service.create(anyVararg())).thenReturn(Flux.error(ForbiddenException()))
+    every { service.create(*anyVararg()) } returns Flux.error(ForbiddenException())
 
     // invoke
     client.post().uri("/attachment").contentType(APPLICATION_JSON).bodyValue(dtos)//.map { it.data })
       .exchange().expectStatus().isForbidden
 
     // verify
-    verify(service).create(anyVararg())
+    verify { service.create(*anyVararg()) }
   }
 }

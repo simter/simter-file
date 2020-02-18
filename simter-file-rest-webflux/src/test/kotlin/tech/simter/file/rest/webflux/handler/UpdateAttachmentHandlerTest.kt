@@ -1,8 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -45,7 +45,7 @@ class UpdateAttachmentHandlerTest @Autowired constructor(
   @Test
   fun success() {
     val dto = randomAttachmentDto4Update()
-    `when`(service.update(id, dto)).thenReturn(Mono.empty())
+    every { service.update(id, dto) } returns Mono.empty()
 
     // invoke request
     client.patch().uri(url)
@@ -55,14 +55,14 @@ class UpdateAttachmentHandlerTest @Autowired constructor(
       .expectStatus().isNoContent
 
     // verify
-    verify(service).update(id, dto)
+    verify { service.update(id, dto) }
   }
 
   @Test
   fun `Found nothing`() {
     // mock
     val dto = randomAttachmentDto4Update()
-    `when`(service.update(id, dto)).thenReturn(Mono.error(NotFoundException("")))
+    every { service.update(id, dto) } returns Mono.error(NotFoundException(""))
 
     // invoke request
     client.patch().uri(url)
@@ -72,14 +72,14 @@ class UpdateAttachmentHandlerTest @Autowired constructor(
       .expectStatus().isNotFound
 
     // verify
-    verify(service).update(id, dto)
+    verify { service.update(id, dto) }
   }
 
   @Test
   fun `Failed by permission denied`() {
     // mock
     val dto = randomAttachmentDto4Update()
-    `when`(service.update(id, dto)).thenReturn(Mono.error(PermissionDeniedException("")))
+    every { service.update(id, dto) } returns Mono.error(PermissionDeniedException(""))
 
     // invoke request
     client.patch().uri(url)
@@ -89,14 +89,14 @@ class UpdateAttachmentHandlerTest @Autowired constructor(
       .expectStatus().isForbidden
 
     // verify
-    verify(service).update(id, dto)
+    verify { service.update(id, dto) }
   }
 
   @Test
   fun `Failed by across module`() {
     // mock
     val dto = randomAttachmentDto4Update()
-    `when`(service.update(id, dto)).thenReturn(Mono.error(ForbiddenException("")))
+    every { service.update(id, dto) } returns Mono.error(ForbiddenException(""))
 
     // invoke request
     client.patch().uri(url)
@@ -106,6 +106,6 @@ class UpdateAttachmentHandlerTest @Autowired constructor(
       .expectStatus().isForbidden
 
     // verify
-    verify(service).update(id, dto)
+    verify { service.update(id, dto) }
   }
 }

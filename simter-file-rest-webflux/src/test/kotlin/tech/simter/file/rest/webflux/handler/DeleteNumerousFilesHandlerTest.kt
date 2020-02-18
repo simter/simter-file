@@ -1,8 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.HttpMethod.DELETE
@@ -34,7 +34,7 @@ class DeleteNumerousFilesHandlerTest @Autowired constructor(
   fun delete() {
     // mock
     val ids = Array(4) { UUID.randomUUID().toString() }
-    `when`(service.delete(*ids)).thenReturn(Mono.empty())
+    every { service.delete(*ids) } returns Mono.empty()
 
     // invoke
     client.method(DELETE).uri("/")
@@ -43,14 +43,14 @@ class DeleteNumerousFilesHandlerTest @Autowired constructor(
       .exchange().expectStatus().isNoContent
 
     // verify
-    Mockito.verify(service).delete(*ids)
+    verify { service.delete(*ids) }
   }
 
   @Test
   fun failedByPermissionDenied() {
     // mock
     val ids = Array(4) { UUID.randomUUID().toString() }
-    `when`(service.delete(*ids)).thenReturn(Mono.error(PermissionDeniedException()))
+    every { service.delete(*ids) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.method(DELETE).uri("/")
@@ -60,14 +60,14 @@ class DeleteNumerousFilesHandlerTest @Autowired constructor(
       .expectStatus().isForbidden
 
     // verify
-    Mockito.verify(service).delete(*ids)
+    verify { service.delete(*ids) }
   }
 
   @Test
   fun failedByAcrossModule() {
     // mock
     val ids = Array(4) { UUID.randomUUID().toString() }
-    `when`(service.delete(*ids)).thenReturn(Mono.error(ForbiddenException()))
+    every { service.delete(*ids) } returns Mono.error(ForbiddenException())
 
     // invoke
     client.method(DELETE).uri("/")
@@ -77,6 +77,6 @@ class DeleteNumerousFilesHandlerTest @Autowired constructor(
       .expectStatus().isForbidden
 
     // verify
-    Mockito.verify(service).delete(*ids)
+    verify { service.delete(*ids) }
   }
 }

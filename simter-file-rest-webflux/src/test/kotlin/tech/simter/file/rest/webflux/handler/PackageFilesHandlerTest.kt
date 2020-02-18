@@ -1,10 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.eq
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED
@@ -38,8 +36,7 @@ class PackageFilesHandlerTest @Autowired constructor(
     val ids = List(3) { UUID.randomUUID().toString() }
     val defaultName = "test.zip"
     val specifiedName = "specified"
-    `when`(service.packageAttachments(any(), *(ids.map { eq(it) }).toTypedArray()))
-      .thenReturn(defaultName.toMono())
+    every { service.packageAttachments(any(), *(ids.map { eq(it) }).toTypedArray()) } returns defaultName.toMono()
 
     client.post().uri("/zip?name=$specifiedName")
       .contentType(APPLICATION_FORM_URLENCODED).bodyValue(ids.joinToString("&") { "id=$it" })
@@ -53,8 +50,7 @@ class PackageFilesHandlerTest @Autowired constructor(
   fun notSetZipName() {
     val ids = List(3) { UUID.randomUUID().toString() }
     val defaultName = "test.zip"
-    `when`(service.packageAttachments(any(), *(ids.map { eq(it) }).toTypedArray()))
-      .thenReturn(defaultName.toMono())
+    every { service.packageAttachments(any(), *(ids.map { eq(it) }).toTypedArray()) } returns defaultName.toMono()
 
     client.post().uri("/zip")
       .contentType(APPLICATION_FORM_URLENCODED).bodyValue(ids.joinToString("&") { "id=$it" })
@@ -68,7 +64,7 @@ class PackageFilesHandlerTest @Autowired constructor(
   fun notFound() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.empty())
+    every { service.packageAttachments(any(), eq(id)) } returns Mono.empty()
 
     // invoke
     client.post().uri("/zip?name=test")
@@ -76,14 +72,14 @@ class PackageFilesHandlerTest @Autowired constructor(
       .exchange().expectStatus().isNotFound
 
     // verify
-    verify(service).packageAttachments(any(), eq(id))
+    verify { service.packageAttachments(any(), eq(id)) }
   }
 
   @Test
   fun failedByPermissionDenied() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.error(PermissionDeniedException()))
+    every { service.packageAttachments(any(), eq(id)) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.post().uri("/zip?name=test")
@@ -91,14 +87,14 @@ class PackageFilesHandlerTest @Autowired constructor(
       .exchange().expectStatus().isForbidden
 
     // verify
-    verify(service).packageAttachments(any(), eq(id))
+    verify { service.packageAttachments(any(), eq(id)) }
   }
 
   @Test
   fun failedByAcrossModule() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.error(ForbiddenException()))
+    every { service.packageAttachments(any(), eq(id)) } returns Mono.error(ForbiddenException())
 
     // invoke
     client.post().uri("/zip?name=test")
@@ -106,6 +102,6 @@ class PackageFilesHandlerTest @Autowired constructor(
       .exchange().expectStatus().isForbidden
 
     // verify
-    verify(service).packageAttachments(any(), eq(id))
+    verify { service.packageAttachments(any(), eq(id)) }
   }
 }

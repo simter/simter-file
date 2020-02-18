@@ -3,5 +3,5 @@
   <include resource="org/springframework/boot/logging/logback/base.xml"/>
   <!-- TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF -->
   <root level="ERROR"/>
-  <logger name="tech.simter.file" level="WARN"/>
+  <logger name="tech.simter.file" level="ERROR"/>
 </configuration>

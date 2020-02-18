@@ -1,8 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.test.context.TestPropertySource
@@ -33,51 +33,51 @@ class DeleteFilesHandlerTest @Autowired constructor(
   fun deleteOne() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.delete(id)).thenReturn(Mono.empty())
+    every { service.delete(id) } returns Mono.empty()
 
     // invoke
     client.delete().uri("/$id").exchange().expectStatus().isNoContent
 
     // verify
-    Mockito.verify(service).delete(id)
+    verify { service.delete(id) }
   }
 
   @Test
   fun deleteBatch() {
     // mock
     val ids = arrayOf("a0001", "a0002", "a0003", "a0004", "a0005")
-    `when`(service.delete(*ids)).thenReturn(Mono.empty())
+    every { service.delete(*ids) } returns Mono.empty()
 
     // invoke
     client.delete().uri("/${ids.joinToString(",")}").exchange().expectStatus().isNoContent
 
     // verify
-    Mockito.verify(service).delete(*ids)
+    verify { service.delete(*ids) }
   }
 
   @Test
   fun failedByPermissionDenied() {
     // mock
     val ids = arrayOf("a0001", "a0002", "a0003", "a0004", "a0005")
-    `when`(service.delete(*ids)).thenReturn(Mono.error(PermissionDeniedException()))
+    every { service.delete(*ids) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.delete().uri("/${ids.joinToString(",")}").exchange().expectStatus().isForbidden
 
     // verify
-    Mockito.verify(service).delete(*ids)
+    verify { service.delete(*ids) }
   }
 
   @Test
   fun failedByAcrossModule() {
     // mock
     val ids = arrayOf("a0001", "a0002", "a0003", "a0004", "a0005")
-    `when`(service.delete(*ids)).thenReturn(Mono.error(ForbiddenException()))
+    every { service.delete(*ids) } returns Mono.error(ForbiddenException())
 
     // invoke
     client.delete().uri("/${ids.joinToString(",")}").exchange().expectStatus().isForbidden
 
     // verify
-    Mockito.verify(service).delete(*ids)
+    verify { service.delete(*ids) }
   }
 }

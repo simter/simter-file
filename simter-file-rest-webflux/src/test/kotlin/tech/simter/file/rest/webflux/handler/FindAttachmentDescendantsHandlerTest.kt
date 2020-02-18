@@ -1,8 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -49,7 +49,7 @@ class FindAttachmentDescendantsHandlerTest @Autowired constructor(
   fun `Find some`() {
     // mock
     val dtos = List(randomInt(1, 3)) { randomAttachmentDtoWithChildren(1, 2) }
-    `when`(service.findDescendants(id)).thenReturn(dtos.toFlux())
+    every { service.findDescendants(id) } returns dtos.toFlux()
 
     // invoke and verify
     client.get().uri(url).exchange()
@@ -71,29 +71,29 @@ class FindAttachmentDescendantsHandlerTest @Autowired constructor(
           }
         }
       }
-    verify(service).findDescendants(id)
+    verify { service.findDescendants(id) }
   }
 
   @Test
   fun `Found nothing`() {
     // mock
-    `when`(service.findDescendants(id)).thenReturn(Flux.empty())
+    every { service.findDescendants(id) } returns Flux.empty()
 
     // invoke and verify
     client.get().uri(url).exchange()
       .expectHeader().contentType(APPLICATION_JSON)
       .expectStatus().isOk
       .expectBody().jsonPath("$").isEmpty
-    verify(service).findDescendants(id)
+    verify { service.findDescendants(id) }
   }
 
   @Test
   fun `Failed by permission denied`() {
     // mock
-    `when`(service.findDescendants(id)).thenReturn(Flux.error(PermissionDeniedException()))
+    every { service.findDescendants(id) } returns Flux.error(PermissionDeniedException())
 
     // invoke and verify
     client.get().uri(url).exchange().expectStatus().isForbidden
-    verify(service).findDescendants(id)
+    verify { service.findDescendants(id) }
   }
 }

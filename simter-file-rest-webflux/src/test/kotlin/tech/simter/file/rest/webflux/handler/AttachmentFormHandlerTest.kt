@@ -1,8 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -36,7 +36,7 @@ class AttachmentFormHandlerTest @Autowired constructor(
     val now = OffsetDateTime.now()
     val attachment = AttachmentImpl(id, "/path", "name", "type", 100,
       now, "Simter", now, "Simter", "0")
-    `when`(service.get(id)).thenReturn(Mono.just(attachment))
+    every { service.get(id) } returns Mono.just(attachment)
 
     // invoke
     client.get().uri("/attachment/$id")
@@ -46,32 +46,32 @@ class AttachmentFormHandlerTest @Autowired constructor(
       .expectBody().jsonPath("$.id").isEqualTo(id)
 
     // verify
-    verify(service).get(id)
+    verify { service.get(id) }
   }
 
   @Test
   fun notFound() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.get(id)).thenReturn(Mono.empty())
+    every { service.get(id) } returns Mono.empty()
 
     // invoke
     client.get().uri("/attachment/$id").exchange().expectStatus().isNotFound
 
     // verify
-    verify(service).get(id)
+    verify { service.get(id) }
   }
 
   @Test
   fun failedByPermissionDenied() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.get(id)).thenReturn(Mono.error(PermissionDeniedException()))
+    every { service.get(id) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.get().uri("/attachment/$id").exchange().expectStatus().isForbidden
 
     // verify
-    verify(service).get(id)
+    verify { service.get(id) }
   }
 }

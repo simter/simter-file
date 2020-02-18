@@ -1,8 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.data.domain.Page
@@ -44,7 +44,7 @@ class AttachmentViewHandlerTest @Autowired constructor(
     list.add(AttachmentImpl(id, "/path", "name", "type", 100,
       now, "Simter", now, "Simter", "0"))
     val pageable = PageRequest.of(pageNo, pageSize)
-    `when`<Mono<Page<Attachment>>>(service.find(pageable)).thenReturn(Mono.just<Page<Attachment>>(PageImpl(list, pageable, list.size.toLong())))
+    every { service.find(pageable) } returns Mono.just<Page<Attachment>>(PageImpl(list, pageable, list.size.toLong()))
 
     // invoke
     client.get().uri("/attachment?page-no=0&page-size=25")
@@ -58,7 +58,7 @@ class AttachmentViewHandlerTest @Autowired constructor(
       .jsonPath("$.rows[0].id").isEqualTo(id)    // verify Attachment.id
 
     // verify
-    verify(service).find(pageable)
+    verify { service.find(pageable) }
   }
 
   @Test
@@ -67,7 +67,7 @@ class AttachmentViewHandlerTest @Autowired constructor(
     val pageNo = 0
     val pageSize = 25
     val pageable = PageRequest.of(pageNo, pageSize)
-    `when`<Mono<Page<Attachment>>>(service.find(pageable)).thenReturn(Mono.error<Page<Attachment>>(PermissionDeniedException()))
+    every { service.find(pageable) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.get().uri("/attachment?page-no=$pageNo&page-size=$pageSize")
@@ -75,6 +75,6 @@ class AttachmentViewHandlerTest @Autowired constructor(
       .expectStatus().isForbidden
 
     // verify
-    verify(service).find(pageable)
+    verify { service.find(pageable) }
   }
 }

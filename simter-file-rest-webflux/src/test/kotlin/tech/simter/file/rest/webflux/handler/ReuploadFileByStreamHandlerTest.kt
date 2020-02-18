@@ -1,9 +1,8 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockitokotlin2.any
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
@@ -41,7 +40,7 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       it.id = id
       it.size = fileSize
     }
-    `when`(service.reuploadFile(attachment, fileData)).thenReturn(Mono.empty())
+    every { service.reuploadFile(attachment, fileData) } returns Mono.empty()
 
     // invoke
     client.patch().uri("/$id")
@@ -52,7 +51,7 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isNoContent
 
     // verify
-    verify(service).reuploadFile(attachment, fileData)
+    verify { service.reuploadFile(attachment, fileData) }
   }
 
   @Test
@@ -70,7 +69,7 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       it.type = ext
       it.name = name
     }
-    `when`(service.reuploadFile(attachment, fileData)).thenReturn(Mono.empty())
+    every { service.reuploadFile(attachment, fileData) } returns Mono.empty()
 
     // invoke
     client.patch().uri("/$id")
@@ -82,7 +81,7 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isNoContent
 
     // verify
-    verify(service).reuploadFile(attachment, fileData)
+    verify { service.reuploadFile(attachment, fileData) }
   }
 
   @Test
@@ -100,7 +99,7 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       it.type = ext
       it.name = name
     }
-    `when`(service.reuploadFile(attachment, fileData)).thenReturn(Mono.error(NotFoundException("")))
+    every { service.reuploadFile(attachment, fileData) } returns Mono.error(NotFoundException(""))
 
     // invoke
     client.patch().uri("/$id")
@@ -112,7 +111,7 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isNotFound
 
     // verify
-    verify(service).reuploadFile(attachment, fileData)
+    verify { service.reuploadFile(attachment, fileData) }
   }
 
   @Test
@@ -124,7 +123,7 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
     val fileData = file.file.readBytes()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    `when`(service.reuploadFile(any(), any())).thenReturn(Mono.error(PermissionDeniedException()))
+    every { service.reuploadFile(any(), any()) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.patch().uri("/$id")
@@ -136,6 +135,6 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isForbidden
 
     // verify
-    verify(service).reuploadFile(any(), any())
+    verify { service.reuploadFile(any(), any()) }
   }
 }
