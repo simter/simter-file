@@ -59,7 +59,8 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {
-    TODO("not implemented")
+    return if (attachments.isEmpty()) Mono.empty()
+    else repository.saveAll(attachments.asIterable().map { AttachmentPo.from(it) }).then()
   }
 
   override fun delete(vararg ids: String): Flux<String> {
