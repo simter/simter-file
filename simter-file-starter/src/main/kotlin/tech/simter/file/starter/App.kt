@@ -9,6 +9,6 @@ fun main(args: Array<String>) {
 }
 
 @SpringBootApplication(
-  scanBasePackages = ["tech.simter.file"],
+  scanBasePackages = ["tech.simter"],
   scanBasePackageClasses = [ProjectInfoAutoConfiguration::class])
 class App
