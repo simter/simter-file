@@ -77,7 +77,20 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun getFullPath(id: String): Mono<String> {
-    TODO("not implemented")
+    val sql = """
+      with recursive p(id, path, upper_id) as (
+        select id, concat(path, ''), upper_id from st_attachment where id = :id
+        union
+        select a.id, concat(a.path, '/', p.path), a.upper_id from st_attachment as a
+        join p on a.id = p.upper_id
+      )
+      select p.path from p where upper_id is null
+    """.trimIndent()
+    return databaseClient.execute(sql)
+      .bind("id", id)
+      .`as`(String::class.java)
+      .fetch()
+      .one()
   }
 
   override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
