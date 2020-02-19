@@ -106,6 +106,14 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun findPuids(vararg ids: String): Flux<Optional<String>> {
-    TODO("not implemented")
+    if (ids.isEmpty()) return Flux.empty()
+    val sql = "select distinct (case when a.puid is null then '' else a.puid end) as puid" +
+      " from $TABLE_ATTACHMENT a where id in (:ids) order by puid asc"
+    return databaseClient.execute(sql)
+      .bind("ids", ids.toList())
+      .`as`(String::class.java)
+      .fetch()
+      .all()
+      .map { if (it.isEmpty()) Optional.empty() else Optional.of(it) }
   }
 }
