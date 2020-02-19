@@ -1,4 +1,4 @@
-package tech.simter.file.impl.dao.mongo
+package tech.simter.file.impl.dao.mongo.dto
 
 import tech.simter.file.core.domain.AttachmentDto4Zip
 
@@ -6,33 +6,33 @@ fun AttachmentDto4Zip.generateId() {
   id = origin?.let { "\"$origin\"-\"$terminus\"" } ?: "null-\"$terminus\""
 }
 
-fun List<AttachmentUppersWithDescendents>.convertToAttachmentDto4Zip(): List<AttachmentDto4Zip> {
+fun List<AttachmentUppersWithDescendants>.convertToAttachmentDto4Zip(): List<AttachmentDto4Zip> {
   if (isEmpty()) return listOf()
   val commonAncestors = this.map { it.uppers }.reduce { reduce, next ->
     reduce.intersect(next).toList()
   }
   val commonAncestorCount = commonAncestors.size
   val leastCommonAncestor = commonAncestors.lastOrNull()?.id
-  return this.map {
-    val uppers = it.uppers
-    var descendents = it.descendents.reversed()
+  return this.map { ud ->
+    val uppers = ud.uppers
+    var descendants = ud.descendants.reversed()
     val root = AttachmentDto4Zip().apply {
       origin = leastCommonAncestor
-      terminus = it.id
+      terminus = ud.id
       zipPath = (
         if (commonAncestorCount == 0) uppers
         else uppers.takeLast(uppers.size - commonAncestorCount + 1)
         ).joinToString("/") { it.name }
       physicalPath = uppers.joinToString("/") { it.path }
-      type = it.type
+      type = ud.type
       generateId()
     }
     val results = mutableListOf(root)
     val queue = mutableListOf(root)
     while (queue.isNotEmpty()) {
       val top = queue.removeAt(0)
-      descendents.groupBy { if (top.terminus == it.upperId) "children" else "other" }.also {
-        descendents = it["other"] ?: listOf()
+      descendants.groupBy { if (top.terminus == it.upperId) "children" else "other" }.also {
+        descendants = it["other"] ?: listOf()
         (it["children"] ?: listOf()).map {
           AttachmentDto4Zip().apply {
             origin = leastCommonAncestor
@@ -42,9 +42,9 @@ fun List<AttachmentUppersWithDescendents>.convertToAttachmentDto4Zip(): List<Att
             type = it.type
             generateId()
           }
-        }.also {
-          results.addAll(it)
-          queue.addAll(it)
+        }.also { list ->
+          results.addAll(list)
+          queue.addAll(list)
         }
       }
     }
@@ -54,13 +54,17 @@ fun List<AttachmentUppersWithDescendents>.convertToAttachmentDto4Zip(): List<Att
     .distinct()
 }
 
-data class AttachmentUppersWithDescendents(val id: String,
-                                           val type: String,
-                                           val descendents: List<Info>,
-                                           val uppers: List<Info>) {
-  data class Info(val id: String,
-                  val type: String,
-                  val path: String,
-                  val name: String,
-                  val upperId: String?)
+data class AttachmentUppersWithDescendants(
+  val id: String,
+  val type: String,
+  val descendants: List<Info>,
+  val uppers: List<Info>
+) {
+  data class Info(
+    val id: String,
+    val type: String,
+    val path: String,
+    val name: String,
+    val upperId: String?
+  )
 }

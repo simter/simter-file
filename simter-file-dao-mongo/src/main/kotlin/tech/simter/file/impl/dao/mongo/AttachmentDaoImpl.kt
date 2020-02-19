@@ -20,6 +20,7 @@ import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.impl.dao.mongo.dto.*
 import tech.simter.file.impl.dao.mongo.po.AttachmentPo
 import java.util.*
 
@@ -37,7 +38,7 @@ class AttachmentDaoImpl @Autowired constructor(
   override fun findPuids(vararg ids: String): Flux<Optional<String>> {
     val query = Query.query(Criteria.where("_id").`in`(*ids))
       .also { it.fields().include("puid").exclude("_id") }
-    return operations.find(query, AttachmentPuid::class.java, operations.getCollectionName(Attachment::class.java))
+    return operations.find(query, AttachmentPuid::class.java, operations.getCollectionName(AttachmentPo::class.java))
       .map { Optional.ofNullable(it.puid) }.distinct()
   }
 
@@ -49,13 +50,13 @@ class AttachmentDaoImpl @Autowired constructor(
         // Aggregate all upper(including itself) into an array into field "aggregate"
         graphLookup("st_attachment")
           .startWith("id").connectFrom("upperId").connectTo("_id").`as`("uppers"),
-        // Aggregate all descendents into an array into field "aggregate"
+        // Aggregate all descendants into an array into field "aggregate"
         graphLookup("st_attachment")
-          .startWith("id").connectFrom("_id").connectTo("upperId").`as`("descendents"),
-        project("uppers", "descendents", "type")
+          .startWith("id").connectFrom("_id").connectTo("upperId").`as`("descendants"),
+        project("uppers", "descendants", "type")
       ),
-      Attachment::class.java,
-      AttachmentUppersWithDescendents::class.java
+      AttachmentPo::class.java,
+      AttachmentUppersWithDescendants::class.java
     )
       .collectList().flatMapIterable { it.convertToAttachmentDto4Zip() }
   }
@@ -79,15 +80,18 @@ class AttachmentDaoImpl @Autowired constructor(
       newAggregation(
         // Filter out the specified Attachment
         match(Criteria.where("id").`is`(id)),
-        // Aggregate all descendents into an array into field "aggregate"
+        // Aggregate all descendants into an array into field "aggregate"
         graphLookup("st_attachment")
-          .startWith("id").connectFrom("_id").connectTo("upperId").`as`("aggregate"),
+          .startWith("id")
+          .connectFrom("_id")
+          .connectTo("upperId")
+          .`as`("aggregate"),
         project("aggregate")
       ),
-      Attachment::class.java,
-      AttachmentDescendentsDtoWithUpper::class.java
+      AttachmentPo::class.java,
+      AttachmentDescendantsDtoWithUpper::class.java
     )
-      .singleOrEmpty().map(AttachmentDescendentsDtoWithUpper::dtoWithChildren).flatMapIterable { it.children!! }
+      .singleOrEmpty().map(AttachmentDescendantsDtoWithUpper::dtoWithChildren).flatMapIterable { it.children!! }
   }
 
   override fun getFullPath(id: String): Mono<String> {
@@ -97,10 +101,13 @@ class AttachmentDaoImpl @Autowired constructor(
         match(Criteria.where("id").`is`(id)),
         // Aggregate all upper(including itself) into an array into field "aggregate"
         graphLookup("st_attachment")
-          .startWith("id").connectFrom("upperId").connectTo("_id").`as`("aggregate"),
+          .startWith("id")
+          .connectFrom("upperId")
+          .connectTo("_id")
+          .`as`("aggregate"),
         project("aggregate")
       ),
-      Attachment::class.java, AttachmentUppersPath::class.java
+      AttachmentPo::class.java, AttachmentUppersPath::class.java
     )
       .singleOrEmpty().map(AttachmentUppersPath::fullPath)
   }
@@ -110,22 +117,24 @@ class AttachmentDaoImpl @Autowired constructor(
     return repository.findById(id) as Mono<Attachment>
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun find(pageable: Pageable): Mono<Page<Attachment>> {
     val query = Query().with(pageable)
     val zip: Mono<Page<Attachment>> = Mono.zip(
-      operations.find(query, Attachment::class.java).collectList(),
-      operations.count(query, Attachment::class.java)
+      operations.find(query, AttachmentPo::class.java).collectList() as Mono<List<Attachment>>,
+      operations.count(query, AttachmentPo::class.java)
     ) { content, total -> PageImpl(content, pageable, total) }
     return zip.defaultIfEmpty(Page.empty<Attachment>(pageable))
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun find(puid: String, upperId: String?): Flux<Attachment> {
     val condition = Criteria.where("puid").`is`(puid)
     if (null != upperId) condition.and("upperId").`is`(upperId)
     return operations.find(
       Query.query(condition).with(Sort.by(Sort.Direction.DESC, "createOn")),
-      Attachment::class.java
-    )
+      AttachmentPo::class.java
+    ) as Flux<Attachment>
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {
@@ -144,7 +153,7 @@ class AttachmentDaoImpl @Autowired constructor(
             .startWith("id").connectFrom("upperId").connectTo("_id").`as`("aggregate"),
           project("aggregate")
         ),
-        Attachment::class.java,
+        AttachmentPo::class.java,
         AttachmentUppersPath::class.java
       )
         .map(AttachmentUppersPath::fullPath).collectList()
@@ -160,10 +169,10 @@ class AttachmentDaoImpl @Autowired constructor(
                   .startWith("id").connectFrom("_id").connectTo("upperId").`as`("aggregate"),
                 project("aggregate")
               ),
-              Attachment::class.java,
-              AttachmentDescendentsId::class.java
+              AttachmentPo::class.java,
+              AttachmentDescendantsId::class.java
             )
-              .map(AttachmentDescendentsId::descendents).flatMapIterable { it }.collectList()
+              .map(AttachmentDescendantsId::descendants).flatMapIterable { it }.collectList()
               // 2.2. Delete attachments and theirs descendants
               .flatMap {
                 operations.remove<AttachmentPo>(
