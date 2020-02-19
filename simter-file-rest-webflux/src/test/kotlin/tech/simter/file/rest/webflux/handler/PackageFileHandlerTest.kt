@@ -1,45 +1,39 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.eq
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM_VALUE
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
-import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
-import org.springframework.web.reactive.config.EnableWebFlux
-import org.springframework.web.reactive.function.server.RouterFunctions.route
+import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.rest.webflux.handler.PackageFileHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
+import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.util.*
 
 /**
  * Test [PackageFileHandler].
  *
  * @author zh
+ * @author RJ
  */
-@SpringJUnitConfig(PackageFileHandler::class)
-@EnableWebFlux
-@MockBean(AttachmentService::class)
-internal class PackageFileHandlerTest @Autowired constructor(
-  private val service: AttachmentService,
-  handler: PackageFileHandler
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
+class PackageFileHandlerTest @Autowired constructor(
+  private val client: WebTestClient,
+  private val service: AttachmentService
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
-
   @Test
   fun setZipName() {
     val id = UUID.randomUUID().toString()
     val defaultName = "test.zip"
     val specifiedName = "specified"
-    `when`(service.packageAttachments(any(), eq(id))).thenReturn(defaultName.toMono())
+    every { service.packageAttachments(any(), eq(id)) } returns defaultName.toMono()
 
     client.get().uri("/zip/$id?name=$specifiedName")
       .exchange().expectStatus().isOk
@@ -52,7 +46,7 @@ internal class PackageFileHandlerTest @Autowired constructor(
   fun notSetZipName() {
     val id = UUID.randomUUID().toString()
     val defaultName = "test.zip"
-    `when`(service.packageAttachments(any(), eq(id))).thenReturn(defaultName.toMono())
+    every { service.packageAttachments(any(), eq(id)) } returns defaultName.toMono()
 
     client.get().uri("/zip/$id")
       .exchange().expectStatus().isOk
@@ -65,41 +59,41 @@ internal class PackageFileHandlerTest @Autowired constructor(
   fun notFound() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.empty())
+    every { service.packageAttachments(any(), eq(id)) } returns Mono.empty()
 
     // invoke
     client.get().uri("/zip/$id?name=test")
       .exchange().expectStatus().isNotFound
 
     // verify
-    verify(service).packageAttachments(any(), eq(id))
+    verify { service.packageAttachments(any(), eq(id)) }
   }
 
   @Test
   fun failedByPermissionDenied() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.error(PermissionDeniedException()))
+    every { service.packageAttachments(any(), eq(id)) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.get().uri("/zip/$id?name=test")
       .exchange().expectStatus().isForbidden
 
     // verify
-    verify(service).packageAttachments(any(), eq(id))
+    verify { service.packageAttachments(any(), eq(id)) }
   }
 
   @Test
   fun failedByAcrossModule() {
     // mock
     val id = UUID.randomUUID().toString()
-    `when`(service.packageAttachments(any(), eq(id))).thenReturn(Mono.error(ForbiddenException()))
+    every { service.packageAttachments(any(), eq(id)) } returns Mono.error(ForbiddenException())
 
     // invoke
     client.get().uri("/zip/$id?name=test")
       .exchange().expectStatus().isForbidden
 
     // verify
-    verify(service).packageAttachments(any(), eq(id))
+    verify { service.packageAttachments(any(), eq(id)) }
   }
 }

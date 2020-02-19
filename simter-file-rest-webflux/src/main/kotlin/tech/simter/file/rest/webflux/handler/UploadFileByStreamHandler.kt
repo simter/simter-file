@@ -16,8 +16,9 @@ import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.po.Attachment
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.AttachmentService
+import tech.simter.file.impl.domain.AttachmentImpl
 import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -61,6 +62,7 @@ import java.util.*
  *
  * @author JW
  * @author zh
+ * @author RJ
  */
 @Component
 class UploadFileByStreamHandler @Autowired constructor(
@@ -109,6 +111,6 @@ fun createAttachment(id: String, fileSize: Long, fileName: String, puid: String?
   } else {
     "${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$type"
   }
-  return Attachment(id = id, path = path, name = fileName.substring(0, lastDotIndex), type = type, size = fileSize,
+  return AttachmentImpl(id = id, path = path, name = fileName.substring(0, lastDotIndex), type = type, size = fileSize,
     createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", puid = puid, upperId = upperId)
 }

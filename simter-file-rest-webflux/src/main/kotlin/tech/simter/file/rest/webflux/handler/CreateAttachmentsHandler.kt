@@ -3,7 +3,8 @@ package tech.simter.file.rest.webflux.handler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.FORBIDDEN
-import org.springframework.http.MediaType.APPLICATION_JSON_UTF8
+import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.reactive.function.server.RequestPredicates.POST
@@ -12,12 +13,12 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.dto.AttachmentDto4Create
-import tech.simter.file.po.Attachment
-import tech.simter.file.service.AttachmentService
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
+import tech.simter.file.core.AttachmentService
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.domain.AttachmentCreateInfo
+import tech.simter.file.impl.domain.AttachmentCreateInfoImpl
+import tech.simter.file.impl.domain.AttachmentImpl
 import java.time.OffsetDateTime
-import java.util.*
 
 /**
  * The [HandlerFunction] for Create Attachments .
@@ -54,6 +55,7 @@ import java.util.*
  * ```
  *
  * @author zh
+ * @author RJ
  */
 
 @Component
@@ -61,30 +63,30 @@ class CreateAttachmentsHandler @Autowired constructor(
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
-    return request.bodyToFlux<AttachmentDto4Create>().map { toAttachment(it) }
+    return request.bodyToFlux<AttachmentCreateInfoImpl>().map { toAttachment(it) }
       .collectList().map { it.toTypedArray() }
       .flatMap { attachmentService.create(*it).collectList() }
-      .flatMap { status(CREATED).contentType(APPLICATION_JSON_UTF8).syncBody(it) }
+      .flatMap { status(CREATED).contentType(APPLICATION_JSON).bodyValue(it) }
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
       .onErrorResume(ForbiddenException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
   }
 
-  fun toAttachment(dto: AttachmentDto4Create): Attachment {
-    val id = dto.id ?: UUID.randomUUID().toString()
+  fun toAttachment(dto: AttachmentCreateInfo): Attachment {
+    val id = dto.id
     val now = OffsetDateTime.now()
-    return Attachment(id = id, path = dto.path ?: id, name = dto.name!!, type = dto.type ?: "",
+    return AttachmentImpl(id = id, path = dto.path, name = dto.name, type = dto.type,
       size = 0, createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter",
       puid = dto.puid ?: "", upperId = dto.upperId ?: "EMPTY")
   }
 
   companion object {
     /** The default [RequestPredicate] */
-    val REQUEST_PREDICATE: RequestPredicate = POST("/attachment").and(contentType(APPLICATION_JSON_UTF8))
+    val REQUEST_PREDICATE: RequestPredicate = POST("/attachment").and(contentType(APPLICATION_JSON))
   }
 }

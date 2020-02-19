@@ -2,7 +2,8 @@ package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.FORBIDDEN
-import org.springframework.http.MediaType.APPLICATION_JSON_UTF8
+import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.reactive.function.server.RequestPredicates.DELETE
@@ -12,8 +13,7 @@ import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.service.AttachmentService
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
+import tech.simter.file.core.AttachmentService
 
 /**
  * The [HandlerFunction] for delete files.
@@ -40,6 +40,7 @@ import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
  * ```
  *
  * @author zh
+ * @author RJ
  */
 @Component
 class DeleteNumerousFilesHandler @Autowired constructor(
@@ -51,16 +52,16 @@ class DeleteNumerousFilesHandler @Autowired constructor(
       .then(noContent().build())
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
       .onErrorResume(ForbiddenException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
   }
 
   companion object {
     /** The default [RequestPredicate] */
-    val REQUEST_PREDICATE: RequestPredicate = DELETE("/").and(contentType(APPLICATION_JSON_UTF8))
+    val REQUEST_PREDICATE: RequestPredicate = DELETE("/").and(contentType(APPLICATION_JSON))
   }
 }

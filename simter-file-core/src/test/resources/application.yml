@@ -1,0 +1,7 @@
+spring.main.banner-mode: 'off'
+simter.file.root: target/files
+logging:
+  file: target/test.log
+  level: # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
+    root: ERROR
+    tech.simter.file: WARN

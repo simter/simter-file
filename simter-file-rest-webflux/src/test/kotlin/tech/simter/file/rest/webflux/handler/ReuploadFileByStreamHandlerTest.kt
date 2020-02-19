@@ -1,41 +1,34 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockito_kotlin.any
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.verify
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
-import org.springframework.http.MediaType
+import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
-import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
-import org.springframework.web.reactive.config.EnableWebFlux
-import org.springframework.web.reactive.function.server.RouterFunctions.route
+import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.dto.AttachmentDto
-import tech.simter.file.rest.webflux.handler.ReuploadFileByStreamHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
+import tech.simter.file.core.domain.AttachmentDto
+import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.util.*
 
 /**
  * Test [ReuploadFileByStreamHandler].
  *
  * @author zh
+ * @author RJ
  */
-@SpringJUnitConfig(ReuploadFileByStreamHandler::class)
-@EnableWebFlux
-@MockBean(AttachmentService::class)
-@SpyBean(ReuploadFileByStreamHandler::class)
-internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
-  private val service: AttachmentService,
-  handler: ReuploadFileByStreamHandler
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
+class ReuploadFileByStreamHandlerTest @Autowired constructor(
+  private val client: WebTestClient,
+  private val service: AttachmentService
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
-
   @Test
   fun `Reupload by no file name`() {
     // mock
@@ -47,18 +40,18 @@ internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
       it.id = id
       it.size = fileSize
     }
-    `when`(service.reuploadFile(attachment, fileData)).thenReturn(Mono.empty())
+    every { service.reuploadFile(attachment, fileData) } returns Mono.empty()
 
     // invoke
     client.patch().uri("/$id")
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(file.file.readBytes())
+      .bodyValue(file.file.readBytes())
       .exchange()
       .expectStatus().isNoContent
 
     // verify
-    verify(service).reuploadFile(attachment, fileData)
+    verify { service.reuploadFile(attachment, fileData) }
   }
 
   @Test
@@ -76,19 +69,19 @@ internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
       it.type = ext
       it.name = name
     }
-    `when`(service.reuploadFile(attachment, fileData)).thenReturn(Mono.empty())
+    every { service.reuploadFile(attachment, fileData) } returns Mono.empty()
 
     // invoke
     client.patch().uri("/$id")
       .header("Content-Disposition", "attachment; name=\"filedata\"; filename=\"$name.$ext\"")
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(file.file.readBytes())
+      .bodyValue(file.file.readBytes())
       .exchange()
       .expectStatus().isNoContent
 
     // verify
-    verify(service).reuploadFile(attachment, fileData)
+    verify { service.reuploadFile(attachment, fileData) }
   }
 
   @Test
@@ -106,19 +99,19 @@ internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
       it.type = ext
       it.name = name
     }
-    `when`(service.reuploadFile(attachment, fileData)).thenReturn(Mono.error(NotFoundException("")))
+    every { service.reuploadFile(attachment, fileData) } returns Mono.error(NotFoundException(""))
 
     // invoke
     client.patch().uri("/$id")
       .header("Content-Disposition", "attachment; name=\"filedata\"; filename=\"$name.$ext\"")
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isNotFound
 
     // verify
-    verify(service).reuploadFile(attachment, fileData)
+    verify { service.reuploadFile(attachment, fileData) }
   }
 
   @Test
@@ -130,18 +123,18 @@ internal class ReuploadFileByStreamHandlerTest @Autowired constructor(
     val fileData = file.file.readBytes()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    `when`(service.reuploadFile(any(), any())).thenReturn(Mono.error(PermissionDeniedException()))
+    every { service.reuploadFile(any(), any()) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.patch().uri("/$id")
       .header("Content-Disposition", "attachment; name=\"filedata\"; filename=\"$name.$ext\"")
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isForbidden
 
     // verify
-    verify(service).reuploadFile(any(), any())
+    verify { service.reuploadFile(any(), any()) }
   }
 }
