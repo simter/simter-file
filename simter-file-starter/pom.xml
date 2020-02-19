@@ -157,11 +157,11 @@
     <profile>
       <id>reactive-embedded-mongodb</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
         <db.platform>mongodb</db.platform>
-        <db.port>27017</db.port>
+        <db.port>27018</db.port>
         <db.url><![CDATA[mongodb://${db.username}:${db.password}@${db.host}:${db.port}/${db.name}]]> </db.url>
       </properties>
       <dependencies>
@@ -210,7 +210,7 @@
     <profile>
       <id>r2dbc-embedded-h2</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
         <db.platform>h2</db.platform>
