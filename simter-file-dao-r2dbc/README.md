@@ -41,9 +41,9 @@ mvn test -D db.name=testdb
 
 | Name              | Default | Supported |
 |-------------------|:-------:|:---------:|
-| embedded-h2       |    √    |           |
-| embedded-postgres |         |           |
-| postgres          |         |           |
+| embedded-h2       |    √    |     √     |
+| embedded-postgres |         |     √     |
+| postgres          |         |     √     |
 | embedded-mysql    |         |           |
 | mysql             |         |           |
 | mssql             |         |           |
