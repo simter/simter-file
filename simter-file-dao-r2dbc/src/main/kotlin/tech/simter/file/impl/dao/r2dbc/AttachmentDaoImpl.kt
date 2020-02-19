@@ -1,16 +1,18 @@
 package tech.simter.file.impl.dao.r2dbc
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.*
+import org.springframework.data.domain.Sort.Direction.DESC
 import org.springframework.data.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.file.TABLE_ATTACHMENT
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
 import java.util.*
 
 /**
@@ -28,8 +30,28 @@ class AttachmentDaoImpl @Autowired constructor(
     return repository.findById(id) as Mono<Attachment>
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun find(pageable: Pageable): Mono<Page<Attachment>> {
-    TODO("not implemented")
+    return Mono.zip(
+      // query content
+      databaseClient.select()
+        .from(TABLE_ATTACHMENT)
+        .page(PageRequest.of(
+          pageable.pageNumber,
+          if (pageable.pageSize < 1) 25 else pageable.pageSize,
+          pageable.getSortOr(Sort.by(DESC, "create_on")) // default order by createOn desc
+        ))
+        .`as`(AttachmentPo::class.java)
+        .fetch()
+        .all()
+        .collectList(),
+      // query total count
+      databaseClient.execute("select count(*) c from $TABLE_ATTACHMENT")
+        .`as`(Long::class.javaObjectType)
+        .fetch()
+        .one()
+    ) { content, total -> PageImpl(content, pageable, total) as Page<Attachment> }
+      .defaultIfEmpty(Page.empty<Attachment>(pageable))
   }
 
   override fun find(puid: String, upperId: String?): Flux<Attachment> {
