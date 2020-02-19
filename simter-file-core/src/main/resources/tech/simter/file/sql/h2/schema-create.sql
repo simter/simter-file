@@ -4,9 +4,9 @@ create table st_attachment (
   name      varchar(255) not null,
   type      varchar(10)  not null,
   size      integer      not null,
-  create_on timestamp    not null,
+  create_on timestamp with time zone not null,
   creator   varchar(255) not null,
-  modify_on timestamp    not null,
+  modify_on timestamp with time zone not null,
   modifier  varchar(255) not null,
   puid      varchar(36),
   upper_id  varchar(36)
