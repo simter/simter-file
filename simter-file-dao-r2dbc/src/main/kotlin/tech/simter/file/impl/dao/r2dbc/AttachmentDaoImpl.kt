@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.*
 import org.springframework.data.domain.Sort.Direction.DESC
 import org.springframework.data.r2dbc.core.DatabaseClient
+import org.springframework.data.r2dbc.query.Criteria
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -54,8 +55,16 @@ class AttachmentDaoImpl @Autowired constructor(
       .defaultIfEmpty(Page.empty<Attachment>(pageable))
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun find(puid: String, upperId: String?): Flux<Attachment> {
-    TODO("not implemented")
+    val criteria = Criteria.where("puid").`is`(puid)
+    return databaseClient.select()
+      .from(TABLE_ATTACHMENT)
+      .matching(if (null == upperId) criteria else criteria.and("upper_id").`is`(upperId))
+      .orderBy(Sort.by(DESC, "create_on")) // default order by createOn desc
+      .`as`(AttachmentPo::class.java)
+      .fetch()
+      .all() as Flux<Attachment>
   }
 
   override fun save(vararg attachments: Attachment): Mono<Void> {
