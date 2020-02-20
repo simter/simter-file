@@ -14,10 +14,11 @@ import tech.simter.exception.NotFoundException
 import tech.simter.file.TABLE_ATTACHMENT
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.core.domain.AttachmentTreeNode
+import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
 import tech.simter.file.impl.domain.AttachmentWithUpperImpl
+import tech.simter.file.impl.domain.AttachmentZipInfoImpl
 import tech.simter.util.StringUtils.underscore
 import java.util.*
 
@@ -201,8 +202,74 @@ class AttachmentDaoImpl @Autowired constructor(
       .then()
   }
 
+  @Suppress("UNCHECKED_CAST")
   override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentZipInfo> {
-    TODO("not implemented")
+    if (ids.isEmpty()) return Flux.empty()
+    val sql = """
+      with recursive
+      -- Below the subtree is subtree from root to "ids"
+      -- e: subtree of edge plus edge from "ids" to it
+      e(id, upper_id) as (
+        select id as id, id as upper_id from st_attachment where id in (:ids)
+        union
+        select a.id, a.upper_id from st_attachment as a join e on a.id = e.upper_id
+      )
+      -- o：e's node of out-degree
+      , o(id, count) as (
+        select upper_id as id, count(0) as count from e group by upper_id
+      )
+      -- c: "ids" of common-ancestor
+      , c(id, upper_id, least) as(
+        select o.id as id, o.id as upper_id, count <> 1 as least from o where  o.id is null
+        union
+        select e.id, e.upper_id, count <> 1 or e.id in (:ids1)
+          from e join o on e.id = o.id
+          join c on (e.upper_id = c.id or (c.id is null and e.upper_id is null))
+            and c.least = false
+      )
+      -- l: "ids" of least-common-ancestor
+      , l(id, upper_id) as (
+        select id as id, upper_id as upper_id from c where least = true
+      )
+      -- a: path from "ids" of all ancestors to "ids"
+      , a(id, upper_id, physical_path, zip_path, type) as (
+        select id as id, upper_id as upper_id, concat(path, '') as physical_path, concat(name, '') as zip_path, type as type
+          from st_attachment as a where id in (:ids2)
+        union
+        select a.id, s.upper_id, concat(path, '/', physical_path), concat(name, '/', zip_path), a.type
+          from st_attachment as s
+          join a on a.upper_id = s.id
+      )
+      -- d: zip_path from "ids" of least-common-ancestor to "ids" of all descendant
+      , d(id, lca_id, zip_path, type) as (
+        select a.id as id, l.id as lca_id, a.zip_path as zip_path, a.type as type
+          from a
+          join l on a.upper_id = l.upper_id or (a.upper_id is null and l.upper_id is null)
+        union
+        select a.id, d.lca_id, concat(zip_path, '/', name), a.type
+          from st_attachment as a join d on a.upper_id = d.id
+      )
+       -- d2: physical_path from "ids" of root to "ids" of all descendant
+      , d2(id, physical_path) as (
+        select a.id as id, a.physical_path as physical_path
+          from a where a.upper_id is null
+        union
+        select a.id, concat(physical_path, '/', path)
+          from st_attachment as a join d2 as d on a.upper_id = d.id
+      )
+      select d.id as terminus, lca_id as origin, physical_path, zip_path, type,
+        concat(case when lca_id is null then 'null' else concat('"', lca_id, '"') end, '-"', d.id, '"') as id
+      from d, d2 where d.id = d2.id
+      order by d.zip_path asc
+    """.trimIndent()
+    val idList = ids.toList()
+    return databaseClient.execute(sql)
+      .bind("ids", idList)
+      .bind("ids1", idList) // why? see https://github.com/spring-projects/spring-data-r2dbc/issues/310
+      .bind("ids2", idList)
+      .`as`(AttachmentZipInfoImpl::class.java)
+      .fetch()
+      .all() as Flux<AttachmentZipInfo>
   }
 
   override fun findPuids(vararg ids: String): Flux<Optional<String>> {
