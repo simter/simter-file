@@ -116,7 +116,7 @@ class AttachmentServiceImpl @Autowired constructor(
    * responsive package [dtos] to [outputStream], and return [Mono.empty]
    * @param[bufferLength] The length of each read
    */
-  private fun reactivePackage(outputStream: OutputStream, dtos: List<AttachmentDto4Zip>, bufferLength: Int = 1024): Mono<Void> {
+  private fun reactivePackage(outputStream: OutputStream, dtos: List<AttachmentZipInfo>, bufferLength: Int = 1024): Mono<Void> {
     // init zip file
     val zos = ZipOutputStream(outputStream)
     val byteBuffer = ByteBuffer.allocate(bufferLength)

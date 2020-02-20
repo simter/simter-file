@@ -14,7 +14,7 @@ import tech.simter.exception.NotFoundException
 import tech.simter.file.TABLE_ATTACHMENT
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto4Zip
+import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.core.domain.AttachmentTreeNode
 import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
 import tech.simter.file.impl.domain.AttachmentWithUpperImpl
@@ -201,7 +201,7 @@ class AttachmentDaoImpl @Autowired constructor(
       .then()
   }
 
-  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentZipInfo> {
     TODO("not implemented")
   }
 

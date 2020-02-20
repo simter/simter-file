@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto4Zip
+import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.core.domain.AttachmentTreeNode
 import tech.simter.file.impl.dao.mongo.dto.*
 import tech.simter.file.impl.dao.mongo.po.AttachmentPo
@@ -42,23 +42,30 @@ class AttachmentDaoImpl @Autowired constructor(
       .map { Optional.ofNullable(it.puid) }.distinct()
   }
 
-  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentZipInfo> {
     return operations.aggregate(
       newAggregation(
         // Filter out the specified Attachment
         match(Criteria.where("id").`in`(*ids)),
-        // Aggregate all upper(including itself) into an array into field "aggregate"
+        // Aggregate all upper(including itself) into an array field "uppers"
         graphLookup("st_attachment")
-          .startWith("id").connectFrom("upperId").connectTo("_id").`as`("uppers"),
-        // Aggregate all descendants into an array into field "aggregate"
+          .startWith("id")
+          .connectFrom("upperId")
+          .connectTo("_id")
+          .`as`("uppers"),
+        // Aggregate all descendants into an array field "descendants"
         graphLookup("st_attachment")
-          .startWith("id").connectFrom("_id").connectTo("upperId").`as`("descendants"),
+          .startWith("id")
+          .connectFrom("_id")
+          .connectTo("upperId")
+          .`as`("descendants"),
         project("uppers", "descendants", "type")
       ),
       AttachmentPo::class.java,
       AttachmentUppersWithDescendants::class.java
     )
-      .collectList().flatMapIterable { it.convertToAttachmentDto4Zip() }
+      .collectList()
+      .flatMapIterable { it.convertToAttachmentZipInfo() }
   }
 
   @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")

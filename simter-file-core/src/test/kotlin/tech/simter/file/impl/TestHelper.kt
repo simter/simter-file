@@ -5,8 +5,13 @@ import tech.simter.reactive.context.SystemContext.User
 import tech.simter.util.RandomUtils.randomInt
 import tech.simter.util.RandomUtils.randomString
 import java.time.OffsetDateTime
+import java.util.*
 
 object TestHelper {
+  fun randomAttachmentId(): String {
+    return UUID.randomUUID().toString()
+  }
+
   fun randomAuthenticatedUser(
     id: Int = randomInt(),
     account: String = randomString(),

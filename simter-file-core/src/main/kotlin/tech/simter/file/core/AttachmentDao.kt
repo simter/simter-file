@@ -6,7 +6,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto4Zip
+import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.core.domain.AttachmentTreeNode
 import java.util.*
 
@@ -88,15 +88,15 @@ interface AttachmentDao {
   fun update(id: String, data: Map<String, Any?>): Mono<Void>
 
   /**
-   * Find [AttachmentDto4Zip] from the descendants of attachments and attachments.
+   * Find [AttachmentZipInfo] from the descendants of attachments and attachments.
    *   If not found, return [Flux.empty].
-   *   [AttachmentDto4Zip.zipPath] is logical path relatively to the recent common ancestor of file attachments
+   *   [AttachmentZipInfo.zipPath] is logical path relatively to the recent common ancestor of file attachments
    *     and it not include the file suffix.
-   *   [AttachmentDto4Zip.physicalPath] is the physical path of the file.
+   *   [AttachmentZipInfo.physicalPath] is the physical path of the file.
    * @param[ids] the attachments id.
-   * @return order by [AttachmentDto4Zip.zipPath] asc
+   * @return order by [AttachmentZipInfo.zipPath] asc
    */
-  fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip>
+  fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentZipInfo>
 
   /**
    * Find and returns [Attachment]s distinct puid collection.

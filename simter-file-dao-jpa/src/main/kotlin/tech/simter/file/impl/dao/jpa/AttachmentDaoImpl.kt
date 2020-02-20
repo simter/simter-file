@@ -11,10 +11,11 @@ import reactor.kotlin.core.publisher.toFlux
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentTreeNode
 import tech.simter.file.core.domain.AttachmentWithUpper
+import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.impl.dao.jpa.dto.AttachmentWithUpperImpl
+import tech.simter.file.impl.dao.jpa.dto.AttachmentZipInfoImpl
 import tech.simter.file.impl.dao.jpa.po.AttachmentPo
 import java.util.*
 import javax.persistence.EntityManager
@@ -45,7 +46,7 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentZipInfo> {
     if (ids.isEmpty()) return Flux.empty()
     val sql = """
       with recursive
@@ -104,9 +105,9 @@ class AttachmentDaoImpl @Autowired constructor(
       from d, d2 where d.id = d2.id
       order by d.zip_path asc
     """.trimIndent()
-    val dtos = em.createNativeQuery(sql, AttachmentDto4Zip::class.java)
+    val dtos = em.createNativeQuery(sql, AttachmentZipInfoImpl::class.java)
       .setParameter("ids", ids.toList())
-      .resultList as List<AttachmentDto4Zip>
+      .resultList as List<AttachmentZipInfo>
     return dtos.toFlux()
   }
 
