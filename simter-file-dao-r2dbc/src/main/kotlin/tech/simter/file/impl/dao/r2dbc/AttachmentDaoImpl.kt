@@ -8,9 +8,11 @@ import org.springframework.data.r2dbc.query.Criteria
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toFlux
 import tech.simter.file.TABLE_ATTACHMENT
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.domain.AttachmentDto4FullPath
 import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
@@ -73,7 +75,61 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun delete(vararg ids: String): Flux<String> {
-    TODO("not implemented")
+    return if (ids.isEmpty()) Flux.empty()
+    else {
+      // 1. Query the full path of the attachments
+      val fullPathSql = """
+        with recursive p(id, path, upper_id) as (
+          select id, concat(path, ''), upper_id
+            from st_attachment where id in (:ids)
+          union
+          select p.id, concat(a.path, '/', p.path), a.upper_id
+            from st_attachment as a
+            join p on a.id = p.upper_id
+            -- If the ancestors of attachment in the attachments list, ignored the attachment
+            where p.upper_id not in (:ids1)
+        )
+        select id, path as full_path from p where upper_id is null
+      """.trimIndent()
+      return databaseClient.execute(fullPathSql)
+        .bind("ids", ids.toList())
+        .bind("ids1", ids.toList()) // why? see https://github.com/spring-projects/spring-data-r2dbc/issues/310
+        .`as`(AttachmentDto4FullPath::class.java)
+        .fetch()
+        .all()
+        .map { it.fullPath!! }
+        .collectList()
+        .flatMapMany { fullPaths ->
+          // 2. Find all attachmentIds to delete include all theirs descendants
+          val nodeSql = """
+            with recursive u(id, upper_id ) as (
+              select id, upper_id  from st_attachment where id in (:ids)
+              union
+              select a.id, a.upper_id from st_attachment as a join u on a.upper_id = u.id
+            )
+            select id from u
+          """.trimIndent()
+          databaseClient.execute(nodeSql)
+            .bind("ids", ids.toList())
+            .`as`(String::class.java)
+            .fetch()
+            .all()
+            .collectList()
+            .flatMap {
+              // 3. Delete attachments and all theirs descendants
+              if (it.isNotEmpty()) databaseClient.execute("delete from st_attachment where id in (:ids)")
+                .bind("ids", it)
+                .`as`(String::class.java)
+                .fetch()
+                .rowsUpdated()
+              else Mono.empty()
+            }
+            .flatMapMany {
+              // 4. Return fullPaths
+              fullPaths.toFlux()
+            }
+        }
+    }
   }
 
   override fun getFullPath(id: String): Mono<String> {
