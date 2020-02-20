@@ -111,13 +111,13 @@ class AttachmentDaoImpl @Autowired constructor(
     return dtos.toFlux()
   }
 
-  override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
-    return if (data.isEmpty()) {
+  override fun update(id: String, info: Map<String, Any?>): Mono<Void> {
+    return if (info.isEmpty()) {
       Mono.empty()
     } else {
       val result = em
-        .createQuery("update AttachmentPo set ${data.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
-        .apply { data.forEach { (key, value) -> setParameter(key, value) } }
+        .createQuery("update AttachmentPo set ${info.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
+        .apply { info.forEach { (key, value) -> setParameter(key, value) } }
         .setParameter("id", id)
         .executeUpdate()
       em.clear()

@@ -17,9 +17,10 @@ import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.AttachmentService
-import tech.simter.file.core.domain.AttachmentDto
+import tech.simter.file.impl.TestHelper.randomAttachment
 import tech.simter.file.impl.TestHelper.randomAuthenticatedUser
 import tech.simter.file.impl.UnitTestConfiguration
+import tech.simter.file.impl.domain.AttachmentUpdateInfoImpl
 import tech.simter.file.impl.service.AttachmentServiceImpl.OperationType.Update
 import tech.simter.reactive.security.ReactiveSecurityService
 import java.io.File
@@ -39,13 +40,6 @@ class ReuploadFileMethodTest @Autowired constructor(
   private val service: AttachmentServiceImpl,
   private val securityService: ReactiveSecurityService
 ) {
-  private fun randomAttachment(size: Long? = null): AttachmentDto {
-    return AttachmentDto().apply {
-      size?.let { this.size = it }
-      id = UUID.randomUUID().toString()
-    }
-  }
-
   @AfterEach
   fun clean() {
     File(fileRootDir).deleteRecursively()
@@ -56,24 +50,25 @@ class ReuploadFileMethodTest @Autowired constructor(
     // mock
     val file = ClassPathResource("logback-test.xml")
     val fileDate = file.file.readBytes()
-    val attachment = randomAttachment(size = fileDate.size.toLong())
+    val attachment = randomAttachment().copy(size = fileDate.size.toLong())
     val user = randomAuthenticatedUser()
-    every { dao.findPuids(attachment.id!!) } returns Flux.just(Optional.ofNullable<String>(null))
+    every { dao.findPuids(attachment.id) } returns Flux.just(Optional.ofNullable<String>(null))
     every { service.verifyAuthorize(null, Update) } returns Mono.empty()
-    every { dao.getFullPath(attachment.id!!) } returns "test.xml".toMono()
-    every { dao.update(eq(attachment.id!!), any()) } returns Mono.empty()
+    every { dao.getFullPath(attachment.id) } returns "test.xml".toMono()
+    every { dao.update(eq(attachment.id), any()) } returns Mono.empty()
     every { securityService.getAuthenticatedUser() } returns Optional.of(user).toMono()
 
     // invoke
-    val actual = service.reuploadFile(attachment, fileDate)
+    val updateInfo = AttachmentUpdateInfoImpl.from(attachment)
+    val actual = service.reuploadFile(attachment.id, fileDate, updateInfo)
 
     // 1. verify service.save method invoked
     actual.test().verifyComplete()
     verify {
-      dao.findPuids(attachment.id!!)
-      dao.getFullPath(attachment.id!!)
-      dao.update(eq(attachment.id!!), match { m ->
-        val data = attachment.data
+      dao.findPuids(attachment.id)
+      dao.getFullPath(attachment.id)
+      dao.update(eq(attachment.id), match { m ->
+        val data = updateInfo.data
         m.map {
           val key = it.key
           val value = it.value
@@ -99,16 +94,17 @@ class ReuploadFileMethodTest @Autowired constructor(
   fun failedByPermissionDenied() {
     // mock
     val attachment = randomAttachment()
-    every { dao.findPuids(attachment.id!!) } returns Flux.just(Optional.ofNullable<String>(null))
+    every { dao.findPuids(attachment.id) } returns Flux.just(Optional.ofNullable<String>(null))
     every { service.verifyAuthorize(null, Update) } returns Mono.error(PermissionDeniedException())
 
     // invoke
-    val actual = service.reuploadFile(attachment, byteArrayOf())
+    val updateInfo = AttachmentUpdateInfoImpl.from(attachment)
+    val actual = service.reuploadFile(attachment.id, byteArrayOf(), updateInfo)
 
     // verify
     actual.test().verifyError(PermissionDeniedException::class.java)
     verify {
-      dao.findPuids(attachment.id!!)
+      dao.findPuids(attachment.id)
       service.verifyAuthorize(null, Update)
     }
   }
@@ -117,13 +113,14 @@ class ReuploadFileMethodTest @Autowired constructor(
   fun failedByNotFound() {
     // mock
     val attachment = randomAttachment()
-    every { dao.findPuids(attachment.id!!) } returns Flux.empty()
+    every { dao.findPuids(attachment.id) } returns Flux.empty()
 
     // invoke
-    val actual = service.reuploadFile(attachment, byteArrayOf())
+    val updateInfo = AttachmentUpdateInfoImpl.from(attachment)
+    val actual = service.reuploadFile(attachment.id, byteArrayOf(), updateInfo)
 
     // verify
     actual.test().verifyError(NotFoundException::class.java)
-    verify { dao.findPuids(attachment.id!!) }
+    verify { dao.findPuids(attachment.id) }
   }
 }

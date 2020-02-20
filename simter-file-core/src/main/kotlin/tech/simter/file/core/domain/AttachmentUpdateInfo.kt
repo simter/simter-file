@@ -3,13 +3,14 @@ package tech.simter.file.core.domain
 import tech.simter.kotlin.beans.DynamicBean
 
 /**
- * The dto of the [Attachment] update fields.
+ * The attachment update info.
  *
  * @author zh
  * @author RJ
  * */
 interface AttachmentUpdateInfo : DynamicBean {
   val name: String?
+  val type: String?
   val path: String?
   val size: Long?
   val puid: String?

@@ -1,6 +1,6 @@
 package tech.simter.file.impl.dao.mongo.dto
 
-data class AttachmentUppersPath(
+internal data class AttachmentUppersPath(
   private val id: String,
   private val aggregate: List<Path>
 ) {

@@ -1,6 +1,6 @@
 package tech.simter.file.impl.dao.mongo.dto
 
-data class AttachmentDescendantsId(
+internal data class AttachmentDescendantsId(
   private val id: String,
   private val aggregate: List<Id>
 ) {

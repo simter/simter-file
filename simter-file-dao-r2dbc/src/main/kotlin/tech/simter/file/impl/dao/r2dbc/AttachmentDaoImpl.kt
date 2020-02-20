@@ -177,17 +177,17 @@ class AttachmentDaoImpl @Autowired constructor(
       }
   }
 
-  override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
-    if (data.isEmpty()) return Mono.empty() // nothing to update
+  override fun update(id: String, info: Map<String, Any?>): Mono<Void> {
+    if (info.isEmpty()) return Mono.empty() // nothing to update
 
     // convert camel-case key to underscore key
-    val originKeys = data.keys.toList()
+    val originKeys = info.keys.toList()
     val underscoreKeys = underscore(originKeys.joinToString(",")).split(",")
     // build Update instance
     lateinit var update: Update
     originKeys.forEachIndexed { index, originKey ->
-      update = if (index == 0) Update.update(underscoreKeys[index], data[originKey])
-      else update.set(underscoreKeys[index], data[originKey])
+      update = if (index == 0) Update.update(underscoreKeys[index], info[originKey])
+      else update.set(underscoreKeys[index], info[originKey])
     }
 
     // 执行 update

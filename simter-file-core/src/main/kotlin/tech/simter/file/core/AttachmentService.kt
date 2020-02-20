@@ -8,7 +8,6 @@ import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto
 import tech.simter.file.core.domain.AttachmentTreeNode
 import tech.simter.file.core.domain.AttachmentUpdateInfo
 import java.io.File
@@ -145,14 +144,14 @@ interface AttachmentService {
   fun uploadFile(attachment: Attachment, writer: (File) -> Mono<Void>): Mono<Void>
 
   /**
-   * save physical file and update the [AttachmentDto].
+   * Replace attachment's physical file and update its info.
    *
-   * @param[dto] the [Attachment] will modify part of the value.
    * @param[fileData] the reupload file data.
+   * @param[info] the update info.
    * @return[Mono] signaling when operation has completed.
    *   If [Attachment] is not exists, return [Mono.error] with [NotFoundException].
    *   If new file or it's upper folder is creation failed, return [Mono.error] with [IllegalAccessException].
    *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
-  fun reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void>
+  fun reuploadFile(id: String, fileData: ByteArray, info: AttachmentUpdateInfo): Mono<Void>
 }

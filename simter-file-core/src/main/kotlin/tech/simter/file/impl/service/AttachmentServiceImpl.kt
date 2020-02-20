@@ -16,7 +16,10 @@ import tech.simter.exception.NotFoundException
 import tech.simter.file.*
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.AttachmentService
-import tech.simter.file.core.domain.*
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.domain.AttachmentTreeNode
+import tech.simter.file.core.domain.AttachmentUpdateInfo
+import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.impl.domain.AttachmentImpl
 import tech.simter.file.impl.service.AttachmentServiceImpl.OperationType.*
 import tech.simter.reactive.context.SystemContext.User
@@ -100,9 +103,9 @@ class AttachmentServiceImpl @Autowired constructor(
           val att = dtos[0]
           val name = att.origin?.let {
             if (dtos.size == 1 && att.type != ":d") {
-              "${att.zipPath!!.split("/")[0]}.${att.type}"
+              "${att.zipPath.split("/")[0]}.${att.type}"
             } else {
-              att.zipPath!!.split("/")[0]
+              att.zipPath.split("/")[0]
             }
           } ?: "root"
           Mono.just("$name.zip")
@@ -124,7 +127,7 @@ class AttachmentServiceImpl @Autowired constructor(
       // write a folder
       if (dto.type == ":d") {
         Mono.defer {
-          zos.putNextEntry(ZipEntry("${dto.zipPath!!}/"))
+          zos.putNextEntry(ZipEntry("${dto.zipPath}/"))
           zos.closeEntry()
           Mono.just(Unit)
         }
@@ -133,8 +136,8 @@ class AttachmentServiceImpl @Autowired constructor(
       else {
         // init reactiveReadAFileToZip a file and init zip entry
         Mono.defer {
-          val channel = AsynchronousFileChannel.open(Paths.get("$fileRootDir/${dto.physicalPath!!}"))
-          zos.putNextEntry(ZipEntry("${dto.zipPath!!}.${dto.type!!}"))
+          val channel = AsynchronousFileChannel.open(Paths.get("$fileRootDir/${dto.physicalPath}"))
+          zos.putNextEntry(ZipEntry("${dto.zipPath}.${dto.type}"))
           Mono.just(channel)
         }
           // recursive reactiveReadAFileToZip the file many times
@@ -333,8 +336,7 @@ class AttachmentServiceImpl @Autowired constructor(
       .flatMap { attachmentDao.save(it) }
   }
 
-  override fun reuploadFile(dto: AttachmentDto, fileData: ByteArray): Mono<Void> {
-    val id = dto.id!!
+  override fun reuploadFile(id: String, fileData: ByteArray, info: AttachmentUpdateInfo): Mono<Void> {
     // 1. verify authorize
     return attachmentDao.findPuids(id).next()
       .switchIfEmpty(Mono.error(NotFoundException("The attachment $id not exists")))
@@ -358,8 +360,8 @@ class AttachmentServiceImpl @Autowired constructor(
       // 4. set the modifyOn and modifier
       .then(Mono.defer { securityService.getAuthenticatedUser() })
       .map(Optional<User>::get).map(User::name)
-      .map { userName -> dto.data.plus(mapOf("modifier" to userName, "modifyOn" to OffsetDateTime.now())) }
-      // 5. save attachment data
-      .flatMap { info -> attachmentDao.update(id, info.filter { it.key != "id" }) }
+      .map { userName -> info.data.plus(mapOf("modifier" to userName, "modifyOn" to OffsetDateTime.now())) }
+      // 5. update attachment data
+      .flatMap { attachmentDao.update(id, it) }
   }
 }

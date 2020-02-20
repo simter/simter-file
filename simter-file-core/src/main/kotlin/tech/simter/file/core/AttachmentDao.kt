@@ -6,8 +6,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.core.domain.AttachmentTreeNode
+import tech.simter.file.core.domain.AttachmentUpdateInfo
+import tech.simter.file.core.domain.AttachmentZipInfo
 import java.util.*
 
 /**
@@ -81,11 +82,11 @@ interface AttachmentDao {
    *  Update part of the fields in the attachment
    *
    * @param[id] the attachment's id
-   * @param[data] The fields that will be modified
+   * @param[info] The fields that will be modified
    * @return [Mono] signaling when operation has completed
    *   If the attachment is not exists, return [Mono.error] with [NotFoundException].
    */
-  fun update(id: String, data: Map<String, Any?>): Mono<Void>
+  fun update(id: String, info: Map<String, Any?>): Mono<Void>
 
   /**
    * Find [AttachmentZipInfo] from the descendants of attachments and attachments.

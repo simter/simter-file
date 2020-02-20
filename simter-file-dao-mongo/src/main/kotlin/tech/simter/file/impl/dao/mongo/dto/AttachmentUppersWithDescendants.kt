@@ -3,11 +3,11 @@ package tech.simter.file.impl.dao.mongo.dto
 import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.impl.domain.AttachmentZipInfoImpl
 
-fun generateId(origin: String?, terminus: String): String {
+internal fun generateId(origin: String?, terminus: String): String {
   return origin?.let { "\"$origin\"-\"$terminus\"" } ?: "null-\"$terminus\""
 }
 
-fun List<AttachmentUppersWithDescendants>.convertToAttachmentZipInfo(): List<AttachmentZipInfo> {
+internal fun List<AttachmentUppersWithDescendants>.convertToAttachmentZipInfo(): List<AttachmentZipInfo> {
   if (isEmpty()) return listOf()
   val commonAncestors = this.map { it.uppers }.reduce { reduce, next ->
     reduce.intersect(next).toList()
@@ -55,7 +55,7 @@ fun List<AttachmentUppersWithDescendants>.convertToAttachmentZipInfo(): List<Att
     .distinct()
 }
 
-data class AttachmentUppersWithDescendants(
+internal data class AttachmentUppersWithDescendants(
   val id: String,
   val type: String,
   val descendants: List<Info>,

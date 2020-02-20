@@ -1,3 +1,3 @@
 package tech.simter.file.impl.dao.mongo.dto
 
-data class AttachmentPuid(val puid: String?)
+internal data class AttachmentPuid(val puid: String?)
