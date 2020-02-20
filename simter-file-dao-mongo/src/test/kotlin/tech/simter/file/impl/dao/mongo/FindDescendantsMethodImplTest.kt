@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
+import tech.simter.file.impl.dao.mongo.TestHelper.cleanDatabase
 import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentPo
 import tech.simter.util.AssertUtils.assertSamePropertyHasSameValue
@@ -39,6 +40,9 @@ class FindDescendantsMethodImplTest @Autowired constructor(
 
   @Test
   fun `upper has descendants`() {
+    // clean
+    cleanDatabase(repository)
+
     // prepare data
     //            po100
     //       /            \

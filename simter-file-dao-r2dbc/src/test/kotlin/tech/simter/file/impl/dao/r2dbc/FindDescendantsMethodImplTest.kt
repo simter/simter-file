@@ -37,6 +37,9 @@ class FindDescendantsMethodImplTest @Autowired constructor(
 
   @Test
   fun `upper has descendants`() {
+    // clean
+    repository.deleteAll().test().verifyComplete()
+
     // prepare data
     //            po100
     //       /            \

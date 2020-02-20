@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
+import tech.simter.file.impl.dao.mongo.TestHelper.cleanDatabase
 import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentPo
 import tech.simter.file.impl.domain.AttachmentZipInfoImpl
@@ -34,6 +35,9 @@ class FindDescendantsZipPathMethodImplTest @Autowired constructor(
 
   @Test
   fun findDescendantsZipPath() {
+    // clean
+    cleanDatabase(repository)
+
     // prepare data
     //            po100                     po200
     //       /            \
