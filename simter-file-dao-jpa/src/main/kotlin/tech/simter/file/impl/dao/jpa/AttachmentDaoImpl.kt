@@ -10,7 +10,12 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.core.domain.*
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.domain.AttachmentTreeNode
+import tech.simter.file.core.domain.AttachmentWithUpper
+import tech.simter.file.core.domain.AttachmentZipInfo
+import tech.simter.file.impl.dao.jpa.dto.AttachmentWithUpperImpl
+import tech.simter.file.impl.dao.jpa.dto.AttachmentZipInfoImpl
 import tech.simter.file.impl.dao.jpa.po.AttachmentPo
 import java.util.*
 import javax.persistence.EntityManager
@@ -41,7 +46,7 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentZipInfo> {
     if (ids.isEmpty()) return Flux.empty()
     val sql = """
       with recursive
@@ -100,19 +105,19 @@ class AttachmentDaoImpl @Autowired constructor(
       from d, d2 where d.id = d2.id
       order by d.zip_path asc
     """.trimIndent()
-    val dtos = em.createNativeQuery(sql, AttachmentDto4Zip::class.java)
+    val dtos = em.createNativeQuery(sql, AttachmentZipInfoImpl::class.java)
       .setParameter("ids", ids.toList())
-      .resultList as List<AttachmentDto4Zip>
+      .resultList as List<AttachmentZipInfo>
     return dtos.toFlux()
   }
 
-  override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
-    return if (data.isEmpty()) {
+  override fun update(id: String, info: Map<String, Any?>): Mono<Void> {
+    return if (info.isEmpty()) {
       Mono.empty()
     } else {
       val result = em
-        .createQuery("update AttachmentPo set ${data.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
-        .apply { data.forEach { (key, value) -> setParameter(key, value) } }
+        .createQuery("update AttachmentPo set ${info.keys.joinToString(", ") { "$it = :$it" }} where id =:id")
+        .apply { info.forEach { (key, value) -> setParameter(key, value) } }
         .setParameter("id", id)
         .executeUpdate()
       em.clear()
@@ -122,25 +127,25 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   @Suppress("UNCHECKED_CAST")
-  override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
+  override fun findDescendants(id: String): Flux<AttachmentTreeNode> {
     val sql = """
-      with recursive n(id, path, name, type, size, modify_on, modifier, upper_id)
-      as (
-        select id, path, name, type, size, modify_on, modifier, upper_id
-        from st_attachment where upper_id = :id
+      with recursive n(id, path, paths, name, type, size, modify_on, modifier, upper_id) as (
+        select id, path, cast(path as text) as paths, name, type, size, modify_on, modifier, upper_id
+          from st_attachment where upper_id = :id
         union
-        select a.id, a.path, a.name, a.type, a.size, a.modify_on, a.modifier, a.upper_id
-        from st_attachment as a join n on a.upper_id = n.id
+        select c.id, c.path, cast(concat(n.path, '/', c.path) as text), c.name, c.type, c.size, c.modify_on, c.modifier, c.upper_id
+          from st_attachment as c join n on c.upper_id = n.id
       )
-      select id, path, name, type, size, modify_on, modifier, upper_id from n
+      select id, path, name, type, size, modify_on, modifier, upper_id
+        from n order by paths asc
     """.trimIndent()
-    val descendants = em.createNativeQuery(sql, AttachmentDtoWithUpper::class.java)
+    val descendants = em.createNativeQuery(sql, AttachmentWithUpperImpl::class.java)
       .setParameter("id", id)
-      .resultList as List<AttachmentDtoWithUpper>
-    return AttachmentDtoWithChildren().apply {
-      this.id = id
-      generateChildren(descendants)
-    }.children!!.toFlux()
+      .resultList as List<AttachmentWithUpper>
+    return AttachmentTreeNode.from(
+      upperId = id,
+      descendants = descendants
+    ).toFlux()
   }
 
   override fun getFullPath(id: String): Mono<String> {
@@ -202,11 +207,11 @@ class AttachmentDaoImpl @Autowired constructor(
           -- If the ancestors of attachment in the attachments list, ignored the attachment
           where p.upper_id not in (:ids)
         )
-        select id, path as full_path from p where upper_id is null
+        select path from p where upper_id is null
       """.trimIndent()
-      val fullPathDaos = em.createNativeQuery(fullPathSql, AttachmentDto4FullPath::class.java)
+      val fullPaths = em.createNativeQuery(fullPathSql)
         .setParameter("ids", ids.toList())
-        .resultList as List<AttachmentDto4FullPath>
+        .resultList as List<String>
 
       // Delete attachments and all theirs descendants
       val nodeSql = """
@@ -222,7 +227,7 @@ class AttachmentDaoImpl @Autowired constructor(
         em.createNativeQuery("delete from st_attachment where id in (:ids)")
           .setParameter("ids", nodeDtos).executeUpdate()
       }
-      fullPathDaos.map { it.fullPath!! }.toFlux()
+      fullPaths.toFlux()
     } else Flux.empty()
   }
 }

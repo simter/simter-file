@@ -12,10 +12,13 @@ import reactor.core.publisher.Flux
 import reactor.kotlin.core.publisher.toFlux
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentService
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.core.domain.AttachmentTreeNode
+import tech.simter.file.impl.domain.AttachmentTreeNodeImpl
+import tech.simter.file.rest.webflux.TestHelper.randomAttachmentId
 import tech.simter.file.rest.webflux.TestHelper.randomInt
 import tech.simter.file.rest.webflux.TestHelper.randomString
 import tech.simter.file.rest.webflux.UnitTestConfiguration
+import java.time.OffsetDateTime
 import java.util.*
 
 /**
@@ -32,23 +35,24 @@ class FindAttachmentDescendantsHandlerTest @Autowired constructor(
 ) {
   private val id = UUID.randomUUID().toString()
   private val url = "/attachment/$id/descendant"
-  private fun randomAttachmentDtoWithChildren(depth: Int, maxDegree: Int): AttachmentDtoWithChildren {
-    return AttachmentDtoWithChildren().apply {
-      id = UUID.randomUUID().toString()
-      name = randomString("name")
-      type = randomString("type")
-      size = randomInt().toLong()
-      modifier = randomString("modifier")
-      if (depth > 0) {
-        children = List(randomInt(0, maxDegree)) { randomAttachmentDtoWithChildren(depth - 1, maxDegree) }
-      }
-    }
+  private fun randomAttachmentTreeNode(depth: Int, maxDegree: Int): AttachmentTreeNode {
+    return AttachmentTreeNodeImpl(
+      id = randomAttachmentId(),
+      name = randomString("name"),
+      type = randomString("type"),
+      path = randomString("path"),
+      size = randomInt().toLong(),
+      modifier = randomString("modifier"),
+      modifyOn = OffsetDateTime.now(),
+      children = if (depth > 0) List(randomInt(0, maxDegree)) { randomAttachmentTreeNode(depth - 1, maxDegree) }
+      else emptyList()
+    )
   }
 
   @Test
-  fun `Find some`() {
+  fun `find something`() {
     // mock
-    val dtos = List(randomInt(1, 3)) { randomAttachmentDtoWithChildren(1, 2) }
+    val dtos = List(randomInt(1, 3)) { randomAttachmentTreeNode(1, 2) }
     every { service.findDescendants(id) } returns dtos.toFlux()
 
     // invoke and verify
@@ -57,17 +61,18 @@ class FindAttachmentDescendantsHandlerTest @Autowired constructor(
       .expectStatus().isOk
       .expectBody().apply {
         dtos.forEachIndexed { index, dto ->
-          jsonPath("$[$index].id").isEqualTo(dto.id!!)
-          jsonPath("$[$index].name").isEqualTo(dto.name!!)
-          jsonPath("$[$index].type").isEqualTo(dto.type!!)
-          jsonPath("$[$index].size").isEqualTo(dto.size!!)
-          jsonPath("$[$index].modifier").isEqualTo(dto.modifier!!)
+          jsonPath("$[$index].id").isEqualTo(dto.id)
+          jsonPath("$[$index].name").isEqualTo(dto.name)
+          jsonPath("$[$index].type").isEqualTo(dto.type)
+          jsonPath("$[$index].path").isEqualTo(dto.path)
+          jsonPath("$[$index].size").isEqualTo(dto.size)
+          jsonPath("$[$index].modifier").isEqualTo(dto.modifier)
           dto.children!!.forEachIndexed { childIndex, childDtos ->
-            jsonPath("$[$index].children[$childIndex].id").isEqualTo(childDtos.id!!)
-            jsonPath("$[$index].children[$childIndex].name").isEqualTo(childDtos.name!!)
-            jsonPath("$[$index].children[$childIndex].type").isEqualTo(childDtos.type!!)
-            jsonPath("$[$index].children[$childIndex].size").isEqualTo(childDtos.size!!)
-            jsonPath("$[$index].children[$childIndex].modifier").isEqualTo(childDtos.modifier!!)
+            jsonPath("$[$index].children[$childIndex].id").isEqualTo(childDtos.id)
+            jsonPath("$[$index].children[$childIndex].name").isEqualTo(childDtos.name)
+            jsonPath("$[$index].children[$childIndex].type").isEqualTo(childDtos.type)
+            jsonPath("$[$index].children[$childIndex].size").isEqualTo(childDtos.size)
+            jsonPath("$[$index].children[$childIndex].modifier").isEqualTo(childDtos.modifier)
           }
         }
       }
@@ -75,7 +80,7 @@ class FindAttachmentDescendantsHandlerTest @Autowired constructor(
   }
 
   @Test
-  fun `Found nothing`() {
+  fun `found nothing`() {
     // mock
     every { service.findDescendants(id) } returns Flux.empty()
 
@@ -88,7 +93,7 @@ class FindAttachmentDescendantsHandlerTest @Autowired constructor(
   }
 
   @Test
-  fun `Failed by permission denied`() {
+  fun `failed by permission denied`() {
     // mock
     every { service.findDescendants(id) } returns Flux.error(PermissionDeniedException())
 

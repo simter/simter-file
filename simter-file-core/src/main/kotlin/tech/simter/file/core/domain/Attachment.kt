@@ -11,7 +11,6 @@ import java.time.OffsetDateTime
 interface Attachment :
   AttachmentIdentityProperties,
   AttachmentRequiredProperties,
-  AttachmentStoreProperties,
   AttachmentLinkProperties,
   AttachmentCreationProperties,
   AttachmentModificationProperties,
@@ -34,16 +33,17 @@ interface AttachmentRequiredProperties {
   val type: String
   /** The byte unit file size */
   val size: Long
-}
-
-interface AttachmentStoreProperties {
   /** The relative path that store the actual physical file */
   val path: String
 }
 
-interface AttachmentLinkProperties {
-  /** The unique id of the parent module */
+interface AttachmentLinkProperties : AttachmentModuleProperties, AttachmentUpperProperties
+interface AttachmentModuleProperties {
+  /** The unique id of the belong business module */
   val puid: String?
+}
+
+interface AttachmentUpperProperties {
   /** The upperId of the parent module */
   val upperId: String?
 }

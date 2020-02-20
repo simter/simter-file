@@ -18,8 +18,8 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto4Zip
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.core.domain.AttachmentTreeNode
+import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.impl.dao.mongo.dto.*
 import tech.simter.file.impl.dao.mongo.po.AttachmentPo
 import java.util.*
@@ -42,56 +42,68 @@ class AttachmentDaoImpl @Autowired constructor(
       .map { Optional.ofNullable(it.puid) }.distinct()
   }
 
-  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
+  override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentZipInfo> {
     return operations.aggregate(
       newAggregation(
         // Filter out the specified Attachment
         match(Criteria.where("id").`in`(*ids)),
-        // Aggregate all upper(including itself) into an array into field "aggregate"
+        // Aggregate all upper(including itself) into an array field "uppers"
         graphLookup("st_attachment")
-          .startWith("id").connectFrom("upperId").connectTo("_id").`as`("uppers"),
-        // Aggregate all descendants into an array into field "aggregate"
+          .startWith("id")
+          .connectFrom("upperId")
+          .connectTo("_id")
+          .`as`("uppers"),
+        // Aggregate all descendants into an array field "descendants"
         graphLookup("st_attachment")
-          .startWith("id").connectFrom("_id").connectTo("upperId").`as`("descendants"),
+          .startWith("id")
+          .connectFrom("_id")
+          .connectTo("upperId")
+          .`as`("descendants"),
         project("uppers", "descendants", "type")
       ),
       AttachmentPo::class.java,
       AttachmentUppersWithDescendants::class.java
     )
-      .collectList().flatMapIterable { it.convertToAttachmentDto4Zip() }
+      .collectList()
+      .flatMapIterable { it.convertToAttachmentZipInfo() }
   }
 
-  @Suppress("NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
-  override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
-    return if (data.isEmpty()) Mono.empty()
+  override fun update(id: String, info: Map<String, Any?>): Mono<Void> {
+    return if (info.isEmpty()) Mono.empty()
     else operations.updateMulti<AttachmentPo>(
       // Filter out the specified Attachment
       Query.query(Criteria.where("id").`is`(id)),
       // Set update fields
-      Update().also { update -> data.forEach { (k, v) -> update.set(k, v) } }
+      Update().also { update -> info.forEach { (k, v) -> update.set(k, v) } }
     ).flatMap {
       if (it.matchedCount > 0) Mono.empty<Void>()
       else Mono.error(NotFoundException())
     }
   }
 
-  override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
+  override fun findDescendants(id: String): Flux<AttachmentTreeNode> {
     return operations.aggregate(
       newAggregation(
         // Filter out the specified Attachment
         match(Criteria.where("id").`is`(id)),
-        // Aggregate all descendants into an array into field "aggregate"
+        // Aggregate all descendants into an array field "descendants"
         graphLookup("st_attachment")
           .startWith("id")
           .connectFrom("_id")
           .connectTo("upperId")
-          .`as`("aggregate"),
-        project("aggregate")
+          .`as`("descendants"),
+        project("descendants")
       ),
       AttachmentPo::class.java,
-      AttachmentDescendantsDtoWithUpper::class.java
+      AttachmentWithDescendants::class.java
     )
-      .singleOrEmpty().map(AttachmentDescendantsDtoWithUpper::dtoWithChildren).flatMapIterable { it.children!! }
+      .singleOrEmpty()
+      .flatMapIterable { upper ->
+        AttachmentTreeNode.from(
+          upperId = id,
+          descendants = upper.descendants?.sortedBy { it.path } ?: emptyList()
+        )
+      }
   }
 
   override fun getFullPath(id: String): Mono<String> {

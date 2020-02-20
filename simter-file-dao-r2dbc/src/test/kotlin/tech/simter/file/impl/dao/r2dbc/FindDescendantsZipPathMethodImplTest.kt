@@ -1,15 +1,14 @@
-package tech.simter.file.impl.dao.mongo
+package tech.simter.file.impl.dao.r2dbc
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
+import org.springframework.boot.test.context.SpringBootTest
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.impl.dao.mongo.TestHelper.cleanDatabase
-import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentId
-import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentPo
+import tech.simter.file.impl.dao.r2dbc.TestHelper.cleanDatabase
+import tech.simter.file.impl.dao.r2dbc.TestHelper.randomAttachmentId
+import tech.simter.file.impl.dao.r2dbc.TestHelper.randomAttachmentPo
 import tech.simter.file.impl.domain.AttachmentZipInfoImpl
 
 /**
@@ -17,11 +16,10 @@ import tech.simter.file.impl.domain.AttachmentZipInfoImpl
  *
  * @author RJ
  */
-@SpringJUnitConfig(UnitTestConfiguration::class)
-@DataMongoTest
+@SpringBootTest(classes = [UnitTestConfiguration::class])
 class FindDescendantsZipPathMethodImplTest @Autowired constructor(
   private val dao: AttachmentDao,
-  private val repository: AttachmentReactiveRepository
+  private val repository: AttachmentRepository
 ) {
   @Test
   fun notFoundDescendantsZipPath() {
@@ -36,7 +34,7 @@ class FindDescendantsZipPathMethodImplTest @Autowired constructor(
   @Test
   fun findDescendantsZipPath() {
     // clean
-    cleanDatabase(repository)
+    cleanDatabase(repository).test().verifyComplete()
 
     // prepare data
     //            po100                     po200

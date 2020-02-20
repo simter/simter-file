@@ -6,8 +6,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto4Zip
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.core.domain.AttachmentTreeNode
+import tech.simter.file.core.domain.AttachmentUpdateInfo
+import tech.simter.file.core.domain.AttachmentZipInfo
 import java.util.*
 
 /**
@@ -75,28 +76,28 @@ interface AttachmentDao {
    * @return the children that include its children recursively.
    *   If the upper has no children or the upper is not exists, return [Flux.empty]
    */
-  fun findDescendants(id: String): Flux<AttachmentDtoWithChildren>
+  fun findDescendants(id: String): Flux<AttachmentTreeNode>
 
   /**
    *  Update part of the fields in the attachment
    *
    * @param[id] the attachment's id
-   * @param[data] The fields that will be modified
+   * @param[info] The fields that will be modified
    * @return [Mono] signaling when operation has completed
    *   If the attachment is not exists, return [Mono.error] with [NotFoundException].
    */
-  fun update(id: String, data: Map<String, Any?>): Mono<Void>
+  fun update(id: String, info: Map<String, Any?>): Mono<Void>
 
   /**
-   * Find [AttachmentDto4Zip] from the descendants of attachments and attachments.
+   * Find [AttachmentZipInfo] from the descendants of attachments and attachments.
    *   If not found, return [Flux.empty].
-   *   [AttachmentDto4Zip.zipPath] is logical path relatively to the recent common ancestor of file attachments
-   *     and it not include the file suffix .
-   *   [AttachmentDto4Zip.physicalPath] is the physical path of the file.
+   *   [AttachmentZipInfo.zipPath] is logical path relatively to the recent common ancestor of file attachments
+   *     and it not include the file suffix.
+   *   [AttachmentZipInfo.physicalPath] is the physical path of the file.
    * @param[ids] the attachments id.
-   * @return order by [AttachmentDto4Zip.zipPath] asc
+   * @return order by [AttachmentZipInfo.zipPath] asc
    */
-  fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip>
+  fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentZipInfo>
 
   /**
    * Find and returns [Attachment]s distinct puid collection.

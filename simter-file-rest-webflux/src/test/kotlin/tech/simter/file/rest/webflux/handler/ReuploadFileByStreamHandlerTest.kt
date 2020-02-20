@@ -13,7 +13,8 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentService
-import tech.simter.file.core.domain.AttachmentDto
+import tech.simter.file.impl.domain.AttachmentUpdateInfoImpl
+import tech.simter.file.rest.webflux.TestHelper.randomAttachmentId
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.util.*
 
@@ -30,17 +31,16 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
   private val service: AttachmentService
 ) {
   @Test
-  fun `Reupload by no file name`() {
+  fun `reupload by no file name`() {
     // mock
     val file = ClassPathResource("logback-test.xml")
     val fileData = file.file.readBytes()
-    val id = UUID.randomUUID().toString()
+    val id = randomAttachmentId()
     val fileSize = file.contentLength()
-    val attachment = AttachmentDto().also {
-      it.id = id
-      it.size = fileSize
+    val info = AttachmentUpdateInfoImpl().apply {
+      size = fileSize
     }
-    every { service.reuploadFile(attachment, fileData) } returns Mono.empty()
+    every { service.reuploadFile(id = id, fileData = fileData, info = info) } returns Mono.empty()
 
     // invoke
     client.patch().uri("/$id")
@@ -51,11 +51,11 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isNoContent
 
     // verify
-    verify { service.reuploadFile(attachment, fileData) }
+    verify { service.reuploadFile(id = id, fileData = fileData, info = info) }
   }
 
   @Test
-  fun `Reupload by has file name`() {
+  fun `reupload by has file name`() {
     // mock
     val name = "logback-test"
     val ext = "xml"
@@ -63,13 +63,12 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
     val fileData = file.file.readBytes()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    val attachment = AttachmentDto().also {
-      it.id = id
+    val info = AttachmentUpdateInfoImpl().also {
       it.size = fileSize
       it.type = ext
       it.name = name
     }
-    every { service.reuploadFile(attachment, fileData) } returns Mono.empty()
+    every { service.reuploadFile(id = id, fileData = fileData, info = info) } returns Mono.empty()
 
     // invoke
     client.patch().uri("/$id")
@@ -81,11 +80,11 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isNoContent
 
     // verify
-    verify { service.reuploadFile(attachment, fileData) }
+    verify { service.reuploadFile(id = id, fileData = fileData, info = info) }
   }
 
   @Test
-  fun `Found nothing`() {
+  fun `not found exception`() {
     // mock
     val name = "logback-test"
     val ext = "xml"
@@ -93,13 +92,12 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
     val fileData = file.file.readBytes()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    val attachment = AttachmentDto().also {
-      it.id = id
+    val info = AttachmentUpdateInfoImpl().also {
       it.size = fileSize
       it.type = ext
       it.name = name
     }
-    every { service.reuploadFile(attachment, fileData) } returns Mono.error(NotFoundException(""))
+    every { service.reuploadFile(id = id, fileData = fileData, info = info) } returns Mono.error(NotFoundException(""))
 
     // invoke
     client.patch().uri("/$id")
@@ -111,11 +109,11 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isNotFound
 
     // verify
-    verify { service.reuploadFile(attachment, fileData) }
+    verify { service.reuploadFile(id = id, fileData = fileData, info = info) }
   }
 
   @Test
-  fun `Failed by permission denied`() {
+  fun `failed by permission denied`() {
     // mock
     val name = "logback-test"
     val ext = "xml"
@@ -123,7 +121,12 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
     val fileData = file.file.readBytes()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    every { service.reuploadFile(any(), any()) } returns Mono.error(PermissionDeniedException())
+    val info = AttachmentUpdateInfoImpl().also {
+      it.size = fileSize
+      it.type = ext
+      it.name = name
+    }
+    every { service.reuploadFile(id = id, fileData = fileData, info = info) } returns Mono.error(PermissionDeniedException())
 
     // invoke
     client.patch().uri("/$id")
@@ -135,6 +138,6 @@ class ReuploadFileByStreamHandlerTest @Autowired constructor(
       .expectStatus().isForbidden
 
     // verify
-    verify { service.reuploadFile(any(), any()) }
+    verify { service.reuploadFile(id = id, fileData = fileData, info = info) }
   }
 }

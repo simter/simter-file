@@ -9,6 +9,4 @@ package tech.simter.file.core.domain
 interface AttachmentCreateInfo :
   AttachmentIdentityProperties,
   AttachmentRequiredProperties,
-  AttachmentLinkProperties{
-  val path: String
-}
+  AttachmentLinkProperties

@@ -1,3 +1,4 @@
+simter.file.root: target/files
 spring:
   main.banner-mode: 'off'
   profiles.active:
