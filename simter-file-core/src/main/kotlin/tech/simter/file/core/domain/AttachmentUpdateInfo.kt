@@ -11,6 +11,7 @@ import tech.simter.kotlin.beans.DynamicBean
 interface AttachmentUpdateInfo : DynamicBean {
   val name: String?
   val path: String?
+  val size: Long?
   val puid: String?
   val upperId: String?
 
