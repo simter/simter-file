@@ -16,6 +16,7 @@ import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.core.domain.AttachmentDtoWithUpper
 import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
 import tech.simter.util.StringUtils.underscore
 import java.util.*
@@ -151,7 +152,28 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
-    TODO("not implemented")
+    val sql = """
+      with recursive n(id, path, name, type, size, modify_on, modifier, upper_id) as (
+        select id, path, name, type, size, modify_on, modifier, upper_id
+          from st_attachment where upper_id = :id
+        union
+        select a.id, a.path, a.name, a.type, a.size, a.modify_on, a.modifier, a.upper_id
+          from st_attachment as a join n on a.upper_id = n.id
+      )
+      select id, path, name, type, size, modify_on, modifier, upper_id from n
+    """.trimIndent()
+    return databaseClient.execute(sql)
+      .bind("id", id)
+      .`as`(AttachmentDtoWithUpper::class.java)
+      .fetch()
+      .all()
+      .collectList()
+      .flatMapMany { descendants ->
+        AttachmentDtoWithChildren().apply {
+          this.id = id
+          generateChildren(descendants)
+        }.children!!.toFlux()
+      }
   }
 
   override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
