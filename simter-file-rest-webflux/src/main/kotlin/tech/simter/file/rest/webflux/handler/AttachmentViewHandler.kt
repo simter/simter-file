@@ -58,8 +58,8 @@ class AttachmentViewHandler @Autowired constructor(
     return attachmentService
       // find Page<Attachment> by queryParam page-no, page-size
       .find(PageRequest.of(
-        request.queryParam("page-no").get().toInt(),
-        request.queryParam("page-size").get().toInt()
+        request.queryParam("page-no").map { it.toInt() }.orElse(1),
+        request.queryParam("page-size").map { it.toInt() }.orElse(25)
       ))
       .map {
         // build response body
