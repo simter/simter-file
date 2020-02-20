@@ -5,16 +5,19 @@ import org.springframework.data.domain.*
 import org.springframework.data.domain.Sort.Direction.DESC
 import org.springframework.data.r2dbc.core.DatabaseClient
 import org.springframework.data.r2dbc.query.Criteria
+import org.springframework.data.r2dbc.query.Update
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
+import tech.simter.exception.NotFoundException
 import tech.simter.file.TABLE_ATTACHMENT
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
+import tech.simter.util.StringUtils.underscore
 import java.util.*
 
 /**
@@ -152,7 +155,27 @@ class AttachmentDaoImpl @Autowired constructor(
   }
 
   override fun update(id: String, data: Map<String, Any?>): Mono<Void> {
-    TODO("not implemented")
+    if (data.isEmpty()) return Mono.empty() // nothing to update
+
+    // convert camel-case key to underscore key
+    val originKeys = data.keys.toList()
+    val underscoreKeys = underscore(originKeys.joinToString(",")).split(",")
+    // build Update instance
+    lateinit var update: Update
+    originKeys.forEachIndexed { index, originKey ->
+      update = if (index == 0) Update.update(underscoreKeys[index], data[originKey])
+      else update.set(underscoreKeys[index], data[originKey])
+    }
+
+    // 执行 update
+    return databaseClient.update()
+      .table(TABLE_ATTACHMENT)
+      .using(update)
+      .matching(Criteria.where("id").`is`(id))
+      .fetch()
+      .rowsUpdated()
+      .doOnNext { if (it < 1) throw NotFoundException() }
+      .then()
   }
 
   override fun findDescendantsZipPath(vararg ids: String): Flux<AttachmentDto4Zip> {
