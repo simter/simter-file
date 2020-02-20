@@ -155,10 +155,10 @@ class AttachmentDaoImpl @Autowired constructor(
   override fun findDescendants(id: String): Flux<AttachmentTreeNode> {
     val sql = """
       with recursive n(id, path, paths, name, type, size, modify_on, modifier, upper_id) as (
-        select id, path, path as paths, name, type, size, modify_on, modifier, upper_id
+        select id, path, cast(path as text) as paths, name, type, size, modify_on, modifier, upper_id
           from st_attachment where upper_id = :id
         union
-        select c.id, c.path, concat(n.path, '/', c.path), c.name, c.type, c.size, c.modify_on, c.modifier, c.upper_id
+        select c.id, c.path, cast(concat(n.path, '/', c.path) as text), c.name, c.type, c.size, c.modify_on, c.modifier, c.upper_id
           from st_attachment as c join n on c.upper_id = n.id
       )
       select id, path, name, type, size, modify_on, modifier, upper_id
