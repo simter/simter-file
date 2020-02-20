@@ -3,15 +3,10 @@ package tech.simter.file.impl.dao.r2dbc
 import org.springframework.data.r2dbc.core.DatabaseClient
 import reactor.core.publisher.Mono
 import tech.simter.file.TABLE_ATTACHMENT
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
-
-fun AttachmentDtoWithChildren.getOwnData(): Map<String, Any?> {
-  return data.filter { it.key != "children" }
-}
 
 object TestHelper {
   fun cleanDatabase(repository: AttachmentRepository): Mono<Void> {

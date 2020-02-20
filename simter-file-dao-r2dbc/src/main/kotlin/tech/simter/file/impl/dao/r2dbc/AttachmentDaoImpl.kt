@@ -15,9 +15,9 @@ import tech.simter.file.TABLE_ATTACHMENT
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentDto4Zip
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
-import tech.simter.file.core.domain.AttachmentDtoWithUpper
+import tech.simter.file.core.domain.AttachmentTreeNode
 import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
+import tech.simter.file.impl.domain.AttachmentWithUpperImpl
 import tech.simter.util.StringUtils.underscore
 import java.util.*
 
@@ -151,28 +151,29 @@ class AttachmentDaoImpl @Autowired constructor(
       .one()
   }
 
-  override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
+  override fun findDescendants(id: String): Flux<AttachmentTreeNode> {
     val sql = """
-      with recursive n(id, path, name, type, size, modify_on, modifier, upper_id) as (
-        select id, path, name, type, size, modify_on, modifier, upper_id
+      with recursive n(id, path, paths, name, type, size, modify_on, modifier, upper_id) as (
+        select id, path, path as paths, name, type, size, modify_on, modifier, upper_id
           from st_attachment where upper_id = :id
         union
-        select a.id, a.path, a.name, a.type, a.size, a.modify_on, a.modifier, a.upper_id
-          from st_attachment as a join n on a.upper_id = n.id
+        select c.id, c.path, concat(n.path, '/', c.path), c.name, c.type, c.size, c.modify_on, c.modifier, c.upper_id
+          from st_attachment as c join n on c.upper_id = n.id
       )
-      select id, path, name, type, size, modify_on, modifier, upper_id from n
+      select id, path, name, type, size, modify_on, modifier, upper_id
+        from n order by paths asc
     """.trimIndent()
     return databaseClient.execute(sql)
       .bind("id", id)
-      .`as`(AttachmentDtoWithUpper::class.java)
+      .`as`(AttachmentWithUpperImpl::class.java)
       .fetch()
       .all()
       .collectList()
-      .flatMapMany { descendants ->
-        AttachmentDtoWithChildren().apply {
-          this.id = id
-          generateChildren(descendants)
-        }.children!!.toFlux()
+      .flatMapIterable { descendants ->
+        AttachmentTreeNode.from(
+          upperId = id,
+          descendants = descendants
+        )
       }
   }
 

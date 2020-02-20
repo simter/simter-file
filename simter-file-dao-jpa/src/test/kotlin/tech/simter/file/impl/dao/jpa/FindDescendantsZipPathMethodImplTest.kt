@@ -7,16 +7,11 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.AttachmentDto4Zip
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.impl.dao.jpa.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.jpa.po.AttachmentPo
 import tech.simter.reactive.test.jpa.ReactiveDataJpaTest
 import tech.simter.reactive.test.jpa.TestEntityManager
 import java.time.OffsetDateTime
-
-fun AttachmentDtoWithChildren.getOwnData(): Map<String, Any?> {
-  return data.filter { it.key != "children" }
-}
 
 /**
  * @author RJ

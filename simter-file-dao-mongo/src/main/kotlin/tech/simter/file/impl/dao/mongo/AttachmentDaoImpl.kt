@@ -19,7 +19,7 @@ import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentDto4Zip
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.core.domain.AttachmentTreeNode
 import tech.simter.file.impl.dao.mongo.dto.*
 import tech.simter.file.impl.dao.mongo.po.AttachmentPo
 import java.util.*
@@ -75,23 +75,29 @@ class AttachmentDaoImpl @Autowired constructor(
     }
   }
 
-  override fun findDescendants(id: String): Flux<AttachmentDtoWithChildren> {
+  override fun findDescendants(id: String): Flux<AttachmentTreeNode> {
     return operations.aggregate(
       newAggregation(
         // Filter out the specified Attachment
         match(Criteria.where("id").`is`(id)),
-        // Aggregate all descendants into an array into field "aggregate"
+        // Aggregate all descendants into an array field "descendants"
         graphLookup("st_attachment")
           .startWith("id")
           .connectFrom("_id")
           .connectTo("upperId")
-          .`as`("aggregate"),
-        project("aggregate")
+          .`as`("descendants"),
+        project("descendants")
       ),
       AttachmentPo::class.java,
-      AttachmentDescendantsDtoWithUpper::class.java
+      AttachmentWithDescendants::class.java
     )
-      .singleOrEmpty().map(AttachmentDescendantsDtoWithUpper::dtoWithChildren).flatMapIterable { it.children!! }
+      .singleOrEmpty()
+      .flatMapIterable { upper ->
+        AttachmentTreeNode.from(
+          upperId = id,
+          descendants = upper.descendants?.sortedBy { it.path } ?: emptyList()
+        )
+      }
   }
 
   override fun getFullPath(id: String): Mono<String> {

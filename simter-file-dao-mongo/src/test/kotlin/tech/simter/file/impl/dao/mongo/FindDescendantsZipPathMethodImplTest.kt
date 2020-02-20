@@ -8,14 +8,9 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.AttachmentDto4Zip
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.mongo.po.AttachmentPo
 import java.time.OffsetDateTime
-
-fun AttachmentDtoWithChildren.getOwnData(): Map<String, Any?> {
-  return data.filter { it.key != "children" }
-}
 
 /**
  * Test [AttachmentDaoImpl.findDescendantsZipPath].

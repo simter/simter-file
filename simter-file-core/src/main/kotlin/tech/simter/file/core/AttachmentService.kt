@@ -9,8 +9,8 @@ import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentDto
+import tech.simter.file.core.domain.AttachmentTreeNode
 import tech.simter.file.core.domain.AttachmentUpdateInfo
-import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import java.io.File
 import java.io.OutputStream
 
@@ -90,7 +90,7 @@ interface AttachmentService {
    *   If the upper has no children or the upper is not exists, return [Flux.empty].
    *   If user don't have permission, return [Flux.error] with [PermissionDeniedException].
    */
-  fun findDescendants(id: String): Flux<AttachmentDtoWithChildren>
+  fun findDescendants(id: String): Flux<AttachmentTreeNode>
 
   /**
    * Create one or more [Attachment]
