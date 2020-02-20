@@ -1,52 +1,45 @@
 package tech.simter.file.rest.webflux.handler
 
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.argThat
+import com.ninjasquad.springmockk.SpykBean
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
-import org.springframework.test.web.reactive.server.WebTestClient.bindToRouterFunction
-import org.springframework.web.reactive.config.EnableWebFlux
-import org.springframework.web.reactive.function.server.RouterFunctions.route
+import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
-import reactor.test.StepVerifier
+import reactor.kotlin.test.test
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.rest.webflux.handler.UploadFileByStreamHandler.Companion.REQUEST_PREDICATE
-import tech.simter.file.service.AttachmentService
+import tech.simter.file.core.AttachmentService
+import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.io.File
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
-
 
 /**
  * Test UploadFileByStreamHandler.
  *
  * @author JW
  * @author zh
+ * @author RJ
  */
-@SpringJUnitConfig(UploadFileByStreamHandler::class)
-@EnableWebFlux
-@MockBean(AttachmentService::class)
-@SpyBean(UploadFileByStreamHandler::class)
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
+@SpykBean(UploadFileByStreamHandler::class)
 @TestPropertySource(properties = ["simter.file.root=target/files"])
-internal class UploadFileByStreamHandlerTest @Autowired constructor(
+class UploadFileByStreamHandlerTest @Autowired constructor(
+  private val client: WebTestClient,
   private val service: AttachmentService,
   @Value("\${simter.file.root}") private val fileRootDir: String,
   private val handler: UploadFileByStreamHandler
 ) {
-  private val client = bindToRouterFunction(route(REQUEST_PREDICATE, handler)).build()
-
   @AfterEach
   fun clean() {
     File(fileRootDir).deleteRecursively()
@@ -62,31 +55,35 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
     val puid = "text"
-    val beCreatedFile = File("fileRootDir/text.xml")
+    val beCreatedFile = File("$fileRootDir/text.xml")
     beCreatedFile.parentFile.mkdirs()
-    `when`(service.uploadFile(any(), any())).thenReturn(Mono.empty())
-    doReturn(id).`when`(handler).newId()
+    every { service.uploadFile(any(), any()) } returns Mono.empty()
+    every { handler.newId() } returns id
 
     // invoke request
     client.post().uri("/?puid=$puid&upper=$upperId&filename=$fileName")
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isCreated
       .expectBody().jsonPath("$").isEqualTo(id)
 
     // verify
-    verify(service).uploadFile(argThat {
-      assertEquals(id, this.id)
-      assertEquals(upperId, this.upperId)
-      assertEquals(fileSize, this.size)
-      assertEquals(puid, this.puid)
-      true
-    }, argThat {
-      StepVerifier.create(this(beCreatedFile)).verifyComplete()
-      true
-    })
+    verify {
+      service.uploadFile(
+        match {
+          assertEquals(id, it.id)
+          assertEquals(upperId, it.upperId)
+          assertEquals(fileSize, it.size)
+          assertEquals(puid, it.puid)
+          true
+        },
+        match {
+          it(beCreatedFile).test().verifyComplete()
+          true
+        })
+    }
     assertTrue(beCreatedFile.exists())
   }
 
@@ -99,25 +96,30 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     val upperId = UUID.randomUUID().toString()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    `when`(service.uploadFile(any(), any())).thenReturn(Mono.error(NotFoundException("not Found upper")))
-    doReturn(id).`when`(handler).newId()
+    every { service.uploadFile(any(), any()) } returns Mono.error(NotFoundException("not Found upper"))
+    every { handler.newId() } returns id
 
     // invoke request
     client.post().uri("/?upper=$upperId&filename=$fileName")
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isNotFound
 
     // verify
-    verify(service).uploadFile(argThat {
-      assertEquals(id, this.id)
-      assertEquals(upperId, this.upperId)
-      assertEquals(fileSize, this.size)
-      assertNull(this.puid)
-      true
-    }, any())
+    verify {
+      service.uploadFile(
+        match {
+          assertEquals(id, it.id)
+          assertEquals(upperId, it.upperId)
+          assertEquals(fileSize, it.size)
+          assertNull(it.puid)
+          true
+        },
+        any()
+      )
+    }
   }
 
   @Test
@@ -129,24 +131,29 @@ internal class UploadFileByStreamHandlerTest @Autowired constructor(
     val upperId = UUID.randomUUID().toString()
     val id = UUID.randomUUID().toString()
     val fileSize = file.contentLength()
-    `when`(service.uploadFile(any(), any())).thenReturn(Mono.error(PermissionDeniedException()))
-    doReturn(id).`when`(handler).newId()
+    every { service.uploadFile(any(), any()) } returns Mono.error(PermissionDeniedException())
+    every { handler.newId() } returns id
 
     // invoke request
     client.post().uri("/?upper=$upperId&filename=$fileName")
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(fileSize)
-      .syncBody(fileData)
+      .bodyValue(fileData)
       .exchange()
       .expectStatus().isForbidden
 
     // verify
-    verify(service).uploadFile(argThat {
-      assertEquals(id, this.id)
-      assertEquals(upperId, this.upperId)
-      assertEquals(fileSize, this.size)
-      assertNull(this.puid)
-      true
-    }, any())
+    verify {
+      service.uploadFile(
+        match {
+          assertEquals(id, it.id)
+          assertEquals(upperId, it.upperId)
+          assertEquals(fileSize, it.size)
+          assertNull(it.puid)
+          true
+        },
+        any()
+      )
+    }
   }
 }

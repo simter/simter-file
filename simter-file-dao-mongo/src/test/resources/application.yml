@@ -1,0 +1,18 @@
+spring:
+  main.banner-mode: 'off'
+  mongodb:
+    embedded:
+      version: @mongo-embedded.version@
+      storage.database-dir: target/mongodb
+logging:
+  file: target/test.log
+  level: # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
+    root: ERROR
+    tech.simter.file: WARN
+
+    #---- mongo ----#
+    #org.springframework.boot.autoconfigure.mongo: INFO
+    #org.springframework.data.mongodb: DEBUG
+    #org.springframework.data.mongodb.core.ReactiveMongoTemplate: DEBUG # debug to show query
+    #org.springframework.data.mongodb.core.mapping.event.LoggingEventListener: INFO # use with LoggingEventListener bean
+    #de.flapdoodle.embed: DEBUG # embedded mongo

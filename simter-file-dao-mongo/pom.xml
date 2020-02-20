@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>tech.simter.file</groupId>
+    <artifactId>simter-file-parent</artifactId>
+    <version>${revision}</version>
+    <relativePath>../simter-file-parent</relativePath>
+  </parent>
+  <artifactId>simter-file-dao-mongo</artifactId>
+  <packaging>jar</packaging>
+  <description>Dao Implementation By Reactive MongoDB</description>
+  <dependencies>
+    <dependency>
+      <groupId>tech.simter</groupId>
+      <artifactId>simter-mongo-ext</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>tech.simter.file</groupId>
+      <artifactId>simter-file-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-mongodb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>de.flapdoodle.embed</groupId>
+      <artifactId>de.flapdoodle.embed.mongo</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <url>https://github.com/simter/simter-file/tree/master/simter-file-dao-mongo</url>
+  <scm>
+    <url>https://github.com/simter/simter-file.git</url>
+  </scm>
+  <developers>
+    <developer>
+      <name>RJ.Hwang</name>
+      <email>rongjihuang@gmail.com</email>
+    </developer>
+  </developers>
+</project>

@@ -3,6 +3,7 @@ package tech.simter.file.rest.webflux.handler
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.*
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.stereotype.Component
 import org.springframework.util.FileCopyUtils
 import org.springframework.web.reactive.function.server.HandlerFunction
@@ -13,12 +14,12 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.po.Attachment
-import tech.simter.file.service.AttachmentService
-import tech.simter.reactive.web.Utils.TEXT_PLAIN_UTF8
+import tech.simter.file.core.AttachmentService
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.impl.domain.AttachmentImpl
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -61,6 +62,7 @@ import java.util.*
  *
  * @author JW
  * @author zh
+ * @author RJ
  */
 @Component
 class UploadFileByStreamHandler @Autowired constructor(
@@ -80,14 +82,14 @@ class UploadFileByStreamHandler @Autowired constructor(
           FileCopyUtils.copy(it, file).toMono().then()
         }.thenReturn(id)
       }
-      .flatMap { status(CREATED).syncBody(it) }
+      .flatMap { status(CREATED).bodyValue(it) }
       .onErrorResume(NotFoundException::class.java) {
         if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
-        else status(NOT_FOUND).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(NOT_FOUND).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
       .onErrorResume(PermissionDeniedException::class.java) {
         if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN_UTF8).syncBody(it.message!!)
+        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
       }
   }
 
@@ -109,6 +111,6 @@ fun createAttachment(id: String, fileSize: Long, fileName: String, puid: String?
   } else {
     "${now.format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss"))}-$id.$type"
   }
-  return Attachment(id = id, path = path, name = fileName.substring(0, lastDotIndex), type = type, size = fileSize,
+  return AttachmentImpl(id = id, path = path, name = fileName.substring(0, lastDotIndex), type = type, size = fileSize,
     createOn = now, creator = "Simter", modifyOn = now, modifier = "Simter", puid = puid, upperId = upperId)
 }
