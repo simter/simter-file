@@ -10,7 +10,10 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.core.domain.*
+import tech.simter.file.core.domain.Attachment
+import tech.simter.file.core.domain.AttachmentDto4Zip
+import tech.simter.file.core.domain.AttachmentDtoWithChildren
+import tech.simter.file.core.domain.AttachmentDtoWithUpper
 import tech.simter.file.impl.dao.jpa.po.AttachmentPo
 import java.util.*
 import javax.persistence.EntityManager
@@ -202,11 +205,11 @@ class AttachmentDaoImpl @Autowired constructor(
           -- If the ancestors of attachment in the attachments list, ignored the attachment
           where p.upper_id not in (:ids)
         )
-        select id, path as full_path from p where upper_id is null
+        select path from p where upper_id is null
       """.trimIndent()
-      val fullPathDaos = em.createNativeQuery(fullPathSql, AttachmentDto4FullPath::class.java)
+      val fullPaths = em.createNativeQuery(fullPathSql)
         .setParameter("ids", ids.toList())
-        .resultList as List<AttachmentDto4FullPath>
+        .resultList as List<String>
 
       // Delete attachments and all theirs descendants
       val nodeSql = """
@@ -222,7 +225,7 @@ class AttachmentDaoImpl @Autowired constructor(
         em.createNativeQuery("delete from st_attachment where id in (:ids)")
           .setParameter("ids", nodeDtos).executeUpdate()
       }
-      fullPathDaos.map { it.fullPath!! }.toFlux()
+      fullPaths.toFlux()
     } else Flux.empty()
   }
 }

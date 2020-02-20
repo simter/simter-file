@@ -12,7 +12,6 @@ import reactor.kotlin.core.publisher.toFlux
 import tech.simter.file.TABLE_ATTACHMENT
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
-import tech.simter.file.core.domain.AttachmentDto4FullPath
 import tech.simter.file.core.domain.AttachmentDto4Zip
 import tech.simter.file.core.domain.AttachmentDtoWithChildren
 import tech.simter.file.impl.dao.r2dbc.po.AttachmentPo
@@ -89,15 +88,14 @@ class AttachmentDaoImpl @Autowired constructor(
             -- If the ancestors of attachment in the attachments list, ignored the attachment
             where p.upper_id not in (:ids1)
         )
-        select id, path as full_path from p where upper_id is null
+        select path as full_path from p where upper_id is null
       """.trimIndent()
       return databaseClient.execute(fullPathSql)
         .bind("ids", ids.toList())
         .bind("ids1", ids.toList()) // why? see https://github.com/spring-projects/spring-data-r2dbc/issues/310
-        .`as`(AttachmentDto4FullPath::class.java)
+        .`as`(String::class.java)
         .fetch()
         .all()
-        .map { it.fullPath!! }
         .collectList()
         .flatMapMany { fullPaths ->
           // 2. Find all attachmentIds to delete include all theirs descendants
