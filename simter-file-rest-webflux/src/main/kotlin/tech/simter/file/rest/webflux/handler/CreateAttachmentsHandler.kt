@@ -57,7 +57,6 @@ import java.time.OffsetDateTime
  * @author zh
  * @author RJ
  */
-
 @Component
 class CreateAttachmentsHandler @Autowired constructor(
   private val attachmentService: AttachmentService
