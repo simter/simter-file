@@ -1,5 +1,18 @@
 # simter-file changelog
 
+## 0.6.0 2020-02-21
+
+- Refactor groupId to `tech.simter.file` [#67]
+- Refactor module structure to make core api simplify and clear [#70]
+- Add r2dbc dao implementation [#66]
+- Support static file on starter [#68]
+- Add rest-api.md from [github wiki](https://github.com/simter/simter-file.wiki.git) and replenish missing rest-api items，see [docs/rest-api.md](./docs/rest-api.md)
+
+[#66]: https://github.com/simter/simter-file/issues/66
+[#67]: https://github.com/simter/simter-file/issues/67
+[#68]: https://github.com/simter/simter-file/issues/68
+[#70]: https://github.com/simter/simter-file/issues/70
+
 ## 0.5.0 2020-02-14
 
 For older merge release.
