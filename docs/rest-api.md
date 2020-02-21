@@ -16,6 +16,13 @@ Provide rest APIs:
 | 6  | POST   | /  (multipart/form-data)     | Upload one file through submit form way
 | 7  | POST   | /  (application/octet-stream)| Upload one file through stream way
 | 8  | DELETE | /$ids                        | Delete files
+| 9  | DELETE | /                            | Delete numerous files
+| 10 | POST   | /attachment                  | Batch create attachment instances without physical file
+| 11 | PATCH  | /attachment/$id              | Update attachment info
+| 12 | GET    | /$id/descendant              | Find attachment descendants tree
+| 13 | PATCH  | /$id                         | Reupload file by stream
+| 14 | GET    | /zip/$id?name=x              | Zip files to download by query param
+| 15 | POST   | /zip/?name=x                 | Zip files to download by request body
 
 **Common query params:**
 
@@ -278,3 +285,180 @@ Delete /$ids
 ```
 
 If attachment not exists, ignore it as deleted successfully.
+
+## 9. Delete numerous files
+
+Through request body to transmit the multiple to-delete ids.
+
+### Request
+
+```
+Delete /
+Content-Type : application/json
+
+[id1, id2, ..., idN]
+```
+
+### Response
+
+```
+204 No Content
+```
+
+If attachment not exists, ignore it as deleted successfully.
+
+## 10. Batch create attachment instances without physical file
+
+### Request
+
+```
+POST /attachment
+Content-Type : application/json
+
+[{DATA},...]
+```
+
+{DATA}={id, name, upperId, path, type, puid}
+
+- If no path is specified, use ID instead.
+- The user can specify the id but is responsible for ensuring the global uniqueness of the id.
+- If type is ":d", the attachment is a folder attachment.
+- If type is none or blank, the attachment type is not specified.
+
+### Response
+
+```
+201 Created
+Content-Type : application/json
+
+[id1, ..., idN]
+```
+
+The response ids order is the same as `'[{DATA}, ...]'`.
+
+## 11. Update attachment info
+
+### Request
+
+```
+PATCH /attachment/$id
+Content-Type : application/json
+
+{DATA}
+```
+
+{DATA}={name, type, path, size, puid, upperId}
+
+### Response
+
+```
+204 No Content
+```
+
+### Response: (if not found)
+
+```
+404 Not Found
+```
+
+### 12. Find attachment descendants tree
+
+### Request
+
+```
+GET /$id/descendant
+```
+
+### Response
+
+```
+200 OK
+Content-Type : application/json
+
+[{CHILD_DATA}, ...]
+```
+
+{CHILD_DATA}={id, name, type, size, modifyOn, modifier, children: [{CHILD_DATA}, ...]}
+
+### 13. Reupload file by stream
+
+### Request
+
+```
+PATCH /$id
+Content-Type        : application/octet-stream
+Content-Length      : $len
+Content-Disposition : filename="$filename"
+
+{FILE_DATA}
+```
+
+### Response
+
+```
+204 No Content
+```
+
+### Response (if not found)
+
+```
+404 Not Found
+```
+
+### 14. Zip files to download by query params
+
+### Request
+
+```
+GET /zip/$id?name=x
+```
+
+- name is optional
+- $id can be `'id1,id2,...'` combine by comma symbol, but the user need to make sure that $id is not truncated.
+
+### Response
+
+```
+200 OK
+Content-Type        : application/octet-stream
+Content-Length      : $len
+Content-Disposition : attachment; filename="$name.zip"
+
+$FILE_DATA
+```
+
+### Response (if not found)
+
+```
+404 Not Found
+```
+
+### 15. Zip files to download by request body
+
+### Request
+
+```
+POST /zip/?name=x
+Content-Type : application/x-www-form-urlencoded
+
+id=$id1&id=$id2...
+```
+
+name is optional
+
+### Response
+
+```
+200 OK
+Content-Type        : application/octet-stream
+Content-Length      : $len
+Content-Disposition : attachment; filename="$name.zip"
+
+$FILE_DATA
+```
+
+### Response (if not found)
+
+```
+404 Not Found
+```
