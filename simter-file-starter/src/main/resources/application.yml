@@ -1,6 +1,7 @@
 module.version:
   simter: @simter.version@
   simter-file: @project.version@
+module.rest-context-path.simter-file: @module.rest-context-path.simter-file@
 module.authorization.simter-file:
   # the admin role identity, default 'ADMIN'
   admin-role: ADMIN

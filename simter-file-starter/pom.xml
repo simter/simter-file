@@ -32,6 +32,7 @@
     <db.continue-on-error>false</db.continue-on-error>
     <db.disabled-datasource>false</db.disabled-datasource>
     <logging.file>target/test.log</logging.file>
+    <module.rest-context-path.simter-file>/file</module.rest-context-path.simter-file>
   </properties>
   <dependencies>
     <dependency>
