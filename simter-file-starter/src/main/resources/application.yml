@@ -44,7 +44,7 @@ spring:
     - jpa-@db.jpa-implementation@
   application.name: @project.artifactId@-@project.version@
 server:
-  port: ${port:9013}
+  port: @server.port@
   servlet.context-path: /
   server-header: @project.artifactId@-@project.version@
 logging:
