@@ -13,8 +13,8 @@ const val DEFAULT_ADMIN_ROLE = "ADMIN"
 const val ADMIN_ROLE_KEY = "module.authorization.simter-file.admin-role"
 /** Default module authorizer key */
 const val DEFAULT_MODULE_AUTHORIZER_KEY = "module.authorization.simter-file.default"
-/** all sub-module authorizer key */
-const val SUB_MODULES_AUTHORIZER_KEY = "module.authorization.simter-file.sub-modules"
+/** All business modules authorizer key */
+const val MODULES_AUTHORIZER_KEY = "module.authorization.simter-file.modules"
 
 /** table name of attachment */
 const val TABLE_ATTACHMENT = "st_attachment"

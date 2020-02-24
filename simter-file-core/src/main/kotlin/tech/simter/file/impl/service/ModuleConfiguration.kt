@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import tech.simter.file.DEFAULT_MODULE_AUTHORIZER_KEY
 import tech.simter.file.PACKAGE
-import tech.simter.file.SUB_MODULES_AUTHORIZER_KEY
+import tech.simter.file.MODULES_AUTHORIZER_KEY
 import tech.simter.reactive.security.ModuleAuthorizer
 import tech.simter.reactive.security.ReactiveSecurityService
 import tech.simter.reactive.security.properties.ModuleAuthorizeProperties
@@ -46,19 +46,19 @@ class ModuleConfiguration {
   }
 
   /**
-   * Starter could config multiple yml key [SUB_MODULES_AUTHORIZER_KEY] to
-   * support specific sub-module access-control when it is necessary,
-   * otherwise all sub-module access-control would fallback to use [ModuleConfiguration.defaultModuleAuthorizer].
+   * Starter could config multiple yml key [MODULES_AUTHORIZER_KEY] to
+   * support specific business module access-control when it is necessary,
+   * otherwise all business modules access-control would fallback to use [ModuleConfiguration.defaultModuleAuthorizer].
    */
-  @Bean("$SUB_MODULES_AUTHORIZER_KEY.properties")
-  @ConfigurationProperties(prefix = SUB_MODULES_AUTHORIZER_KEY)
-  fun subModuleAuthorizePropertiesMap(): Map<String, ModuleAuthorizeProperties> {
+  @Bean("$MODULES_AUTHORIZER_KEY.properties")
+  @ConfigurationProperties(prefix = MODULES_AUTHORIZER_KEY)
+  fun modulesAuthorizeProperties(): Map<String, ModuleAuthorizeProperties> {
     return HashMap()
   }
 
-  @Bean("$SUB_MODULES_AUTHORIZER_KEY.authorizer")
-  fun subModuleAuthorizerMap(
-    @Qualifier("$SUB_MODULES_AUTHORIZER_KEY.properties")
+  @Bean("$MODULES_AUTHORIZER_KEY.authorizers")
+  fun modulesAuthorizers(
+    @Qualifier("$MODULES_AUTHORIZER_KEY.properties")
     properties: Map<String, ModuleAuthorizeProperties>,
     securityService: ReactiveSecurityService
   ): Map<String, ModuleAuthorizer> {

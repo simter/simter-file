@@ -51,8 +51,8 @@ class AttachmentServiceImpl @Autowired constructor(
   private val fileRootDir: String,
   @Qualifier("$DEFAULT_MODULE_AUTHORIZER_KEY.authorizer")
   private val defaultModuleAuthorizer: ModuleAuthorizer,
-  @Qualifier("$SUB_MODULES_AUTHORIZER_KEY.authorizer")
-  private val subModuleAuthorizerMap: Map<String, ModuleAuthorizer>,
+  @Qualifier("$MODULES_AUTHORIZER_KEY.authorizers")
+  private val modulesAuthorizers: Map<String, ModuleAuthorizer>,
   @Value("$ADMIN_ROLE_KEY: $DEFAULT_ADMIN_ROLE")
   private val adminRole: String,
   val attachmentDao: AttachmentDao,
@@ -67,7 +67,7 @@ class AttachmentServiceImpl @Autowired constructor(
 
   /**
    * 1. If current user is admin, use [defaultModuleAuthorizer] to checkout module permission.
-   * 2. If has a sub-module authorizer in [subModuleAuthorizerMap], use this authorizer to checkout module permission.
+   * 2. If has a business module authorizer in [modulesAuthorizers], use this authorizer to checkout module permission.
    * 3. otherwise use [defaultModuleAuthorizer] to checkout permission.
    */
   fun verifyAuthorize(module: String?, operation: OperationType): Mono<Void> {
@@ -76,10 +76,10 @@ class AttachmentServiceImpl @Autowired constructor(
       .flatMap { isAdmin ->
         when {
           // verify by admin access-control
-          isAdmin || !subModuleAuthorizerMap.containsKey(module) ->
+          isAdmin || !modulesAuthorizers.containsKey(module) ->
             defaultModuleAuthorizer.verifyHasPermission(o)
           // verify by sub-module access-control
-          else -> subModuleAuthorizerMap[module]!!.verifyHasPermission(o)
+          else -> modulesAuthorizers[module]!!.verifyHasPermission(o)
         }
       }
   }
