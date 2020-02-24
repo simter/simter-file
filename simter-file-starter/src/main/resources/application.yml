@@ -31,7 +31,7 @@ module.authorization.simter-file:
           strategy: "And"
         DELETE.roles: "X_DELETE"
     #module-b: ...
-simter:jwt:
+simter.jwt:
   secret-key: @simter.jwt.secret-key@
   require-authorized: @simter.jwt.require-authorized@
   exclude-paths: /static/
