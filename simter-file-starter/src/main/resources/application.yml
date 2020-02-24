@@ -2,11 +2,35 @@ module.version:
   simter: @simter.version@
   simter-file: @project.version@
 module.authorization.simter-file:
-  # for default module access-control, mostly for admin permission
+  # the admin role identity, default 'ADMIN'
+  admin-role: ADMIN
+  # Default module access-control, mostly for admin permission.
+  # See tech.simter.file.impl.service.ModuleConfiguration.defaultModuleAuthorizer(...) bean.
+  # If without module.authorization.simter-file.modules config, fallback to use this.
   default:
     defaultPermission: "Allow"   # Allow|Deny
-  # for all sub-modules access-control
-  sub-modules: []
+    operations:
+      READ.roles: ["ADMIN"]
+      CREATE.roles: ["ADMIN"]
+      UPDATE.roles: ["ADMIN"]
+      DELETE.roles: ["ADMIN"]
+  # All business modules access-control.
+  # See tech.simter.file.impl.service.ModuleConfiguration.moduleAuthorizers(...) bean.
+  # If without these config, fallback to use the upper default config.
+  modules:
+    # a sample for a business module-a access-control.
+    # see tech.simter.reactive.security.properties.ModuleAuthorizeProperties
+    module-a:
+      defaultPermission: "Allow"   # Allow|Deny, default Deny
+      operations:
+        READ:
+          roles: ["X_READ1", "X_READ2"]  # actual role identity
+          strategy: "Or"                 # And|Or, default Or
+        "[CREATE,UPDATE]":               # create or update
+          roles: ["X_CREATE", "X_UPDATE"]
+          strategy: "And"
+        DELETE.roles: "X_DELETE"
+    #module-b: ...
 simter:jwt:
   secret-key: @simter.jwt.secret-key@
   require-authorized: @simter.jwt.require-authorized@
