@@ -143,23 +143,6 @@
       <artifactId>simter-util</artifactId>
       <scope>test</scope>
     </dependency>
-
-    <!-- TODO: delete after use mockk instead -->
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-junit-jupiter</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.nhaarman.mockitokotlin2</groupId>
-      <artifactId>mockito-kotlin</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
   <build>
     <resources>
