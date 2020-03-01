@@ -23,6 +23,7 @@
     <module>simter-file-bom</module>
     <module>simter-file-parent</module>
     <module>simter-file-core</module>
+    <module>simter-file-test</module>
     <module>simter-file-dao-mongo</module>
     <module>simter-file-dao-r2dbc</module>
     <module>simter-file-dao-jpa</module>
