@@ -36,13 +36,6 @@
       <artifactId>spring-boot</artifactId>
       <optional>true</optional>
     </dependency>
-
-    <!-- TODO: delete -->
-    <dependency>
-      <groupId>javax.persistence</groupId>
-      <artifactId>javax.persistence-api</artifactId>
-      <optional>true</optional>
-    </dependency>
   </dependencies>
   <url>https://github.com/simter/simter-file/tree/master/simter-file-core</url>
   <scm>
