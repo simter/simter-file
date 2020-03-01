@@ -6,8 +6,8 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.mongo.po.AttachmentPo
+import tech.simter.file.test.TestHelper.randomAttachmentId
 import java.time.OffsetDateTime
 import java.util.*
 

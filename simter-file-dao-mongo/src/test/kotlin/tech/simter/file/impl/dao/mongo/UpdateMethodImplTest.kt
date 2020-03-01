@@ -7,9 +7,9 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.exception.NotFoundException
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentPo
 import tech.simter.file.impl.domain.AttachmentUpdateInfoImpl
+import tech.simter.file.test.TestHelper.randomAttachmentId
 
 /**
  * Test [AttachmentDaoImpl.update].

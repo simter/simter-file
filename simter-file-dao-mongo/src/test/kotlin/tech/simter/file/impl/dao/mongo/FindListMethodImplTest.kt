@@ -9,9 +9,9 @@ import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.impl.dao.mongo.TestHelper.cleanDatabase
-import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentId
-import tech.simter.file.impl.dao.mongo.TestHelper.randomString
 import tech.simter.file.impl.dao.mongo.po.AttachmentPo
+import tech.simter.file.test.TestHelper.randomAttachmentId
+import tech.simter.file.test.TestHelper.randomString
 import java.time.OffsetDateTime
 import java.util.stream.IntStream
 
