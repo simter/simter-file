@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.impl.dao.jpa.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.jpa.TestHelper.randomAttachmentPo
+import tech.simter.file.test.TestHelper.randomAttachmentId
 import tech.simter.reactive.test.jpa.ReactiveDataJpaTest
 import tech.simter.reactive.test.jpa.TestEntityManager
 import tech.simter.util.AssertUtils
