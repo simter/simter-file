@@ -9,8 +9,8 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.impl.dao.r2dbc.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.r2dbc.TestHelper.randomAttachmentPo
+import tech.simter.file.test.TestHelper.randomAttachmentId
 import java.time.OffsetDateTime
 
 /**
