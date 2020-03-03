@@ -1,0 +1,25 @@
+spring.main.banner-mode: 'off'
+simter-file:
+  server-url: @simter-file.server-url@
+  root-dir: @simter-file.root-dir@
+logging:
+  file: target/test.log
+  level: # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
+    root: ERROR
+    tech.simter.file: WARN
+
+    #---- spring ----#
+    #org.springframework: WARN
+
+    #---- spring-boot ----#
+    #org.springframework.boot: WARN
+    org.springframework.boot.context.embedded: TRACE
+    org.springframework.boot.web.embedded.netty.NettyWebServer: INFO # INFO - show server port
+
+    #---- spring reactive ----#
+    #org.springframework.http.client.reactive: DEBUG
+    #org.springframework.http.server.reactive: DEBUG
+    #org.springframework.web.reactive: DEBUG # debug to show mapped and matches routes
+
+    #---- reactor ----#
+    #reactor.ipc.netty: DEBUG # debug to show request/response

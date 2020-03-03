@@ -20,7 +20,21 @@
       <groupId>tech.simter</groupId>
       <artifactId>simter-util</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webflux</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webflux</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+  <properties>
+    <simter-file.server-url>http://localhost:9013/file</simter-file.server-url>
+    <simter-file.root-dir>../simter-file-starter/target/files</simter-file.root-dir>
+  </properties>
   <build>
     <plugins>
       <plugin>
