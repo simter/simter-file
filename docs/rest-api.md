@@ -258,11 +258,10 @@ Content-Disposition : $filename
 | $puid      | false   | The business module identity
 | $upperId   | false   | The upper id
 
-
 ### Response
 
 ```
-204 No Content
+201 Created
 Location : /$id
 ```
 

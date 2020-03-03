@@ -67,7 +67,7 @@ class UploadFileByStreamHandlerTest @Autowired constructor(
       .bodyValue(fileData)
       .exchange()
       .expectStatus().isCreated
-      .expectBody().jsonPath("$").isEqualTo(id)
+      .expectHeader().valueEquals("Location", "/$id")
 
     // verify
     verify {
