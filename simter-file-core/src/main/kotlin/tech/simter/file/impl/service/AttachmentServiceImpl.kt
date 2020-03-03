@@ -47,7 +47,7 @@ import java.util.zip.ZipOutputStream
  */
 @Component
 class AttachmentServiceImpl @Autowired constructor(
-  @Value("\${simter.file.root}")
+  @Value("\${$FILE_ROOT_DIR_KEY}")
   private val fileRootDir: String,
   @Qualifier("$DEFAULT_MODULE_AUTHORIZER_KEY.authorizer")
   private val defaultModuleAuthorizer: ModuleAuthorizer,

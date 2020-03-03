@@ -14,6 +14,7 @@ import reactor.kotlin.core.publisher.toFlux
 import reactor.kotlin.test.test
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.PermissionDeniedException
+import tech.simter.file.FILE_ROOT_DIR_KEY
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.AttachmentService
 import tech.simter.file.impl.UnitTestConfiguration
@@ -32,7 +33,7 @@ import java.util.*
 class DeleteMethodTest @Autowired constructor(
   private val dao: AttachmentDao,
   private val service: AttachmentServiceImpl,
-  @Value("\${simter.file.root}") private val fileRootDir: String
+  @Value("\${$FILE_ROOT_DIR_KEY}") private val fileRootDir: String
 ) {
   @AfterEach
   fun clean() {

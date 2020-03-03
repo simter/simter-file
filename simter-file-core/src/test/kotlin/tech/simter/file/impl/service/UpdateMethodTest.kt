@@ -15,6 +15,7 @@ import reactor.kotlin.test.test
 import tech.simter.exception.ForbiddenException
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
+import tech.simter.file.FILE_ROOT_DIR_KEY
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.AttachmentService
 import tech.simter.file.impl.TestHelper.randomAuthenticatedUser
@@ -35,7 +36,7 @@ import java.util.*
  */
 @SpringBootTest(classes = [UnitTestConfiguration::class])
 class UpdateMethodTest @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
+  @Value("\${$FILE_ROOT_DIR_KEY}") private val fileRootDir: String,
   private val dao: AttachmentDao,
   private val service: AttachmentServiceImpl,
   private val securityService: ReactiveSecurityService

@@ -36,7 +36,7 @@ simter.jwt:
   secret-key: @simter.jwt.secret-key@
   require-authorized: @simter.jwt.require-authorized@
   exclude-paths: /static/
-simter.file.root: @simter-file.root-dir@
+simter-file.root-dir: @simter-file.root-dir@
 spring:
   main.banner-mode: 'off'
   profiles.active:
