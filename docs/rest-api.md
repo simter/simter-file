@@ -232,7 +232,7 @@ $upperId
 ### Response
 
 ```
-204 No Content
+201 Created
 Location : /$id
 ```
 

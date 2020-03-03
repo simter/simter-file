@@ -71,7 +71,7 @@ class UploadFileByFormHandlerTest @Autowired constructor(
       .contentLength(fileSize)
       .bodyValue(parts)
       .exchange()
-      .expectStatus().isNoContent
+      .expectStatus().isCreated
       .expectHeader().valueEquals("Location", "/$id")
 
     // verify

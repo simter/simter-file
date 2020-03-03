@@ -1,21 +1,19 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus.FORBIDDEN
-import org.springframework.http.HttpStatus.NOT_FOUND
+import org.springframework.http.HttpStatus.*
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA
 import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.codec.multipart.FormFieldPart
-import org.springframework.http.codec.multipart.Part
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.BodyExtractors
 import org.springframework.web.reactive.function.server.HandlerFunction
 import org.springframework.web.reactive.function.server.RequestPredicate
 import org.springframework.web.reactive.function.server.RequestPredicates.POST
 import org.springframework.web.reactive.function.server.RequestPredicates.contentType
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.ServerResponse.noContent
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
@@ -24,7 +22,6 @@ import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.Attachment
 import java.net.URI
 import java.util.*
-import kotlin.collections.HashMap
 
 /**
  * The [HandlerFunction] for upload file by from.
@@ -85,32 +82,26 @@ class UploadFileByFormHandler @Autowired constructor(
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     return request
-      .bodyToFlux(Part::class.java)
-      .filter { it is FilePart || it is FormFieldPart }
-      .collectList()
-      // 1. extract data in request body
-      .map {
-        // build Map by data in list
-        val formDataMap = HashMap<String, Any?>()
-        for (part in it) {
-          if (part is FilePart) formDataMap["fileData"] = part
-          else if (part is FormFieldPart) formDataMap[part.name()] = part.value()
-        }
-        formDataMap
-      }
+      .body(BodyExtractors.toMultipartData())
       // 2. save file to disk
-      .flatMap {
+      .flatMap { mvm ->
+        val it = mvm.toSingleValueMap()
         // get the FilePart by the Map
         val fileData = it["fileData"] as FilePart
         // convert to Attachment instance
-        val attachment = createAttachment(newId(), fileData.headers().contentLength, fileData.filename(),
-          it["puid"] as String?, it["upperId"] as String?)
+        val attachment = createAttachment(
+          id = newId(),
+          fileSize = fileData.headers().contentLength,
+          fileName = fileData.filename(),
+          puid = (it["puid"] as FormFieldPart?)?.value(),
+          upperId = (it["upperId"] as FormFieldPart?)?.value()
+        )
         attachmentService.uploadFile(attachment) { file ->
           fileData.transferTo(file)
         }.thenReturn(attachment.id)
       }
       // 3. return response
-      .flatMap { noContent().location(URI.create("/$it")).build() }
+      .flatMap { status(CREATED).location(URI.create("/$it")).build() }
       .onErrorResume(NotFoundException::class.java) {
         if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
         else status(NOT_FOUND).contentType(TEXT_PLAIN).bodyValue(it.message!!)
