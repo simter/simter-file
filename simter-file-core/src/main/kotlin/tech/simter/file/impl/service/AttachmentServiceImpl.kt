@@ -329,7 +329,8 @@ class AttachmentServiceImpl @Autowired constructor(
       }
       // 4. set the creator and modifier
       .flatMap {
-        securityService.getAuthenticatedUser().map(Optional<User>::get).map(User::name)
+        securityService.getAuthenticatedUser()
+          .map { it.orElse(null)?.name ?: "System" }
           .map { userName -> AttachmentImpl.from(it).copy(creator = userName, modifier = userName) }
       }
       // 5. save attachment data
