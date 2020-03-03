@@ -58,7 +58,7 @@ simter.mongodb.enabled-logging-event-listener: ${debug:false}
 # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
 logging.level:
   #---- simter ----#
-  tech.simter.r2dbc: WARN # WARN - Executing spring.datasource.schema|data scripts to database, INFO - show executed script, DEBUG - show R2dbcProperties
+  tech.simter.r2dbc: INFO # WARN - Executing spring.datasource.schema|data scripts to database, INFO - show executed script, DEBUG - show R2dbcProperties
   tech.simter.embeddeddatabase: INFO # INFO - Starting embedded database: url=..., DEBUG - Load script
 
   #---- r2dbc client ----#
