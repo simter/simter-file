@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.server.ServerResponse.*
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import tech.simter.exception.PermissionDeniedException
+import tech.simter.file.FILE_ROOT_DIR_KEY
 import tech.simter.file.core.AttachmentService
 
 /**
@@ -58,7 +59,7 @@ import tech.simter.file.core.AttachmentService
  */
 @Component
 class InlineFileHandler @Autowired constructor(
-  @Value("\${simter.file.root}") private val fileRootDir: String,
+  @Value("\${$FILE_ROOT_DIR_KEY}") private val fileRootDir: String,
   private val attachmentService: AttachmentService
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {

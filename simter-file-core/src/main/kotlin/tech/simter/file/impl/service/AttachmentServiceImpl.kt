@@ -47,7 +47,7 @@ import java.util.zip.ZipOutputStream
  */
 @Component
 class AttachmentServiceImpl @Autowired constructor(
-  @Value("\${simter.file.root}")
+  @Value("\${$FILE_ROOT_DIR_KEY}")
   private val fileRootDir: String,
   @Qualifier("$DEFAULT_MODULE_AUTHORIZER_KEY.authorizer")
   private val defaultModuleAuthorizer: ModuleAuthorizer,
@@ -329,7 +329,8 @@ class AttachmentServiceImpl @Autowired constructor(
       }
       // 4. set the creator and modifier
       .flatMap {
-        securityService.getAuthenticatedUser().map(Optional<User>::get).map(User::name)
+        securityService.getAuthenticatedUser()
+          .map { it.orElse(null)?.name ?: "System" }
           .map { userName -> AttachmentImpl.from(it).copy(creator = userName, modifier = userName) }
       }
       // 5. save attachment data

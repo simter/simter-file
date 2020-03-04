@@ -1,5 +1,33 @@
 # simter-file changelog
 
+## 0.7.0 2020-03-04
+
+**Breaking api changes:**
+
+- Upload file by stream should return 201 with location header
+- Upload file by form submit should return 201 with location header
+- Rename property 'simter.file.root' to 'simter-file.root-dir'
+
+**Bug fixed and improved:**
+
+- Add integration test:
+    - find module attachments
+    - download file by inline mode
+    - upload file by form submit
+    - upload file by stream
+    - Initial integration test config
+- Add new module simter-file-test for common unit test
+- Make simter-file root dir can be config by maven property 'simter-file.root-dir'
+- Should not config default.operations by default
+- Use 'System' as creator if without authenticated user info when upload file
+- Remove mockito dependency
+- Minimize hikari config
+- Remove javax.persistence-api dependency on core module
+- Make server port configurable by maven property `server.port`
+- Add maven property `module.rest-context-path.simter-file` in starter
+- Add module authorizer config sample on starter
+- Rename SUB_MODULES_AUTHORIZER_KEY to MODULES_AUTHORIZER_KEY
+
 ## 0.6.0 2020-02-21
 
 - Refactor groupId to `tech.simter.file` [#67]

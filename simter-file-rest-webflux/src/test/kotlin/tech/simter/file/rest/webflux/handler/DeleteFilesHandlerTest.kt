@@ -5,7 +5,6 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
-import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
@@ -24,7 +23,6 @@ import java.util.*
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
-@TestPropertySource(properties = ["simter.file.root=target/files"])
 class DeleteFilesHandlerTest @Autowired constructor(
   private val client: WebTestClient,
   private val service: AttachmentService

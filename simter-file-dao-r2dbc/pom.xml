@@ -41,6 +41,11 @@
       <groupId>org.springframework.data</groupId>
       <artifactId>spring-data-r2dbc</artifactId>
     </dependency>
+    <dependency>
+      <groupId>tech.simter.file</groupId>
+      <artifactId>simter-file-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>

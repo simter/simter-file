@@ -20,6 +20,7 @@ import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.AttachmentService
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.impl.domain.AttachmentImpl
+import java.net.URI
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -82,7 +83,7 @@ class UploadFileByStreamHandler @Autowired constructor(
           FileCopyUtils.copy(it, file).toMono().then()
         }.thenReturn(id)
       }
-      .flatMap { status(CREATED).bodyValue(it) }
+      .flatMap { status(CREATED).location(URI.create("/$it")).build() }
       .onErrorResume(NotFoundException::class.java) {
         if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
         else status(NOT_FOUND).contentType(TEXT_PLAIN).bodyValue(it.message!!)

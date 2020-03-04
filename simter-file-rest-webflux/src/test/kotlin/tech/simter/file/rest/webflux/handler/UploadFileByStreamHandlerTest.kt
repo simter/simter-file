@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono
 import reactor.kotlin.test.test
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
+import tech.simter.file.FILE_ROOT_DIR_KEY
 import tech.simter.file.core.AttachmentService
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.io.File
@@ -33,11 +34,11 @@ import java.util.*
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
 @SpykBean(UploadFileByStreamHandler::class)
-@TestPropertySource(properties = ["simter.file.root=target/files"])
+@TestPropertySource(properties = ["$FILE_ROOT_DIR_KEY=target/files"])
 class UploadFileByStreamHandlerTest @Autowired constructor(
   private val client: WebTestClient,
   private val service: AttachmentService,
-  @Value("\${simter.file.root}") private val fileRootDir: String,
+  @Value("\${$FILE_ROOT_DIR_KEY}") private val fileRootDir: String,
   private val handler: UploadFileByStreamHandler
 ) {
   @AfterEach
@@ -67,7 +68,7 @@ class UploadFileByStreamHandlerTest @Autowired constructor(
       .bodyValue(fileData)
       .exchange()
       .expectStatus().isCreated
-      .expectBody().jsonPath("$").isEqualTo(id)
+      .expectHeader().valueEquals("Location", "/$id")
 
     // verify
     verify {

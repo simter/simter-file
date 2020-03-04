@@ -7,9 +7,9 @@ import org.springframework.boot.test.context.SpringBootTest
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
 import tech.simter.file.impl.dao.r2dbc.TestHelper.cleanDatabase
-import tech.simter.file.impl.dao.r2dbc.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.r2dbc.TestHelper.randomAttachmentPo
 import tech.simter.file.impl.domain.AttachmentZipInfoImpl
+import tech.simter.file.test.TestHelper.randomAttachmentId
 
 /**
  * Test [AttachmentDaoImpl.findDescendantsZipPath].

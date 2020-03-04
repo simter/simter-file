@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import reactor.kotlin.test.test
 import tech.simter.file.core.AttachmentDao
-import tech.simter.file.impl.dao.r2dbc.TestHelper.randomAttachmentId
 import tech.simter.file.impl.dao.r2dbc.TestHelper.randomAttachmentPo
+import tech.simter.file.test.TestHelper.randomAttachmentId
 
 /**
  * Test [AttachmentDaoImpl.get]

@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.MediaType.APPLICATION_JSON
-import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
@@ -25,7 +24,6 @@ import java.util.*
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
-@TestPropertySource(properties = ["simter.file.root=target/files"])
 class DeleteNumerousFilesHandlerTest @Autowired constructor(
   private val client: WebTestClient,
   private val service: AttachmentService
