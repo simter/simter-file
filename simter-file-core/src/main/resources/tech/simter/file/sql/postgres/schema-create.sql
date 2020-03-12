@@ -1,25 +1,22 @@
-create table st_attachment (
+create table st_file_store (
   id        varchar(36)  primary key,
-  path      varchar(255) not null,
-  name      varchar(255) not null,
+  module    varchar(255) not null,
+  name      varchar(100) not null,
   type      varchar(10)  not null,
-  size      integer      not null,
+  size      bigint       not null,
+  path      varchar(255) not null,
+  creator   varchar(50)  not null,
   create_on timestamp with time zone not null,
-  creator   varchar(255) not null,
-  modify_on timestamp with time zone not null,
-  modifier  varchar(255) not null,
-  puid      varchar(36),
-  upper_id  varchar(36)
+  modifier  varchar(50)  not null,
+  modify_on timestamp with time zone not null
 );
-comment on table st_attachment            is 'The meta information of the upload file';
-comment on column st_attachment.id        is 'UUID';
-comment on column st_attachment.path      is 'The relative path that store the actual physical file';
-comment on column st_attachment.name      is 'File name without extension';
-comment on column st_attachment.type      is 'If it is a file, the type is file extension without dot symbol and if it is a folder, the type is ":d"';
-comment on column st_attachment.size      is 'The byte unit file length';
-comment on column st_attachment.create_on is 'Created time';
-comment on column st_attachment.creator   is 'The account do the created';
-comment on column st_attachment.modify_on is 'Last modify time';
-comment on column st_attachment.modifier  is 'The account do the last modify';
-comment on column st_attachment.puid      is 'The unique id of the parent module';
-comment on column st_attachment.upper_id  is 'The upperId of the parent module';
+comment on table st_file_store            is 'file information';
+comment on column st_file_store.module    is 'business module identity, must start end and separate with "/" symbol';
+comment on column st_file_store.name      is 'File name without extension';
+comment on column st_file_store.type      is 'file extension without dot symbol';
+comment on column st_file_store.size      is 'byte unit file length';
+comment on column st_file_store.path      is 'relative path that store the physical file';
+comment on column st_file_store.creator   is 'creator identity';
+comment on column st_file_store.create_on is 'created datetime';
+comment on column st_file_store.modifier  is 'last modifier identity';
+comment on column st_file_store.modify_on is 'last modified datetime';
