@@ -1,1 +1,1 @@
-drop table if exists st_file_store;
+drop table if exists st_file;

@@ -1,4 +1,4 @@
-package tech.simter.file.impl.service
+package tech.simter.file.impl
 
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.ConfigurationProperties

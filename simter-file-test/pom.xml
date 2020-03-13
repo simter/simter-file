@@ -43,7 +43,7 @@
   </dependencies>
   <properties>
     <simter-file.server-url>http://localhost:9013/file</simter-file.server-url>
-    <simter-file.root-dir>../simter-file-starter/target/files</simter-file.root-dir>
+    <simter-file.root-dir>../simter-file-starter/target/data</simter-file.root-dir>
   </properties>
   <build>
     <plugins>
@@ -73,9 +73,9 @@
     </plugins>
   </build>
   <profiles>
-    <!-- Run all integration test -->
+    <!-- Run integration test -->
     <profile>
-      <id>all</id>
+      <id>integration-test</id>
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>

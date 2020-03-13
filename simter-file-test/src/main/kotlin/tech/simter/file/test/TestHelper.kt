@@ -1,10 +1,11 @@
 package tech.simter.file.test
 
-import tech.simter.file.impl.domain.AttachmentImpl
+import tech.simter.file.core.FileStore
+import tech.simter.file.timestampId
 import tech.simter.reactive.context.SystemContext
 import tech.simter.util.RandomUtils.randomInt
+import java.nio.file.Paths
 import java.time.OffsetDateTime
-import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
 
 /**
@@ -22,7 +23,7 @@ object TestHelper {
     return SystemContext.User(id = id, account = account, name = name)
   }
 
-  /** Create a random string with a limit length */
+  /** Create a random uuid string with a limit length */
   fun randomString(len: Int = 36): String {
     return UUID.randomUUID().toString().let {
       if (len < 36) it.substring(0, len)
@@ -30,40 +31,41 @@ object TestHelper {
     }
   }
 
-  /** Create a random attachment identity */
-  fun randomAttachmentId(): String {
-    return UUID.randomUUID().toString()
+  /** Create a random file module type */
+  fun randomModuleValue(): String {
+    return "/" + randomString(6) + "/"
   }
 
-  /** Create a random attachment type */
-  fun randomAttachmentType(): String {
-    return randomString(3)
+  /** Create a random file identity */
+  fun randomFileId(): String {
+    return timestampId()
   }
 
-  /** Create an attachment instance with random property values */
-  fun randomAttachment(
-    id: String = randomAttachmentId(),
-    path: String = randomString(),
-    name: String = randomString(6),
-    type: String = randomAttachmentType(),
+  /** Create a random fileStore instance */
+  fun randomFileStore(
+    id: String = timestampId(),
+    module: String = randomModuleValue(),
+    name: String = randomString(8),
+    type: String = "xyz",
     size: Long = randomInt().toLong(),
-    puid: String = randomString(6),
-    upperId: String = randomAttachmentId(),
-    ts: OffsetDateTime = OffsetDateTime.now().truncatedTo(SECONDS)
-  ): AttachmentImpl {
-    val user = randomString(6)
-    return AttachmentImpl(
+    ts: OffsetDateTime = OffsetDateTime.now()
+  ): FileStore {
+    val path = Paths.get(
+      if (module.startsWith("/")) module.substring(1) else module,
+      "$name.$type"
+    ).toString()
+    val creator = randomString(4)
+    return FileStore.Impl(
       id = id,
+      module = module,
       path = path,
       name = name,
       type = type,
       size = size,
-      puid = puid,
-      upperId = upperId,
       createOn = ts,
-      creator = user,
+      creator = creator,
       modifyOn = ts,
-      modifier = user
+      modifier = creator
     )
   }
 }

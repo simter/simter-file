@@ -28,6 +28,10 @@
       <artifactId>reactor-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.data</groupId>
       <artifactId>spring-data-commons</artifactId>
     </dependency>
@@ -36,7 +40,27 @@
       <artifactId>spring-boot</artifactId>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlinx</groupId>
+      <artifactId>kotlinx-serialization-runtime</artifactId>
+    </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <configuration>
+          <compilerPlugins>
+            <!-- Spring support: https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support -->
+            <plugin>spring</plugin>
+            <!-- Kotlin serialization support: https://github.com/Kotlin/kotlinx.serialization -->
+            <plugin>kotlinx-serialization</plugin>
+          </compilerPlugins>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <url>https://github.com/simter/simter-file/tree/master/simter-file-core</url>
   <scm>
     <url>https://github.com/simter/simter-file.git</url>
