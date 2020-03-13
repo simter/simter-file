@@ -34,7 +34,7 @@
     <logging.file>target/test.log</logging.file>
     <server.port>9013</server.port>
     <module.rest-context-path.simter-file>/file</module.rest-context-path.simter-file>
-    <simter-file.root-dir>target/data</simter-file.root-dir>
+    <simter-file.base-data-dir>target/data</simter-file.base-data-dir>
   </properties>
   <dependencies>
     <dependency>

@@ -1,6 +1,6 @@
 module.rest-context-path.simter-file: /
 spring.main.banner-mode: 'off'
-simter-file.root-dir: target/files
+simter-file.base-data-dir: target/data
 logging:
   file: target/test.log
   level: # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
