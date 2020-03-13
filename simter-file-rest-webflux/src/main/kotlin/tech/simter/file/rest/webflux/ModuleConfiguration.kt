@@ -1,5 +1,6 @@
 package tech.simter.file.rest.webflux
 
+import kotlinx.serialization.ImplicitReflectionSerializer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -7,10 +8,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.web.reactive.function.server.router
 import tech.simter.file.PACKAGE
-import tech.simter.file.rest.webflux.handler.*
+import tech.simter.file.rest.webflux.handler.DownloadHandler as DownloadFileHandler
+import tech.simter.file.rest.webflux.handler.UploadHandler as UploadFileHandler
+import tech.simter.file.rest.webflux.handler.FindHandler as FindFileViewDataHandler
 
 /**
  * All configuration for this module.
@@ -25,21 +27,9 @@ import tech.simter.file.rest.webflux.handler.*
 class ModuleConfiguration @Autowired constructor(
   @Value("\${module.version.simter-file:UNKNOWN}") private val version: String,
   @Value("\${module.rest-context-path.simter-file:/file}") private val contextPath: String,
-  private val attachmentFormHandler: AttachmentFormHandler,
-  private val attachmentViewHandler: AttachmentViewHandler,
-  private val findModuleAttachmentsHandler: FindModuleAttachmentsHandler,
-  private val uploadFileByFormHandler: UploadFileByFormHandler,
-  private val uploadFileByStreamHandler: UploadFileByStreamHandler,
   private val downloadFileHandler: DownloadFileHandler,
-  private val inlineFileHandler: InlineFileHandler,
-  private val deleteFilesHandler: DeleteFilesHandler,
-  private val reuploadFileByStreamHandler: ReuploadFileByStreamHandler,
-  private val updateAttachmentHandler: UpdateAttachmentHandler,
-  private val findAttachmentDescendantsHandler: FindAttachmentDescendantsHandler,
-  private val createAttachmentsHandler: CreateAttachmentsHandler,
-  private val deleteNumerousFilesHandler: DeleteNumerousFilesHandler,
-  private val packageFilesHandler: PackageFilesHandler,
-  private val packageFileHandler: PackageFileHandler
+  private val findFileViewDataHandler: FindFileViewDataHandler,
+  private val uploadFileHandler: UploadFileHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
 
@@ -49,42 +39,17 @@ class ModuleConfiguration @Autowired constructor(
   }
 
   /** Register a `RouterFunction<ServerResponse>` with all routers for this module */
+  @ImplicitReflectionSerializer
   @Bean("$PACKAGE.rest.webflux.Routes")
   @ConditionalOnMissingBean(name = ["$PACKAGE.rest.webflux.Routes"])
   fun fileRoutes() = router {
     contextPath.nest {
-      // POST /
-      UploadFileByFormHandler.REQUEST_PREDICATE.invoke(uploadFileByFormHandler::handle)
-      // POST /?puid=:puid&upper=:upper&filename=:filename
-      UploadFileByStreamHandler.REQUEST_PREDICATE.invoke(uploadFileByStreamHandler::handle)
-      // PATCH /{id} Content-Type: application/octet-stream
-      ReuploadFileByStreamHandler.REQUEST_PREDICATE.invoke(reuploadFileByStreamHandler::handle)
-      // GET /attachment?page-no=:pageNo&page-size=:pageSize
-      AttachmentViewHandler.REQUEST_PREDICATE.invoke(attachmentViewHandler::handle)
-      // GET /attachment/{id}
-      AttachmentFormHandler.REQUEST_PREDICATE.invoke(attachmentFormHandler::handle)
-      // GET /attachment/{id}/descendant
-      FindAttachmentDescendantsHandler.REQUEST_PREDICATE.invoke(findAttachmentDescendantsHandler::handle)
-      // GET /zip/{id}?name=:name
-      PackageFileHandler.REQUEST_PREDICATE.invoke(packageFileHandler::handle)
-      // POST /zip?name=:name
-      PackageFilesHandler.REQUEST_PREDICATE.invoke(packageFilesHandler::handle)
-      // POST /attachment
-      CreateAttachmentsHandler.REQUEST_PREDICATE.invoke(createAttachmentsHandler::handle)
-      // PATCH /attachment/{id} Content-Type: application/json;charset=UTF-8
-      UpdateAttachmentHandler.REQUEST_PREDICATE.invoke(updateAttachmentHandler::handle)
-      // GET /parent/{puid}/{upperId}
-      FindModuleAttachmentsHandler.REQUEST_PREDICATE.invoke(findModuleAttachmentsHandler::handle)
-      // GET /{id}
+      // download file
       DownloadFileHandler.REQUEST_PREDICATE.invoke(downloadFileHandler::handle)
-      // GET /inline/{id}
-      InlineFileHandler.REQUEST_PREDICATE.invoke(inlineFileHandler::handle)
-      // DELETE /{ids}
-      DeleteFilesHandler.REQUEST_PREDICATE.invoke(deleteFilesHandler::handle)
-      // DELETE
-      DeleteNumerousFilesHandler.REQUEST_PREDICATE.invoke(deleteNumerousFilesHandler::handle)
-      // GET /
-      GET("/") { ok().contentType(TEXT_PLAIN).bodyValue("simter-file-$version") }
+      // find file-view data
+      FindFileViewDataHandler.REQUEST_PREDICATE.invoke(findFileViewDataHandler::handle)
+      // upload file
+      UploadFileHandler.REQUEST_PREDICATE.invoke(uploadFileHandler::handle)
     }
   }
 }
