@@ -1,4 +1,5 @@
 simter-file:
+  version: @project.version@
   base-data-dir: target/data
   rest-context-path: /
 spring.main.banner-mode: 'off'

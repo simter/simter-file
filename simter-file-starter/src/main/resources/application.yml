@@ -1,9 +1,14 @@
 simter-file:
+  version: @project.version@
   rest-context-path: @simter-file.rest-context-path@
   base-data-dir: @simter-file.base-data-dir@
-module.version:
-  simter: @simter.version@
-  simter-file: @project.version@
+  # main dependency libraries version
+  dependency-version:
+    simter: @simter.version@
+    kotlin: @kotlin.version@
+    spring-framework: @spring-framework.version@
+    spring-boot: @spring-boot.version@
+
 module.authorization.simter-file:
   # the admin role identity, default 'ADMIN'
   admin-role: ADMIN

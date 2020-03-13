@@ -26,7 +26,7 @@ import tech.simter.file.rest.webflux.handler.FindHandler as FindFileViewDataHand
 @Configuration("$PACKAGE.rest.webflux.ModuleConfiguration")
 @ComponentScan
 class ModuleConfiguration @Autowired constructor(
-  @Value("\${module.version.simter-file:UNKNOWN}") private val version: String,
+  @Value("\${simter-file.version:UNKNOWN}") private val version: String,
   @Value("\${simter-file.rest-context-path:/file}") private val contextPath: String,
   private val downloadFileHandler: DownloadFileHandler,
   private val findFileViewDataHandler: FindFileViewDataHandler,
