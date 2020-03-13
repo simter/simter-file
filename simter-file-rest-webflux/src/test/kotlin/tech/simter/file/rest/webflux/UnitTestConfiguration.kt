@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunction
-import tech.simter.file.core.AttachmentService
+import tech.simter.file.core.FileService
 
 /**
  * All unit test config for this module.
@@ -51,5 +51,5 @@ import tech.simter.file.core.AttachmentService
   // this module
   tech.simter.file.rest.webflux.ModuleConfiguration::class
 )
-@MockkBean(AttachmentService::class)
+@MockkBean(FileService::class)
 class UnitTestConfiguration

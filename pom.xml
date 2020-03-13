@@ -15,7 +15,7 @@
   <packaging>pom</packaging>
   <description>Builder</description>
   <properties>
-    <revision>0.7.0</revision>
+    <revision>0.8-SNAPSHOT</revision>
     <simter-file.version>${revision}</simter-file.version>
     <simter-dependencies.version>1.3.0-M13</simter-dependencies.version>
   </properties>
@@ -24,9 +24,9 @@
     <module>simter-file-parent</module>
     <module>simter-file-core</module>
     <module>simter-file-test</module>
-    <module>simter-file-dao-mongo</module>
+    <!--<module>simter-file-dao-mongo</module>-->
     <module>simter-file-dao-r2dbc</module>
-    <module>simter-file-dao-jpa</module>
+    <!--<module>simter-file-dao-jpa</module>-->
     <module>simter-file-rest-webflux</module>
     <module>simter-file-starter</module>
   </modules>

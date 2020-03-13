@@ -1,1 +1,1 @@
-drop table if exists st_attachment;
+drop table if exists st_file;

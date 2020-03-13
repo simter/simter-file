@@ -1,12 +1,19 @@
-module.version:
-  simter: @simter.version@
-  simter-file: @project.version@
-module.rest-context-path.simter-file: @module.rest-context-path.simter-file@
+simter-file:
+  version: @project.version@
+  rest-context-path: @simter-file.rest-context-path@
+  base-data-dir: @simter-file.base-data-dir@
+  # main dependency libraries version
+  dependency-version:
+    simter: @simter.version@
+    kotlin: @kotlin.version@
+    spring-framework: @spring-framework.version@
+    spring-boot: @spring-boot.version@
+
 module.authorization.simter-file:
   # the admin role identity, default 'ADMIN'
   admin-role: ADMIN
   # Default module access-control, mostly for admin permission.
-  # See tech.simter.file.impl.service.ModuleConfiguration.defaultModuleAuthorizer(...) bean.
+  # See tech.simter.file.impl.ModuleConfiguration.defaultModuleAuthorizer(...) bean.
   # If without module.authorization.simter-file.modules config, fallback to use this.
   default:
     defaultPermission: "Allow"   # Allow|Deny
@@ -16,7 +23,7 @@ module.authorization.simter-file:
     #  UPDATE.roles: ["ADMIN"]
     #  DELETE.roles: ["ADMIN"]
   # All business modules access-control.
-  # See tech.simter.file.impl.service.ModuleConfiguration.moduleAuthorizers(...) bean.
+  # See tech.simter.file.impl.ModuleConfiguration.moduleAuthorizers(...) bean.
   # If without these config, fallback to use the upper default config.
   modules:
     # a sample for a business module-a access-control.
@@ -36,7 +43,6 @@ simter.jwt:
   secret-key: @simter.jwt.secret-key@
   require-authorized: @simter.jwt.require-authorized@
   exclude-paths: /static/
-simter-file.root-dir: @simter-file.root-dir@
 spring:
   main.banner-mode: 'off'
   profiles.active:

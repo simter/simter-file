@@ -10,9 +10,6 @@ import org.springframework.context.annotation.Import
  * @author RJ
  */
 @Configuration
-@Import(
-  tech.simter.r2dbc.R2dbcConfiguration::class,
-  ModuleConfiguration::class
-)
-@ComponentScan("tech.simter.embeddeddatabase")
+@Import(ModuleConfiguration::class)
+@ComponentScan("tech.simter")
 class UnitTestConfiguration

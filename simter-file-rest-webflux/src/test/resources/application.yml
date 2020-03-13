@@ -1,4 +1,7 @@
-module.rest-context-path.simter-file: /
+simter-file:
+  version: @project.version@
+  base-data-dir: target/data
+  rest-context-path: /
 spring.main.banner-mode: 'off'
 logging:
   file: target/test.log

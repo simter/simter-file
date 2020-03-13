@@ -27,8 +27,11 @@ import java.util.concurrent.TimeUnit
 @Configuration("$PACKAGE.starter.AppConfiguration")
 @EnableWebFlux
 class AppConfiguration @Autowired constructor(
-  @Value("\${module.version.simter:UNKNOWN}") private val simterVersion: String,
-  @Value("\${module.version.simter-file:UNKNOWN}") private val fileVersion: String
+  @Value("\${simter-file.version:UNKNOWN}") private val simterFileVersion: String,
+  @Value("\${simter-file.dependency-version.simter:UNKNOWN}") private val simterVersion: String,
+  @Value("\${simter-file.dependency-version.kotlin:UNKNOWN}") private val kotlinVersion: String,
+  @Value("\${simter-file.dependency-version.spring-framework:UNKNOWN}") private val springFrameworkVersion: String,
+  @Value("\${simter-file.dependency-version.spring-boot:UNKNOWN}") private val springBootVersion: String
 ) {
   /**
    * Register by method [DelegatingWebFluxConfiguration.setConfigurers].
@@ -66,11 +69,14 @@ class AppConfiguration @Autowired constructor(
 
   private val startTime = OffsetDateTime.now()
   private val rootPage: String = """
-    <h2>Simter File Micro Service</h2>
+    <h2>Simter File Service</h2>
     <div>Start at : $startTime</div>
-    <div>Version : $fileVersion</div>
+    <div>Version : $simterFileVersion</div>
     <ul>
       <li>simter-$simterVersion</li>
+      <li>kotlin-$kotlinVersion</li>
+      <li>spring-$springFrameworkVersion</li>
+      <li>spring-boot-$springBootVersion</li>
     </ul>
   """.trimIndent()
 
