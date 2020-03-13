@@ -18,7 +18,8 @@ import tech.simter.file.rest.webflux.handler.FindHandler as FindFileViewDataHand
  * All configuration for this module.
  *
  * Register a `RouterFunction<ServerResponse>` with all routers for this module.
- * The default context-path of this router is '/'. And can be config by property `simter.rest.context-path.kv`.
+ * The default context-path of this router is '/file'.
+ * And can be config by property `simter-file.rest-context-path`.
  *
  * @author RJ
  */
@@ -26,7 +27,7 @@ import tech.simter.file.rest.webflux.handler.FindHandler as FindFileViewDataHand
 @ComponentScan
 class ModuleConfiguration @Autowired constructor(
   @Value("\${module.version.simter-file:UNKNOWN}") private val version: String,
-  @Value("\${module.rest-context-path.simter-file:/file}") private val contextPath: String,
+  @Value("\${simter-file.rest-context-path:/file}") private val contextPath: String,
   private val downloadFileHandler: DownloadFileHandler,
   private val findFileViewDataHandler: FindFileViewDataHandler,
   private val uploadFileHandler: UploadFileHandler

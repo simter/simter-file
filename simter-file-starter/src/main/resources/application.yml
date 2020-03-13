@@ -1,7 +1,9 @@
+simter-file:
+  rest-context-path: @simter-file.rest-context-path@
+  base-data-dir: @simter-file.base-data-dir@
 module.version:
   simter: @simter.version@
   simter-file: @project.version@
-module.rest-context-path.simter-file: @module.rest-context-path.simter-file@
 module.authorization.simter-file:
   # the admin role identity, default 'ADMIN'
   admin-role: ADMIN
@@ -36,7 +38,6 @@ simter.jwt:
   secret-key: @simter.jwt.secret-key@
   require-authorized: @simter.jwt.require-authorized@
   exclude-paths: /static/
-simter-file.base-data-dir: @simter-file.base-data-dir@
 spring:
   main.banner-mode: 'off'
   profiles.active:

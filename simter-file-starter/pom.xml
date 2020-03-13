@@ -33,7 +33,7 @@
     <db.disabled-datasource>false</db.disabled-datasource>
     <logging.file>target/test.log</logging.file>
     <server.port>9013</server.port>
-    <module.rest-context-path.simter-file>/file</module.rest-context-path.simter-file>
+    <simter-file.rest-context-path>/file</simter-file.rest-context-path>
     <simter-file.base-data-dir>target/data</simter-file.base-data-dir>
   </properties>
   <dependencies>
