@@ -1,5 +1,17 @@
 # simter-file changelog
 
+## 0.8.0 2020-03-13
+
+**This version redesign all api include rest, service, dao, domain interface.**
+
+Target to make the api clear and simple. 
+
+- Redesign all api interface
+- Implement new dao api by r2dbc
+- Implement new rest-api by WebFlux
+- Add integration test on real server
+- Temporary remove dao-mongo and dao-jpa submodule compilation until new implementation
+
 ## 0.7.0 2020-03-04
 
 **Breaking api changes:**
