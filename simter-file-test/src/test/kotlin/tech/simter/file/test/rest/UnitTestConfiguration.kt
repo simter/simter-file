@@ -1,4 +1,4 @@
-package tech.simter.file.test.starter
+package tech.simter.file.test.rest
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -8,7 +8,7 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import tech.simter.reactive.web.Utils.createClientHttpConnector
 
 @Configuration
-class IntegrationTestConfiguration @Autowired constructor(
+class UnitTestConfiguration @Autowired constructor(
   @Value("\${simter-file.server-url}")
   private val serverUrl: String,
   @Value("\${proxy.host:#{null}}")
