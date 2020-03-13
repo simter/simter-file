@@ -10,7 +10,7 @@ import org.springframework.http.MediaType.APPLICATION_XML
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.util.FileCopyUtils
-import tech.simter.file.FILE_ROOT_DIR_KEY
+import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.buildContentDisposition
 import tech.simter.file.test.TestHelper.randomModuleValue
 import tech.simter.file.test.rest.TestHelper.findAllFileView
@@ -27,7 +27,7 @@ import java.nio.file.Paths
  */
 @SpringBootTest(classes = [UnitTestConfiguration::class])
 class DownloadByModuleTest @Autowired constructor(
-  @Value("\${$FILE_ROOT_DIR_KEY}") private val baseDir: String,
+  @Value("\${$BASE_DATA_DIR}") private val baseDir: String,
   private val client: WebTestClient
 ) {
   @Test

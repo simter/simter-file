@@ -10,7 +10,7 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
-import tech.simter.file.FILE_ROOT_DIR_KEY
+import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.buildContentDisposition
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import java.net.URLEncoder
@@ -25,9 +25,9 @@ import java.nio.file.Paths
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
-@TestPropertySource(properties = ["$FILE_ROOT_DIR_KEY=target"])
+@TestPropertySource(properties = ["$BASE_DATA_DIR=target"])
 class DownloadByPathTest @Autowired constructor(
-  @Value("\${$FILE_ROOT_DIR_KEY}")
+  @Value("\${$BASE_DATA_DIR}")
   private val baseDir: String,
   private val client: WebTestClient
 ) {

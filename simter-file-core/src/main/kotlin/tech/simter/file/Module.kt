@@ -40,7 +40,7 @@ const val DEFAULT_MODULE_AUTHORIZER_KEY = "module.authorization.simter-file.defa
 const val MODULES_AUTHORIZER_KEY = "module.authorization.simter-file.modules"
 
 /** The config key for config the root directory to store files */
-const val FILE_ROOT_DIR_KEY = "simter-file.root-dir"
+const val BASE_DATA_DIR = "simter-file.base-data-dir"
 
 /** table name of file */
 const val TABLE_FILE = "st_file"

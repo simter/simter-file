@@ -7,7 +7,7 @@ import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import tech.simter.file.FILE_ROOT_DIR_KEY
+import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.core.*
 import tech.simter.reactive.security.ReactiveSecurityService
 import java.nio.channels.AsynchronousFileChannel
@@ -26,7 +26,7 @@ import java.util.*
  */
 @Service
 class FileServiceImpl @Autowired constructor(
-  @Value("\${$FILE_ROOT_DIR_KEY}")
+  @Value("\${$BASE_DATA_DIR}")
   private val baseDir: String,
   @Value("\${simter-file.verify-real-file-size: true}")
   private val verifyRealFileSize: Boolean,

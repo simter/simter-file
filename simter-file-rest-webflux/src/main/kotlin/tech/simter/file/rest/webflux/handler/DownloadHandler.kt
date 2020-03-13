@@ -18,7 +18,7 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.*
 import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.FILE_ROOT_DIR_KEY
+import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.buildContentDisposition
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher
@@ -42,7 +42,7 @@ import java.util.*
  */
 @Component
 class DownloadHandler @Autowired constructor(
-  @Value("\${$FILE_ROOT_DIR_KEY}") private val baseDir: String,
+  @Value("\${$BASE_DATA_DIR}") private val baseDir: String,
   @Value("\${simter-file.pack-limits: 25}") private val packLimits: Int,
   private val fileService: FileService
 ) : HandlerFunction<ServerResponse> {
