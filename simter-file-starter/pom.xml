@@ -34,7 +34,7 @@
     <logging.file>target/test.log</logging.file>
     <server.port>9013</server.port>
     <module.rest-context-path.simter-file>/file</module.rest-context-path.simter-file>
-    <simter-file.root-dir>target/files</simter-file.root-dir>
+    <simter-file.root-dir>target/data</simter-file.root-dir>
   </properties>
   <dependencies>
     <dependency>
@@ -160,7 +160,7 @@
     <profile>
       <id>reactive-embedded-mongodb</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
         <db.platform>mongodb</db.platform>
@@ -245,7 +245,7 @@
     <profile>
       <id>r2dbc-embedded-postgres</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
         <db.platform>postgres</db.platform>
