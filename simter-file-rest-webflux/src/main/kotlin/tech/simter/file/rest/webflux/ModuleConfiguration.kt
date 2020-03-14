@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.router
 import tech.simter.file.PACKAGE
 import tech.simter.file.rest.webflux.handler.DownloadHandler as DownloadFileHandler
-import tech.simter.file.rest.webflux.handler.UploadHandler as UploadFileHandler
 import tech.simter.file.rest.webflux.handler.FindHandler as FindFileViewDataHandler
+import tech.simter.file.rest.webflux.handler.UploadHandler as UploadFileHandler
 
 /**
  * All configuration for this module.
@@ -26,17 +26,16 @@ import tech.simter.file.rest.webflux.handler.FindHandler as FindFileViewDataHand
 @Configuration("$PACKAGE.rest.webflux.ModuleConfiguration")
 @ComponentScan
 class ModuleConfiguration @Autowired constructor(
-  @Value("\${simter-file.version:UNKNOWN}") private val version: String,
-  @Value("\${simter-file.rest-context-path:/file}") private val contextPath: String,
-  private val downloadFileHandler: DownloadFileHandler,
-  private val findFileViewDataHandler: FindFileViewDataHandler,
-  private val uploadFileHandler: UploadFileHandler
+  @Value("\${simter-file.rest-context-path:/file}")
+  private val contextPath: String,
+  private val downloadFileHandler: tech.simter.file.rest.webflux.handler.DownloadHandler,
+  private val findFileViewDataHandler: tech.simter.file.rest.webflux.handler.FindHandler,
+  private val uploadFileHandler: tech.simter.file.rest.webflux.handler.UploadHandler
 ) {
   private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
 
   init {
-    logger.warn("module.version.simter-file='{}'", version)
-    logger.warn("module.rest-context-path.simter-file='{}'", contextPath)
+    logger.warn("simter-file.rest-context-path='{}'", contextPath)
   }
 
   /** Register a `RouterFunction<ServerResponse>` with all routers for this module */
