@@ -9,6 +9,7 @@ import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
 import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
+import tech.simter.file.test.TestHelper.randomModuleValue
 
 /**
  * Test upload file by ajax.
@@ -30,7 +31,7 @@ class UploadByStreamTest @Autowired constructor(
     // upload file
     client.post().uri {
         it.path("/")
-          .queryParam("module", "/test/")
+          .queryParam("module", randomModuleValue())
           .queryParam("name", "logback-test")
           .queryParam("type", "xml")
           .build()

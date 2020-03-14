@@ -142,6 +142,7 @@ class DownloadByModuleTest @Autowired constructor(
 
   private fun saveZipFle(data: ByteArray, module: String, fileName: String) {
     val file = Paths.get(baseDir, module, fileName).toFile()
+    if (!file.parentFile.exists()) file.parentFile.mkdirs()
     FileCopyUtils.copy(data, file)
   }
 

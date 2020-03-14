@@ -11,6 +11,7 @@ import org.springframework.http.client.MultipartBodyBuilder
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.web.reactive.function.BodyInserters
+import tech.simter.file.test.TestHelper.randomModuleValue
 
 /**
  * Test upload file by traditional form submit.
@@ -33,7 +34,7 @@ class UploadByFormSubmitTest @Autowired constructor(
     // upload file
     client.post().uri {
         it.path("/")
-          .queryParam("module", "/test/")
+          .queryParam("module", randomModuleValue())
           .queryParam("name", "logback-test")
           .queryParam("type", "xml")
           .build()

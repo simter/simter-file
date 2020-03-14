@@ -33,7 +33,7 @@ object TestHelper {
 
   /** Create a random file module type */
   fun randomModuleValue(): String {
-    return "/" + randomString(6) + "/"
+    return "/test/" + randomString(6) + "/"
   }
 
   /** Create a random file identity */

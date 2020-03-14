@@ -24,9 +24,9 @@ class UnitTestConfiguration @Autowired constructor(
         createClientHttpConnector(
           proxyHost = proxyHost,
           proxyPort = proxyPort,
-          connectTimeout = 5,
-          readTimeout = 5,
-          writeTimeout = 5
+          connectTimeout = 30,
+          readTimeout = 30,
+          writeTimeout = 30
         )
       )
       .baseUrl(serverUrl)
