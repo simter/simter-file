@@ -9,7 +9,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
-import tech.simter.file.core.AttachmentDao
 import tech.simter.file.impl.dao.mongo.TestHelper.cleanDatabase
 import tech.simter.file.impl.dao.mongo.TestHelper.randomAttachmentPo
 import tech.simter.file.test.TestHelper.randomAttachmentId

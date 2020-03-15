@@ -1,6 +1,5 @@
 package tech.simter.file.impl.dao.mongo.dto
 
-import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.impl.domain.AttachmentZipInfoImpl
 
 internal fun generateId(origin: String?, terminus: String): String {

@@ -16,10 +16,8 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
-import tech.simter.file.core.AttachmentDao
 import tech.simter.file.core.domain.Attachment
 import tech.simter.file.core.domain.AttachmentTreeNode
-import tech.simter.file.core.domain.AttachmentZipInfo
 import tech.simter.file.impl.dao.mongo.dto.*
 import tech.simter.file.impl.dao.mongo.po.AttachmentPo
 import java.util.*
