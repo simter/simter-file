@@ -42,8 +42,7 @@ interface FileDao {
   /**
    * Persistence a new file store information.
    *
-   * Return the holding value of [file#id] if it is present.
-   * Otherwise the persistence layer must auto generate and return it.
+   * Return the id.
    */
   fun create(file: FileStore): Mono<String>
 
