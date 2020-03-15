@@ -1,22 +1,23 @@
 package tech.simter.file.impl.dao.jpa
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
-import tech.simter.file.core.AttachmentDao
-import tech.simter.file.impl.dao.jpa.TestHelper.randomAttachmentPo
-import tech.simter.file.test.TestHelper.randomAttachmentId
+import tech.simter.file.core.FileDao
+import tech.simter.file.core.ModuleMatcher.Companion.autoModuleMatcher
+import tech.simter.file.impl.dao.jpa.po.FileStorePo
+import tech.simter.file.test.TestHelper.randomFileStore
+import tech.simter.file.test.TestHelper.randomModuleValue
 import tech.simter.reactive.test.jpa.ReactiveDataJpaTest
 import tech.simter.reactive.test.jpa.TestEntityManager
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit.SECONDS
+import java.util.*
 
 /**
- * Test [AttachmentDao.find].
+ * Test [FileDaoImpl.findPage].
  *
  * @author RJ
  */
@@ -24,51 +25,69 @@ import java.time.OffsetDateTime
 @ReactiveDataJpaTest
 class FindPageMethodImplTest @Autowired constructor(
   val rem: TestEntityManager,
-  val dao: AttachmentDao
+  val dao: FileDao
 ) {
   @Test
   fun `found nothing`() {
-    // clean
-    rem.executeUpdate { it.createQuery("delete from AttachmentPo") }
-
-    // invoke
-    dao.find(PageRequest.of(0, 25))
+    val limit = 20
+    dao.findPage(moduleMatcher = autoModuleMatcher(randomModuleValue()), limit = limit)
       .test()
-      .consumeNextWith { page ->
-        assertTrue(page.content.isEmpty())
-        assertEquals(0, page.number)
-        assertEquals(25, page.size)
-        assertEquals(0, page.totalPages)
-        assertEquals(0, page.totalElements)
+      .assertNext { page ->
+        assertThat(page.offset).isEqualTo(0)
+        assertThat(page.limit).isEqualTo(limit)
+        assertThat(page.total).isEqualTo(0)
+        assertThat(page.rows).isEmpty()
       }
       .verifyComplete()
   }
 
   @Test
   fun `found something`() {
-    // clean
-    rem.executeUpdate { it.createQuery("delete from AttachmentPo") }
-
     // prepare data
-    val now = OffsetDateTime.now()
-    val base = randomAttachmentPo()
-    val po1 = base.copy(id = randomAttachmentId(), createOn = now.minusDays(1))
-    val po2 = base.copy(id = randomAttachmentId(), createOn = now)
-    rem.persist(po1, po2)
+    val module1 = randomModuleValue()
+    val module2 = randomModuleValue()
+    val ts = OffsetDateTime.now().truncatedTo(SECONDS)
+    val files = listOf(
+      FileStorePo.from(randomFileStore(module = module1, name = "abc", ts = ts.minusSeconds(9))),
+      FileStorePo.from(randomFileStore(module = module1, name = "def", ts = ts.minusSeconds(8))),
+      FileStorePo.from(randomFileStore(module = module1, name = "gha", ts = ts.minusSeconds(7))),
+      FileStorePo.from(randomFileStore(module = module2, name = "abc", ts = ts.minusSeconds(6)))
+    )
+    rem.persist(*files.toTypedArray())
 
-    // invoke
-    val actual = dao.find(PageRequest.of(0, 25, Sort.by(Sort.Direction.DESC, "createOn")))
+    // 1. find all module1 without fuzzy search
+    val limit = 2
+    dao.findPage(
+        moduleMatcher = autoModuleMatcher(module1),
+        offset = 0,
+        limit = limit
+      )
+      .test()
+      .assertNext { page ->
+        assertThat(page.offset).isEqualTo(0)
+        assertThat(page.limit).isEqualTo(limit)
+        assertThat(page.total).isEqualTo(3)
+        assertThat(page.rows).hasSize(2)
+        assertThat(page.rows[0]).isEqualTo(files[2])
+        assertThat(page.rows[1]).isEqualTo(files[1])
+      }
+      .verifyComplete()
 
-    // verify
-    actual.test()
-      .consumeNextWith { page ->
-        assertEquals(0, page.number)
-        assertEquals(25, page.size)
-        assertEquals(1, page.totalPages)
-        assertEquals(2L, page.totalElements)
-        assertEquals(2, page.content.size)
-        assertEquals(po2, page.content[0])
-        assertEquals(po1, page.content[1])
+    // 2. find all module1 with fuzzy search
+    dao.findPage(
+        moduleMatcher = autoModuleMatcher(module1),
+        offset = 0,
+        limit = limit,
+        search = Optional.of("a")
+      )
+      .test()
+      .assertNext { page ->
+        assertThat(page.offset).isEqualTo(0)
+        assertThat(page.limit).isEqualTo(limit)
+        assertThat(page.total).isEqualTo(2)
+        assertThat(page.rows).hasSize(2)
+        assertThat(page.rows[0]).isEqualTo(files[2])
+        assertThat(page.rows[1]).isEqualTo(files[0])
       }
       .verifyComplete()
   }
