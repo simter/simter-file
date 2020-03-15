@@ -1,6 +1,6 @@
 # simter-file-dao-jpa
 
-The [AttachmentDao] implementation by [JPA].
+The [FileDao] implementation by [JPA].
 
 ## JPA Provider
 
@@ -38,7 +38,9 @@ If want to run test on different host database, manual run bellow command:
 mvn test -P jpa-hibernate,postgres \
 && mvn test -P jpa-eclipselink,postgres \
 && mvn test -P jpa-hibernate,mysql \
-&& mvn test -P jpa-eclipselink,mysql
+&& mvn test -P jpa-eclipselink,mysql \
+&& mvn test -P jpa-hibernate,mssql \
+&& mvn test -P jpa-eclipselink,mssql
 ```
 
 > Could change the host database connection params through below `Maven Properties`.
@@ -62,15 +64,16 @@ mvn test -D db.name=testdb
 
 | SN | Name              | Type               | Default | Supported |
 |----|-------------------|--------------------|---------|:---------:|
-|  1 | jpa-hibernate     | JPA Implementation | true    |     √     |
+|  1 | jpa-hibernate     | JPA Implementation |    √    |     √     |
 |  2 | jpa-eclipselink   | JPA Implementation |         |     √     |
-|  3 | embedded-h2       | Embedded Database  | true    |     √     |
-|  4 | embedded-hsql     | Embedded Database  |         |           |
-|  5 | embedded-derby    | Embedded Database  |         |           |
+|  3 | embedded-h2       | Embedded Database  |    √    |     √     |
+|  4 | embedded-hsql     | Embedded Database  |         |     √     |
+|  5 | embedded-derby    | Embedded Database  |         |     √     |
 |  6 | embedded-postgres | Embedded Database  |         |     √     |
-|  7 | embedded-mysql    | Embedded Database  |         |           |
+|  7 | embedded-mysql    | Embedded Database  |         |     √     |
 |  8 | postgres          | Host Database      |         |     √     |
-|  9 | mysql             | Host Database      |         |           |
+|  9 | mysql             | Host Database      |         |     √     |
+| 10 | mssql             | Host Database      |         |     √     |
 
 The default profile is `jpa-hibernate` and `embedded-h2`.
 Use `-P {profile-name}` to override default. Such as:
@@ -95,4 +98,4 @@ mvn test -P {profile-name}
 [Hibernate]: https://hibernate.org
 [EclipseLink]: https://www.eclipse.org/eclipselink
 [JPA]: https://jcp.org/en/jsr/detail?id=338
-[KeyValueDao]: https://github.com/simter/simter-file/blob/master/simter-file-core/src/main/kotlin/tech/simter/file/core/AttachmentDao.kt
+[FileDao]: https://github.com/simter/simter-file/blob/master/simter-file-core/src/main/kotlin/tech/simter/file/core/FileDao.kt

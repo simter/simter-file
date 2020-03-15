@@ -1,15 +1,16 @@
-package tech.simter.file.core
+package tech.simter.file.impl.dao.jpa
 
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import tech.simter.file.core.FileStore
+import tech.simter.file.core.ModuleMatcher
+import tech.simter.file.core.Page
 import java.util.*
 
 /**
- * The common file dao.
+ * The [FileStore] block Dao Interface.
  *
  * @author RJ
  */
-interface FileDao {
+interface FileBlockDao {
   /**
    * Load the specific file page.
    *
@@ -23,7 +24,7 @@ interface FileDao {
     search: Optional<String> = Optional.empty(),
     limit: Int,
     offset: Int = 0
-  ): Mono<Page<FileStore>>
+  ): Page<FileStore>
 
   /**
    * Find all match files.
@@ -37,19 +38,19 @@ interface FileDao {
     moduleMatcher: ModuleMatcher,
     search: Optional<String> = Optional.empty(),
     limit: Optional<Int> = Optional.empty()
-  ): Flux<FileStore>
+  ): List<FileStore>
 
   /**
    * Persistence a new file store information.
    *
    * Return the id.
    */
-  fun create(file: FileStore): Mono<String>
+  fun create(file: FileStore): String
 
   /**
    * load the specific [id] [FileStore] instance.
    *
-   * Return [Mono.empty] if it is not exists.
+   * Return [Optional.empty] if it is not exists.
    */
-  fun get(id: String): Mono<FileStore>
+  fun get(id: String): Optional<FileStore>
 }

@@ -1,6 +1,6 @@
 # simter-file-dao-r2dbc
 
-The [AttachmentDao] implementation by [R2DBC].
+The [FileDao] implementation by [R2DBC].
 
 ## Unit test
 
@@ -59,5 +59,5 @@ mvn test -P {profile-name}
 
 
 [R2DBC]: https://r2dbc.io
-[AttachmentDao]: https://github.com/simter/simter-file/blob/master/simter-file-core/src/main/kotlin/tech/simter/file/core/AttachmentDao.kt
+[FileDao]: https://github.com/simter/simter-file/blob/master/simter-file-core/src/main/kotlin/tech/simter/file/core/FileDao.kt
 [simter-embedded-database-ext]: https://github.com/simter/simter-embedded-database-ext

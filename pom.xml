@@ -26,7 +26,7 @@
     <module>simter-file-test</module>
     <!--<module>simter-file-dao-mongo</module>-->
     <module>simter-file-dao-r2dbc</module>
-    <!--<module>simter-file-dao-jpa</module>-->
+    <module>simter-file-dao-jpa</module>
     <module>simter-file-rest-webflux</module>
     <module>simter-file-starter</module>
   </modules>

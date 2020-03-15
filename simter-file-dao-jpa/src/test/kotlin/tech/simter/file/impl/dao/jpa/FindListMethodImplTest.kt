@@ -1,22 +1,24 @@
 package tech.simter.file.impl.dao.jpa
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
-import tech.simter.file.core.AttachmentDao
-import tech.simter.file.core.domain.Attachment
-import tech.simter.file.impl.dao.jpa.po.AttachmentPo
-import tech.simter.file.test.TestHelper.randomAttachmentId
-import tech.simter.file.test.TestHelper.randomString
+import tech.simter.file.core.FileDao
+import tech.simter.file.core.ModuleMatcher.Companion.autoModuleMatcher
+import tech.simter.file.impl.dao.jpa.po.FileStorePo
+import tech.simter.file.test.TestHelper.randomFileStore
+import tech.simter.file.test.TestHelper.randomModuleValue
 import tech.simter.reactive.test.jpa.ReactiveDataJpaTest
 import tech.simter.reactive.test.jpa.TestEntityManager
+import tech.simter.util.AssertUtils.assertSamePropertyHasSameValue
 import java.time.OffsetDateTime
-import java.util.stream.IntStream
+import java.time.temporal.ChronoUnit
+import java.util.*
 
 /**
- * Test [AttachmentDao.find].
+ * Test [FileDaoImpl.findList].
  *
  * @author RJ
  */
@@ -24,56 +26,47 @@ import java.util.stream.IntStream
 @ReactiveDataJpaTest
 class FindListMethodImplTest @Autowired constructor(
   val rem: TestEntityManager,
-  val dao: AttachmentDao
+  val dao: FileDao
 ) {
   @Test
   fun `found nothing`() {
-    // clean
-    rem.executeUpdate { it.createQuery("delete from AttachmentPo") }
-
-    // invoke
-    dao.find(puid = randomString(), upperId = null)
+    dao.findList(moduleMatcher = autoModuleMatcher(randomModuleValue()))
       .test()
       .verifyComplete()
   }
 
   @Test
   fun `found something`() {
-    // clean
-    rem.executeUpdate { it.createQuery("delete from AttachmentPo") }
+    // prepare data
+    val module1 = randomModuleValue()
+    val module2 = randomModuleValue()
+    val ts = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS)
+    val files = listOf(
+      FileStorePo.from(randomFileStore(module = module1, name = "abc", ts = ts.minusSeconds(9))),
+      FileStorePo.from(randomFileStore(module = module1, name = "def", ts = ts.minusSeconds(8))),
+      FileStorePo.from(randomFileStore(module = module2, name = "abc", ts = ts.minusSeconds(7)))
+    )
+    rem.persist(*files.toTypedArray())
 
-    // mock
-    val puid = "puid1"
-    val subgroup = "1"
-    val now = OffsetDateTime.now()
-    val origin = ArrayList<Attachment>()
-
-    // init data
-    IntStream.range(0, 5).forEach {
-      val po = AttachmentPo(id = randomAttachmentId(), path = "/data", name = "Sample", type = "png", size = 123,
-        createOn = now.minusDays(it.toLong()), creator = "Simter", puid = "puid1", upperId = it.toString(),
-        modifyOn = now.minusDays(it.toLong()), modifier = "Simter")
-      rem.persist(po)
-      origin.add(po)
-    }
-    origin.sortBy { it.createOn }
-    origin.reverse()
-
-    // 1. found all data by module
-    dao.find(puid = puid, upperId = null).collectList()
+    // 1. find all module1 without fuzzy search
+    dao.findList(moduleMatcher = autoModuleMatcher(module1))
+      .collectList()
       .test()
-      .consumeNextWith { actual ->
-        assertEquals(actual.size, origin.size)
-        IntStream.range(0, actual.size).forEach {
-          assertEquals(actual[it].id, origin[it].id)
-        }
-      }.verifyComplete()
+      .assertNext { actual ->
+        assertThat(actual).hasSize(2)
+        assertSamePropertyHasSameValue(files[1], actual[0])
+        assertSamePropertyHasSameValue(files[0], actual[1])
+      }
+      .verifyComplete()
 
-    // 2. found all data by module and upperId
-    dao.find(puid = puid, upperId = subgroup).collectList()
+    // 2. find all module1 with fuzzy search
+    dao.findList(moduleMatcher = autoModuleMatcher(module1), search = Optional.of("a"))
+      .collectList()
       .test()
-      .consumeNextWith { list ->
-        assertEquals(list[0].id, origin.find { it.puid == puid && it.upperId == subgroup }?.id)
-      }.verifyComplete()
+      .assertNext { actual ->
+        assertThat(actual).hasSize(1)
+        assertSamePropertyHasSameValue(files[0], actual[0])
+      }
+      .verifyComplete()
   }
 }
