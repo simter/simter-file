@@ -1,6 +1,6 @@
 # simter-file-dao-jpa
 
-The [AttachmentDao] implementation by [JPA].
+The [FileDao] implementation by [JPA].
 
 ## JPA Provider
 
@@ -62,9 +62,9 @@ mvn test -D db.name=testdb
 
 | SN | Name              | Type               | Default | Supported |
 |----|-------------------|--------------------|---------|:---------:|
-|  1 | jpa-hibernate     | JPA Implementation | true    |     √     |
+|  1 | jpa-hibernate     | JPA Implementation |    √    |     √     |
 |  2 | jpa-eclipselink   | JPA Implementation |         |     √     |
-|  3 | embedded-h2       | Embedded Database  | true    |     √     |
+|  3 | embedded-h2       | Embedded Database  |    √    |     √     |
 |  4 | embedded-hsql     | Embedded Database  |         |           |
 |  5 | embedded-derby    | Embedded Database  |         |           |
 |  6 | embedded-postgres | Embedded Database  |         |     √     |
@@ -95,4 +95,4 @@ mvn test -P {profile-name}
 [Hibernate]: https://hibernate.org
 [EclipseLink]: https://www.eclipse.org/eclipselink
 [JPA]: https://jcp.org/en/jsr/detail?id=338
-[KeyValueDao]: https://github.com/simter/simter-file/blob/master/simter-file-core/src/main/kotlin/tech/simter/file/core/AttachmentDao.kt
+[FileDao]: https://github.com/simter/simter-file/blob/master/simter-file-core/src/main/kotlin/tech/simter/file/core/FileDao.kt
