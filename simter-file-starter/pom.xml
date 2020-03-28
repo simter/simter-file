@@ -149,7 +149,7 @@
       </activation>
       <properties>
         <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
-        <db.name>st_file</db.name>
+        <db.name>file</db.name>
         <db.username>file</db.username>
         <db.password>password</db.password>
         <db.init-mode>never</db.init-mode>
