@@ -214,7 +214,7 @@
     <profile>
       <id>r2dbc-embedded-h2</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
         <db.platform>h2</db.platform>
@@ -246,7 +246,7 @@
     <profile>
       <id>r2dbc-embedded-postgres</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
         <db.platform>postgres</db.platform>
