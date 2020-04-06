@@ -198,6 +198,9 @@
         <db.port>27017</db.port>
         <db.url><![CDATA[mongodb://${db.username}:${db.password}@${db.host}:${db.port}/${db.name}]]> </db.url>
       </properties>
+      <build>
+        <finalName>${project.name}-${project.version}-reactive-mongodb</finalName>
+      </build>
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
@@ -291,6 +294,9 @@
         <db.disabled-datasource>true</db.disabled-datasource>
         <db.port>5432</db.port>
       </properties>
+      <build>
+        <finalName>${project.name}-${project.version}-r2dbc-postgres</finalName>
+      </build>
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
@@ -352,6 +358,9 @@
         <db.disabled-datasource>true</db.disabled-datasource>
         <db.port>3306</db.port>
       </properties>
+      <build>
+        <finalName>${project.name}-${project.version}-r2dbc-mysql</finalName>
+      </build>
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
@@ -375,6 +384,9 @@
         <db.init-mode>never</db.init-mode>
         <db.port>1433</db.port>
       </properties>
+      <build>
+        <finalName>${project.name}-${project.version}-r2dbc-mssql</finalName>
+      </build>
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
@@ -496,6 +508,9 @@
         <db.url><![CDATA[jdbc:postgresql://${db.host}:${db.port}/${db.name}]]> </db.url>
         <db.driver-class>org.postgresql.Driver</db.driver-class>
       </properties>
+      <build>
+        <finalName>${project.name}-${project.version}-jpa-hibernate-postgres</finalName>
+      </build>
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
@@ -593,6 +608,9 @@
         <db.url><![CDATA[jdbc:mysql://${db.host}:${db.port}/${db.name}]]></db.url>
         <db.driver-class>com.mysql.cj.jdbc.Driver</db.driver-class>
       </properties>
+      <build>
+        <finalName>${project.name}-${project.version}-jpa-hibernate-mysql</finalName>
+      </build>
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
@@ -724,6 +742,9 @@
         <db.url><![CDATA[jdbc:postgresql://${db.host}:${db.port}/${db.name}]]> </db.url>
         <db.driver-class>org.postgresql.Driver</db.driver-class>
       </properties>
+      <build>
+        <finalName>${project.name}-${project.version}-jpa-eclipselink-postgres</finalName>
+      </build>
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
@@ -811,6 +832,9 @@
         <db.url><![CDATA[jdbc:mysql://${db.host}:${db.port}/${db.name}]]></db.url>
         <db.driver-class>com.mysql.cj.jdbc.Driver</db.driver-class>
       </properties>
+      <build>
+        <finalName>${project.name}-${project.version}-jpa-eclipselink-mysql</finalName>
+      </build>
       <dependencies>
         <dependency>
           <groupId>tech.simter.file</groupId>
