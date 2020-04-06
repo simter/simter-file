@@ -1,5 +1,6 @@
 package tech.simter.file.starter
 
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -13,6 +14,7 @@ import org.springframework.web.reactive.function.server.router
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebFilter
 import org.springframework.web.server.WebFilterChain
+import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.PACKAGE
 import java.time.OffsetDateTime
 import java.util.concurrent.TimeUnit
@@ -27,12 +29,29 @@ import java.util.concurrent.TimeUnit
 @Configuration("$PACKAGE.starter.AppConfiguration")
 @EnableWebFlux
 class AppConfiguration @Autowired constructor(
+  @Value("\${simter-file.rest-context-path}") private val contextPath: String,
+  @Value("\${$BASE_DATA_DIR}") private val baseDir: String,
+  @Value("\${simter.jwt.require-authorized}") private val requireAuthorized: Boolean,
+  @Value("\${server.port}") private val serverPort: String,
+  @Value("\${logging.file}") private val loggingFile: String,
   @Value("\${simter-file.version:UNKNOWN}") private val simterFileVersion: String,
   @Value("\${simter-file.dependency-version.simter:UNKNOWN}") private val simterVersion: String,
   @Value("\${simter-file.dependency-version.kotlin:UNKNOWN}") private val kotlinVersion: String,
   @Value("\${simter-file.dependency-version.spring-framework:UNKNOWN}") private val springFrameworkVersion: String,
   @Value("\${simter-file.dependency-version.spring-boot:UNKNOWN}") private val springBootVersion: String
 ) {
+  private final val logger = LoggerFactory.getLogger(AppConfiguration::class.java)
+
+  init {
+    if (logger.isInfoEnabled) {
+      logger.info("simter-file.rest-context-path={}", contextPath)
+      logger.info("$BASE_DATA_DIR={}", baseDir)
+      logger.info("simter.jwt.require-authorized={}", requireAuthorized)
+      logger.info("server.port={}", serverPort)
+      logger.info("logging.file={}", loggingFile)
+    }
+  }
+
   /**
    * Register by method [DelegatingWebFluxConfiguration.setConfigurers].
    *

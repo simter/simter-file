@@ -1,7 +1,6 @@
 package tech.simter.file.rest.webflux
 
 import kotlinx.serialization.ImplicitReflectionSerializer
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -32,12 +31,6 @@ class ModuleConfiguration @Autowired constructor(
   private val findFileViewDataHandler: tech.simter.file.rest.webflux.handler.FindHandler,
   private val uploadFileHandler: tech.simter.file.rest.webflux.handler.UploadHandler
 ) {
-  private val logger = LoggerFactory.getLogger(ModuleConfiguration::class.java)
-
-  init {
-    logger.warn("simter-file.rest-context-path='{}'", contextPath)
-  }
-
   /** Register a `RouterFunction<ServerResponse>` with all routers for this module */
   @ImplicitReflectionSerializer
   @Bean("$PACKAGE.rest.webflux.Routes")
