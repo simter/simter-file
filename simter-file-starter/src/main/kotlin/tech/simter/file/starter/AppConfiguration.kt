@@ -107,6 +107,10 @@ class AppConfiguration @Autowired constructor(
     "/".nest {
       // root /
       GET("/") { ok().contentType(TEXT_HTML).bodyValue(rootPage) }
+      // '/favicon.ico'
+      GET("/favicon.ico") {
+        ok().body(BodyInserters.fromResource(ClassPathResource("META-INF/resources/static/favicon.ico")))
+      }
 
       // OPTIONS /*
       OPTIONS("/**") { noContent().build() }
@@ -122,8 +126,8 @@ class AppConfiguration @Autowired constructor(
   fun corsFilter4StaticFile(): WebFilter {
     return WebFilter { exchange: ServerWebExchange, chain: WebFilterChain ->
       val request = exchange.request
-      if (CorsUtils.isCorsRequest(request)                          // cross origin
-        && !CorsUtils.isPreFlightRequest(request)                   // not OPTION request
+      if (CorsUtils.isCorsRequest(request)                   // cross origin
+        && !CorsUtils.isPreFlightRequest(request)            // not OPTION request
         && request.path.value().startsWith("/static/")) {    // only for static file dir
         // Add Access-Control-Allow-Origin header
         exchange.response.headers.add("Access-Control-Allow-Origin", request.headers.getFirst(ORIGIN))
