@@ -1,5 +1,14 @@
 # simter-file changelog
 
+## 0.8.2 2020-04-09
+
+- Rename authorization key
+- Log main config property on starter with info level
+- Package starter finalName with platform type as suffix
+- Set starter default profile to r2dbc-embedded-h2
+- Add db.options property for embedded-h2, see [r2dbc-h2/issues#19](https://github.com/r2dbc/r2dbc-h2/issues/19)
+- Rename default prod database name st_file to file
+
 ## 0.8.1 2020-03-15
 
 - Implement new dao api by jpa
