@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.CacheControl
 import org.springframework.http.HttpHeaders.ORIGIN
 import org.springframework.http.MediaType.TEXT_HTML
 import org.springframework.web.cors.reactive.CorsUtils
 import org.springframework.web.reactive.config.*
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.router
 import org.springframework.web.server.ServerWebExchange
 import org.springframework.web.server.WebFilter
@@ -86,17 +88,28 @@ class AppConfiguration @Autowired constructor(
     }
   }
 
-  private val startTime = OffsetDateTime.now()
   private val rootPage: String = """
-    <h2>Simter File Service</h2>
-    <div>Start at : $startTime</div>
-    <div>Version : $simterFileVersion</div>
-    <ul>
-      <li>simter-$simterVersion</li>
-      <li>kotlin-$kotlinVersion</li>
-      <li>spring-$springFrameworkVersion</li>
-      <li>spring-boot-$springBootVersion</li>
-    </ul>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width">
+      <title>simter-file</title>
+      <style>html{background-color:#000;color:#fff}</style>
+    </head>
+    <body>
+      <h2>Simter File Service</h2>
+      <div>Start at : ${OffsetDateTime.now()}</div>
+      <div>Version : $simterFileVersion</div>
+      <div>Server Port : $serverPort</div>
+      <ul>
+        <li>simter-$simterVersion</li>
+        <li>kotlin-$kotlinVersion</li>
+        <li>spring-$springFrameworkVersion</li>
+        <li>spring-boot-$springBootVersion</li>
+      </ul>
+    </body>
+    </html>
   """.trimIndent()
 
   /**
