@@ -1,6 +1,6 @@
 package tech.simter.file.test.rest
 
-import kotlinx.serialization.list
+import kotlinx.serialization.builtins.list
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.*
@@ -29,12 +29,12 @@ object TestHelper {
     // upload file
     var id = ""
     client.post().uri {
-        it.path("/")
-          .queryParam("module", module)
-          .queryParam("name", name)
-          .queryParam("type", type)
-          .build()
-      }
+      it.path("/")
+        .queryParam("module", module)
+        .queryParam("name", name)
+        .queryParam("type", type)
+        .build()
+    }
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(size)
       .bodyValue(fileData)
