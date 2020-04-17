@@ -11,10 +11,10 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import reactor.core.publisher.Mono
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
-import tech.simter.file.core.Page
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import tech.simter.file.test.TestHelper.randomFileStore
 import tech.simter.file.test.TestHelper.randomModuleValue
+import tech.simter.kotlin.data.Page
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*

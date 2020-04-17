@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono
 import tech.simter.file.core.FileDao
 import tech.simter.file.core.FileStore
 import tech.simter.file.core.ModuleMatcher
-import tech.simter.file.core.Page
+import tech.simter.kotlin.data.Page
 import tech.simter.reactive.jpa.ReactiveJpaWrapper
 import java.util.*
 

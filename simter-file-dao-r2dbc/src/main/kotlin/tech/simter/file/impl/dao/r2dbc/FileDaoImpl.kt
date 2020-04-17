@@ -13,8 +13,8 @@ import tech.simter.file.core.FileDao
 import tech.simter.file.core.FileStore
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
-import tech.simter.file.core.Page
 import tech.simter.file.standardModuleValue
+import tech.simter.kotlin.data.Page
 import java.util.*
 
 /**

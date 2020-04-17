@@ -2,7 +2,7 @@ package tech.simter.file.impl.dao.jpa
 
 import tech.simter.file.core.FileStore
 import tech.simter.file.core.ModuleMatcher
-import tech.simter.file.core.Page
+import tech.simter.kotlin.data.Page
 import java.util.*
 
 /**

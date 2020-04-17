@@ -7,8 +7,8 @@ import tech.simter.file.TABLE_FILE
 import tech.simter.file.core.FileStore
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
-import tech.simter.file.core.Page
 import tech.simter.file.impl.dao.jpa.po.FileStorePo
+import tech.simter.kotlin.data.Page
 import java.util.*
 import javax.persistence.EntityManager
 
