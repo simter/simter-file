@@ -1,7 +1,7 @@
 package tech.simter.file
 
-import kotlinx.serialization.json.JsonConfiguration
 import tech.simter.file.core.FilePack
+import tech.simter.kotlin.serialization.JsonUtils
 import java.io.OutputStream
 import java.lang.Integer.min
 import java.net.URLEncoder
@@ -64,7 +64,7 @@ const val MODULE_SEPARATOR = "/"
 val TIMESTAMP_ID_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmssSSSS")
 
 /** A simple kotlin json*/
-val kotlinJson = kotlinx.serialization.json.Json(JsonConfiguration.Stable.copy(strictMode = false))
+val kotlinJson = JsonUtils.json
 
 /**
  * Generate a string with timestamp as prefix and limit-len uuid as suffix.
