@@ -1,5 +1,14 @@
 # simter-file changelog
 
+## 0.9.0 2020-04-17
+
+- Polishing - root page info
+- Polishing - code format
+- Polishing - remove unused import
+- Use simter-kotlin module's share kotlin json instance
+- Move 'tech.simter.file.core.Page' to simter-kotlin module
+- Upgrade to simter-1.3.0-M14
+
 ## 0.8.2 2020-04-09
 
 - Rename authorization key
