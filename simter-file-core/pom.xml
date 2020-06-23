@@ -12,6 +12,10 @@
   <description>Core API</description>
   <dependencies>
     <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-reflect</artifactId>
+    </dependency>
+    <dependency>
       <groupId>tech.simter</groupId>
       <artifactId>simter-exception</artifactId>
     </dependency>
