@@ -15,7 +15,7 @@
   <packaging>pom</packaging>
   <description>Builder</description>
   <properties>
-    <revision>0.9.0</revision>
+    <revision>0.10.0</revision>
     <simter-file.version>${revision}</simter-file.version>
   </properties>
   <modules>
