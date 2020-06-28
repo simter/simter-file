@@ -1,5 +1,10 @@
 # simter-file changelog
 
+## 0.10.0 2020-06-28
+
+- Add a module simter-file-service-impl
+- Upgrade to simter-2.0.0-M1
+
 ## 0.9.0 2020-04-17
 
 - Polishing - root page info
