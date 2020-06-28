@@ -11,6 +11,7 @@ spring.datasource:
   password: @db.password@
   continue-on-error: @db.continue-on-error@
   sql-script-encoding: UTF-8
+  separator: ^^^ END OF SCRIPT ^^^
   initialization-mode: @db.init-mode@ # never|embedded|always
   # available when initialization-mode=embedded|always
   schema:

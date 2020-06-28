@@ -31,11 +31,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.jetbrains.kotlinx</groupId>
-      <artifactId>kotlinx-serialization-runtime</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>tech.simter.reactive</groupId>
       <artifactId>simter-reactive-web</artifactId>
       <scope>test</scope>
@@ -47,18 +42,6 @@
   </properties>
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-maven-plugin</artifactId>
-        <configuration>
-          <compilerPlugins>
-            <!-- Spring support: https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support -->
-            <plugin>spring</plugin>
-            <!-- Kotlin serialization support: https://github.com/Kotlin/kotlinx.serialization -->
-            <plugin>kotlinx-serialization</plugin>
-          </compilerPlugins>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>

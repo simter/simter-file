@@ -12,7 +12,6 @@
   <description>Parent</description>
   <dependencyManagement>
     <dependencies>
-      <!-- simter-file -->
       <dependency>
         <groupId>tech.simter.file</groupId>
         <artifactId>simter-file-bom</artifactId>
@@ -64,11 +63,6 @@
       <artifactId>springmockk</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>tech.simter</groupId>
-      <artifactId>simter-util</artifactId>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
   <build>
     <resources>
@@ -93,6 +87,8 @@
           <compilerPlugins>
             <!-- Spring support: https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support -->
             <plugin>spring</plugin>
+            <!-- Kotlin serialization support: https://github.com/Kotlin/kotlinx.serialization -->
+            <plugin>kotlinx-serialization</plugin>
           </compilerPlugins>
         </configuration>
       </plugin>

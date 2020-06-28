@@ -50,6 +50,8 @@
     </license>
   </licenses>
   <scm>
+    <connection>scm:git:git://github.com/simter/simter-file.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/simter/simter-file.git</developerConnection>
     <url>https://github.com/simter/simter-file.git</url>
   </scm>
   <organization>

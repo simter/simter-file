@@ -12,10 +12,6 @@
   <description>Core API</description>
   <dependencies>
     <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-reflect</artifactId>
-    </dependency>
-    <dependency>
       <groupId>tech.simter</groupId>
       <artifactId>simter-exception</artifactId>
     </dependency>
@@ -49,22 +45,6 @@
       <artifactId>kotlinx-serialization-runtime</artifactId>
     </dependency>
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-maven-plugin</artifactId>
-        <configuration>
-          <compilerPlugins>
-            <!-- Spring support: https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support -->
-            <plugin>spring</plugin>
-            <!-- Kotlin serialization support: https://github.com/Kotlin/kotlinx.serialization -->
-            <plugin>kotlinx-serialization</plugin>
-          </compilerPlugins>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
   <url>https://github.com/simter/simter-file/tree/master/simter-file-core</url>
   <scm>
     <url>https://github.com/simter/simter-file.git</url>
