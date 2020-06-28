@@ -7,28 +7,29 @@
     <version>${revision}</version>
     <relativePath>../simter-file-parent</relativePath>
   </parent>
-  <artifactId>simter-file-core</artifactId>
+  <artifactId>simter-file-service-impl</artifactId>
   <packaging>jar</packaging>
-  <description>Core API</description>
+  <description>Service Implementation</description>
   <dependencies>
     <dependency>
-      <groupId>tech.simter</groupId>
-      <artifactId>simter-exception</artifactId>
+      <groupId>tech.simter.file</groupId>
+      <artifactId>simter-file-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>tech.simter</groupId>
-      <artifactId>simter-kotlin</artifactId>
+      <groupId>tech.simter.file</groupId>
+      <artifactId>simter-file-test</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
+      <groupId>tech.simter.reactive</groupId>
+      <artifactId>simter-reactive-security</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jetbrains.kotlinx</groupId>
-      <artifactId>kotlinx-serialization-runtime</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot</artifactId>
     </dependency>
   </dependencies>
-  <url>https://github.com/simter/simter-file/tree/master/simter-file-core</url>
+  <url>https://github.com/simter/simter-file/tree/master/simter-file-service-impl</url>
   <scm>
     <url>https://github.com/simter/simter-file.git</url>
   </scm>

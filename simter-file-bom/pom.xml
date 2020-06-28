@@ -24,6 +24,11 @@
       </dependency>
       <dependency>
         <groupId>tech.simter.file</groupId>
+        <artifactId>simter-file-service-impl</artifactId>
+        <version>${simter-file.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>tech.simter.file</groupId>
         <artifactId>simter-file-dao-mongo</artifactId>
         <version>${simter-file.version}</version>
       </dependency>
