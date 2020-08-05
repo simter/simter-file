@@ -37,7 +37,7 @@ const val ADMIN_ROLE_KEY = "simter-file.authorization.admin-role"
 const val DEFAULT_MODULE_AUTHORIZER_KEY = "simter-file.authorization.default"
 
 /** All business modules authorizer key */
-const val MODULES_AUTHORIZER_KEY = "simter-file..authorization.modules"
+const val MODULES_AUTHORIZER_KEY = "simter-file.authorization.modules"
 
 /** The config key for config the root directory to store files */
 const val BASE_DATA_DIR = "simter-file.base-data-dir"
