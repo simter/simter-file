@@ -34,10 +34,15 @@ This will run all the integration test on each rest-api define in <[rest-api.md]
 
 Want to run the integration test on the real server, just add two specific params:
 
-| ParamName                 | Remark               | Default value
-|---------------------------|----------------------|---------------
-| simter-file.server-url    | server address       | http://127.0.0.1:9013/file
+| ParamName     | Remark               | Default value
+|---------------|----------------------|---------------
+| server-url    | server address       | http://127.0.0.1:9013/file
 | simter-file.base-data-dir | server base data dir | ../simter-file-starter/target/data
+Such as:
+
+```shell
+$ mvn clean test -P integration-test -D server-url=http://127.0.0.1:9013/file
+```
 
 
 [TestHelper.kt]: https://github.com/simter/simter-file/blob/master/simter-file-test/src/main/kotlin/tech/simter/file/test/TestHelper.kt
