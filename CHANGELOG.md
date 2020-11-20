@@ -1,5 +1,12 @@
 # simter-file changelog
 
+## 1.0.0 - 2020-11-20
+
+- Upgrade to simter-2.0.0 (spring-boot-2.3.6)
+- First stable version
+- Simplify property simter-file.server-url to server-url (on simter-file-test)
+- Simplify property simter-file.base-data-dir to base-data-dir (on simter-file-test)
+
 ## 0.10.0 2020-06-28
 
 - Add a module simter-file-service-impl

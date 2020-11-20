@@ -35,7 +35,7 @@ class AppConfiguration @Autowired constructor(
   @Value("\${$BASE_DATA_DIR}") private val baseDir: String,
   @Value("\${simter.jwt.require-authorized}") private val requireAuthorized: Boolean,
   @Value("\${server.port}") private val serverPort: String,
-  @Value("\${logging.file}") private val loggingFile: String,
+  @Value("\${logging.file.name}") private val loggingFile: String,
   @Value("\${simter-file.version:UNKNOWN}") private val simterFileVersion: String,
   @Value("\${simter-file.dependency-version.simter:UNKNOWN}") private val simterVersion: String,
   @Value("\${simter-file.dependency-version.kotlin:UNKNOWN}") private val kotlinVersion: String,
