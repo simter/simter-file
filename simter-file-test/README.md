@@ -37,7 +37,8 @@ Want to run the integration test on the real server, just add two specific param
 | ParamName     | Remark               | Default value
 |---------------|----------------------|---------------
 | server-url    | server address       | http://127.0.0.1:9013/file
-| simter-file.base-data-dir | server base data dir | ../simter-file-starter/target/data
+| base-data-dir | server base data dir | ../simter-file-starter/target/data
+
 Such as:
 
 ```shell

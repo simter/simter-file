@@ -38,7 +38,7 @@
   </dependencies>
   <properties>
     <server-url>http://localhost:9013/file</server-url>
-    <simter-file.base-data-dir>../simter-file-starter/target/data</simter-file.base-data-dir>
+    <base-data-dir>../simter-file-starter/target/data</base-data-dir>
   </properties>
   <build>
     <plugins>

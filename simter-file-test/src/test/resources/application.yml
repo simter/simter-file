@@ -5,7 +5,7 @@
 spring.main.banner-mode: 'off'
 simter-file:
   server-url: @server-url@
-  base-data-dir: @simter-file.base-data-dir@
+  base-data-dir: @base-data-dir@
 logging:
   file: target/test.log
   level: # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
