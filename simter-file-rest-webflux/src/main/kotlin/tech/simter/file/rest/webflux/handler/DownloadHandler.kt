@@ -1,7 +1,6 @@
 package tech.simter.file.rest.webflux.handler
 
-import kotlinx.serialization.ImplicitReflectionSerializer
-import kotlinx.serialization.parseMap
+import kotlinx.serialization.decodeFromString
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
@@ -20,13 +19,14 @@ import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.buildContentDisposition
-import tech.simter.file.core.FileService
-import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.core.FileDownload.Source.FromDataBufferPublisher
 import tech.simter.file.core.FileDownload.Source.FromPath
+import tech.simter.file.core.FileService
+import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.kotlinJson
 import tech.simter.file.packFilesTo
-import java.net.URLDecoder.decode
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -48,7 +48,6 @@ class DownloadHandler @Autowired constructor(
 ) : HandlerFunction<ServerResponse> {
   private val basePath = Paths.get(baseDir)
 
-  @ImplicitReflectionSerializer
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
     val response = when (request.queryParam("type").orElse("")) {
       // download by path - fast
@@ -100,7 +99,7 @@ class DownloadHandler @Autowired constructor(
 
   private fun downloadByPath(request: ServerRequest): Mono<ServerResponse> {
     return downloadByPath(
-      path = decode(request.pathVariable("id"), "UTF-8"),
+      path = decodeParam(request.pathVariable("id")),
       pack = request.queryParam("pack").isPresent,
       inline = request.queryParam("inline").isPresent,
       customFilename = request.queryParam("filename")
@@ -134,9 +133,8 @@ class DownloadHandler @Autowired constructor(
     }
   }
 
-  @ImplicitReflectionSerializer
   private fun downloadByModule(request: ServerRequest): Mono<ServerResponse> {
-    val module = decode(request.pathVariable("id"), "UTF-8")
+    val module = decodeParam(request.pathVariable("id"))
     return fileService.findList(ModuleMatcher.autoModuleMatcher(module))
       .collectList()
       .flatMap { fileViews ->
@@ -168,10 +166,10 @@ class DownloadHandler @Autowired constructor(
                 )
                 .body { outputMessage, _ ->
                   // get custom mapper
-                  val mapperString = decode(request.queryParam("mapper").orElse(""), "UTF-8")
+                  val mapperString = decodeParam(request.queryParam("mapper").orElse(""))
                   val mapper: Map<String, String> = when {
                     mapperString.isEmpty() -> emptyMap()
-                    mapperString.startsWith("{") -> kotlinJson.parseMap(mapperString)
+                    mapperString.startsWith("{") -> kotlinJson.decodeFromString(mapperString)
                     else -> mapOf("_" to mapperString)
                   }
                   // pack to zip format
@@ -194,5 +192,9 @@ class DownloadHandler @Autowired constructor(
   companion object {
     /** The default [RequestPredicate] */
     val REQUEST_PREDICATE: RequestPredicate = GET("/{id}")
+
+    fun decodeParam(encodedString: String): String {
+      return URLDecoder.decode(encodedString, StandardCharsets.UTF_8.name())
+    }
   }
 }
