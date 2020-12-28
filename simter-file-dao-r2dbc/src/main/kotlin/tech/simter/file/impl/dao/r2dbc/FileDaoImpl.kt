@@ -1,10 +1,13 @@
 package tech.simter.file.impl.dao.r2dbc
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.data.r2dbc.core.DatabaseClient
-import org.springframework.data.r2dbc.query.Criteria.where
+import org.springframework.data.domain.Sort.Direction.DESC
+import org.springframework.data.r2dbc.core.R2dbcEntityOperations
+import org.springframework.data.relational.core.query.Criteria
+import org.springframework.data.relational.core.query.Criteria.where
+import org.springframework.data.relational.core.query.Query.query
+import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -13,6 +16,7 @@ import tech.simter.file.core.FileDao
 import tech.simter.file.core.FileStore
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
+import tech.simter.file.impl.dao.r2dbc.po.FileStorePo
 import tech.simter.file.standardModuleValue
 import tech.simter.kotlin.data.Page
 import java.util.*
@@ -24,7 +28,8 @@ import java.util.*
  */
 @Repository
 class FileDaoImpl @Autowired constructor(
-  private val databaseClient: DatabaseClient
+  private val databaseClient: DatabaseClient,
+  private val entityOperations: R2dbcEntityOperations
 ) : FileDao {
   override fun findPage(
     moduleMatcher: ModuleMatcher,
@@ -32,60 +37,58 @@ class FileDaoImpl @Autowired constructor(
     limit: Int,
     offset: Int
   ): Mono<Page<FileStore>> {
-    val params = mutableMapOf<String, Any>()
-    val conditions = mutableListOf<String>()
+    // create common query
+    val select = entityOperations.select(FileStorePo::class.java).from(TABLE_FILE)
 
     // module condition
-    var criteria = when (moduleMatcher) {
-      is ModuleEquals -> {
-        conditions.add("module = :module")
-        params["module"] = moduleMatcher.module
-
-        where("module").`is`(moduleMatcher.module)
-      }
-      else -> {
-        conditions.add("module like :module")
-        val value = if (moduleMatcher.module.endsWith("%")) moduleMatcher.module
+    var condition = Criteria.empty()
+    condition = when (moduleMatcher) {
+      is ModuleEquals -> condition.and("module").`is`(moduleMatcher.module)
+      else -> condition.and("module").like(
+        if (moduleMatcher.module.endsWith("%")) moduleMatcher.module
         else moduleMatcher.module + "%"
-        params["module"] = value
-
-        where("module").like(value)
-      }
+      )
     }
 
     // search condition
     search.ifPresent {
-      val value = if (it.startsWith("%")) {
-        if (it.endsWith("%")) it
-        else "$it%"
-      } else {
-        if (it.endsWith("%")) "%$it"
-        else "%$it%"
-      }
-      conditions.add("name like :search")
-      params["search"] = value
-
-      criteria = criteria.and("name").like(value)
+      condition = condition.and("name").like(
+        if (it.startsWith("%")) {
+          if (it.endsWith("%")) it
+          else "$it%"
+        } else {
+          if (it.endsWith("%")) "%$it"
+          else "%$it%"
+        }
+      )
     }
 
-    val rowsQuery = databaseClient.select()
-      .from(TABLE_FILE)
-      .matching(criteria)
-      .`as`(FileStore.Impl::class.java)
-      .orderBy(Sort.by(Sort.Direction.DESC, "create_on"))
-      .page(PageRequest.of(offset, limit))
-
-    var countSpec = databaseClient.execute(
-      "select count(*) from $TABLE_FILE" +
-        " where ${conditions.joinToString(" and ")}"
-    )
-    params.forEach { countSpec = countSpec.bind(it.key, it.value) }
-    val countQuery = countSpec.map { row -> row[0] as Long }
-
-    return rowsQuery.fetch().all().collectList()
-      .flatMap { files ->
-        countQuery.one().map { total ->
-          Page.of(rows = files as List<FileStore>, total = total, offset = offset, limit = limit)
+    // do page query
+    return select.matching(query(condition)).count() // query total count
+      .flatMap { totalCount ->
+        val sort = Sort.by(DESC, "create_on")
+        if (totalCount <= 0) Mono.just(Page.of(
+          limit = limit,
+          offset = offset,
+          total = 0,
+          rows = emptyList()
+        ))
+        else {
+          // query real rows
+          select.matching(
+            query(condition).sort(sort)
+              .limit(limit)
+              .offset(offset.toLong())
+          ).all()
+            .collectList()
+            .map { rows ->
+              Page.of(
+                limit = limit,
+                offset = offset,
+                total = totalCount,
+                rows = rows as List<FileStore>
+              )
+            }
         }
       }
   }
@@ -96,15 +99,20 @@ class FileDaoImpl @Autowired constructor(
     search: Optional<String>,
     limit: Optional<Int>
   ): Flux<FileStore> {
-    var criteria = when (moduleMatcher) {
-      is ModuleEquals -> where("module").`is`(moduleMatcher.module)
-      else -> where("module").like(
+    // create common query
+    val select = entityOperations.select(FileStorePo::class.java).from(TABLE_FILE)
+
+    // module condition
+    var condition = Criteria.empty()
+    condition = when (moduleMatcher) {
+      is ModuleEquals -> condition.and("module").`is`(moduleMatcher.module)
+      else -> condition.and("module").like(
         if (moduleMatcher.module.endsWith("%")) moduleMatcher.module
         else moduleMatcher.module + "%"
       )
     }
     search.ifPresent {
-      criteria = criteria.and("name").like(
+      condition = condition.and("name").like(
         if (it.startsWith("%")) {
           if (it.endsWith("%")) it
           else "$it%"
@@ -114,28 +122,29 @@ class FileDaoImpl @Autowired constructor(
         }
       )
     }
-    var spec = databaseClient.select()
-      .from(TABLE_FILE)
-      .matching(criteria)
-      .`as`(FileStore.Impl::class.java)
-      .orderBy(Sort.by(Sort.Direction.DESC, "create_on"))
-    limit.ifPresent { spec = spec.page(PageRequest.of(0, limit.get())) }
-    return spec.fetch().all() as Flux<FileStore>
+    var q = query(condition).sort(Sort.by(DESC, "create_on"))
+    limit.ifPresent { q = q.limit(it) }
+    return select.matching(q).all() as Flux<FileStore>
   }
 
   override fun create(file: FileStore): Mono<String> {
-    return databaseClient.insert()
-      .into(TABLE_FILE)
-      .value("module", standardModuleValue(file.module))
-      .value("name", file.name)
-      .value("type", file.type)
-      .value("size", file.size)
-      .value("path", file.path)
-      .value("creator", file.creator)
-      .value("create_on", file.createOn)
-      .value("modifier", file.modifier)
-      .value("modify_on", file.modifyOn)
-      .value("id", if (file.id.isNotEmpty()) file.id else TODO("Not implemented for auto generate id by database"))
+    return databaseClient.sql("""
+      insert into $TABLE_FILE (
+        id, module, name, type, size, path, creator, create_on, modifier, modify_on
+      ) values (
+        :id, :module, :name, :type, :size, :path, :creator, :createOn, :modifier, :modifyOn
+      )
+    """.trimIndent())
+      .bind("module", standardModuleValue(file.module))
+      .bind("name", file.name)
+      .bind("type", file.type)
+      .bind("size", file.size)
+      .bind("path", file.path)
+      .bind("creator", file.creator)
+      .bind("createOn", file.createOn)
+      .bind("modifier", file.modifier)
+      .bind("modifyOn", file.modifyOn)
+      .bind("id", if (file.id.isNotEmpty()) file.id else TODO("Not implemented for auto generate id by database"))
       .fetch()
       .rowsUpdated()
       .map { file.id }
@@ -143,11 +152,9 @@ class FileDaoImpl @Autowired constructor(
 
   @Suppress("UNCHECKED_CAST")
   override fun get(id: String): Mono<FileStore> {
-    return databaseClient.select()
+    return entityOperations.select(FileStorePo::class.java)
       .from(TABLE_FILE)
-      .matching(where("id").`is`(id))
-      .`as`(FileStore.Impl::class.java)
-      .fetch()
+      .matching(query(where("id").`is`(id)))
       .one() as Mono<FileStore>
   }
 }
