@@ -1,9 +1,11 @@
 package tech.simter.file.impl.dao.r2dbc
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.r2dbc.core.DatabaseClient
+import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
+import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.FileDao
 import tech.simter.file.impl.dao.r2dbc.TestHelper.insert
@@ -14,7 +16,8 @@ import tech.simter.file.test.TestHelper.randomFileId
  *
  * @author RJ
  */
-@SpringBootTest(classes = [UnitTestConfiguration::class])
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@DataR2dbcTest
 class GetMethodImplTest @Autowired constructor(
   private val client: DatabaseClient,
   private val dao: FileDao
@@ -32,7 +35,9 @@ class GetMethodImplTest @Autowired constructor(
     // verify exists
     dao.get(file.id)
       .test()
-      .expectNext(file)
+      .assertNext {
+        assertThat(it).usingRecursiveComparison().isEqualTo(file)
+      }
       .verifyComplete()
   }
 }

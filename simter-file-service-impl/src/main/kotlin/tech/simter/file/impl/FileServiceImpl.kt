@@ -94,7 +94,7 @@ class FileServiceImpl @Autowired constructor(
       is FileUploadSource.FromFilePart -> source.value.transferTo(targetFile).doOnSuccess {
         // verify real file size
         if (verifyRealFileSize && targetFile.toFile().length() != describer.size)
-          throw IllegalArgumentException("specific upload file size not match the real file size")
+          throw IllegalArgumentException("specific upload file size not match the real file size " + targetFile.toFile().length() + "|" + describer.size)
       }
       is FileUploadSource.FromResource -> {
         // zero-copy for disk file

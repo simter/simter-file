@@ -3,8 +3,9 @@ package tech.simter.file.impl.dao.r2dbc
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.r2dbc.core.DatabaseClient
+import org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest
+import org.springframework.r2dbc.core.DatabaseClient
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.FileDao
 import tech.simter.file.core.ModuleMatcher.Companion.autoModuleMatcher
@@ -20,7 +21,8 @@ import java.util.*
  *
  * @author RJ
  */
-@SpringBootTest(classes = [UnitTestConfiguration::class])
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@DataR2dbcTest
 class FindPageMethodImplTest @Autowired constructor(
   private val client: DatabaseClient,
   private val dao: FileDao
@@ -55,36 +57,36 @@ class FindPageMethodImplTest @Autowired constructor(
     // 1. find all module1 without fuzzy search
     val limit = 2
     dao.findPage(
-        moduleMatcher = autoModuleMatcher(module1),
-        offset = 0,
-        limit = limit
-      )
+      moduleMatcher = autoModuleMatcher(module1),
+      offset = 0,
+      limit = limit
+    )
       .test()
       .assertNext { page ->
         assertThat(page.offset).isEqualTo(0)
         assertThat(page.limit).isEqualTo(limit)
         assertThat(page.total).isEqualTo(3)
         assertThat(page.rows).hasSize(2)
-        assertThat(page.rows[0]).isEqualTo(files[2])
-        assertThat(page.rows[1]).isEqualTo(files[1])
+        assertThat(page.rows[0]).usingRecursiveComparison().isEqualTo(files[2])
+        assertThat(page.rows[1]).usingRecursiveComparison().isEqualTo(files[1])
       }
       .verifyComplete()
 
     // 2. find all module1 with fuzzy search
     dao.findPage(
-        moduleMatcher = autoModuleMatcher(module1),
-        offset = 0,
-        limit = limit,
-        search = Optional.of("a")
-      )
+      moduleMatcher = autoModuleMatcher(module1),
+      offset = 0,
+      limit = limit,
+      search = Optional.of("a")
+    )
       .test()
       .assertNext { page ->
         assertThat(page.offset).isEqualTo(0)
         assertThat(page.limit).isEqualTo(limit)
         assertThat(page.total).isEqualTo(2)
         assertThat(page.rows).hasSize(2)
-        assertThat(page.rows[0]).isEqualTo(files[2])
-        assertThat(page.rows[1]).isEqualTo(files[0])
+        assertThat(page.rows[0]).usingRecursiveComparison().isEqualTo(files[2])
+        assertThat(page.rows[1]).usingRecursiveComparison().isEqualTo(files[0])
       }
       .verifyComplete()
   }

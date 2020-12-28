@@ -1,6 +1,5 @@
 package tech.simter.file.rest.webflux
 
-import kotlinx.serialization.ImplicitReflectionSerializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -32,7 +31,6 @@ class ModuleConfiguration @Autowired constructor(
   private val uploadFileHandler: tech.simter.file.rest.webflux.handler.UploadHandler
 ) {
   /** Register a `RouterFunction<ServerResponse>` with all routers for this module */
-  @ImplicitReflectionSerializer
   @Bean("$PACKAGE.rest.webflux.Routes")
   @ConditionalOnMissingBean(name = ["$PACKAGE.rest.webflux.Routes"])
   fun fileRoutes() = router {

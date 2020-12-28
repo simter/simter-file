@@ -25,7 +25,8 @@
     </dependency>
     <dependency>
       <groupId>org.jetbrains.kotlinx</groupId>
-      <artifactId>kotlinx-serialization-runtime</artifactId>
+      <artifactId>kotlinx-serialization-json</artifactId>
+      <type>pom</type>
     </dependency>
   </dependencies>
   <url>https://github.com/simter/simter-file/tree/master/simter-file-core</url>

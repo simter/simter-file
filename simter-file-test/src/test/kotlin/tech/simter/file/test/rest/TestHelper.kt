@@ -1,6 +1,6 @@
 package tech.simter.file.test.rest
 
-import kotlinx.serialization.builtins.list
+import kotlinx.serialization.decodeFromString
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.*
@@ -68,6 +68,6 @@ object TestHelper {
       .expectBody<String>()
       .returnResult().responseBody!!
 
-    return kotlinJson.parse(FileStore.Impl.serializer().list, body)
+    return kotlinJson.decodeFromString<List<FileStore.Impl>>(body)
   }
 }

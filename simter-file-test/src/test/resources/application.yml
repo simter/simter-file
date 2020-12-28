@@ -7,7 +7,7 @@ simter-file:
   server-url: @server-url@
   base-data-dir: @base-data-dir@
 logging:
-  file: target/test.log
+  file.name: target/test.log
   level: # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF
     root: ERROR
     tech.simter.file: WARN

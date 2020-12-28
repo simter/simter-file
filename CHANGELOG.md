@@ -1,5 +1,10 @@
 # simter-file changelog
 
+## 2.0.0-M1 - 2020-12-28
+
+- Upgrade to simter-3.0.0-M1 (spring-boot-2.4.1)
+- Upgrade to kotlinx-serialization-1.0.1
+
 ## 1.0.0 - 2020-11-20
 
 - Upgrade to simter-2.0.0 (spring-boot-2.3.6)
