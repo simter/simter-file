@@ -53,13 +53,7 @@ class FileDaoImpl @Autowired constructor(
     // search condition
     search.ifPresent {
       condition = condition.and("name").like(
-        if (it.startsWith("%")) {
-          if (it.endsWith("%")) it
-          else "$it%"
-        } else {
-          if (it.endsWith("%")) "%$it"
-          else "%$it%"
-        }
+        if (it.contains("%")) it else "%$it%"
       )
     }
 
@@ -113,13 +107,7 @@ class FileDaoImpl @Autowired constructor(
     }
     search.ifPresent {
       condition = condition.and("name").like(
-        if (it.startsWith("%")) {
-          if (it.endsWith("%")) it
-          else "$it%"
-        } else {
-          if (it.endsWith("%")) "%$it"
-          else "%$it%"
-        }
+        if (it.contains("%")) it else "%$it%"
       )
     }
     var q = query(condition).sort(Sort.by(DESC, "create_on"))
