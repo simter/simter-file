@@ -1,12 +1,15 @@
 package tech.simter.file.rest.webflux.handler
 
 import io.mockk.every
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
@@ -22,6 +25,7 @@ import tech.simter.file.test.TestHelper.randomModuleValue
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
 class FindListTest @Autowired constructor(
+  private val json: Json,
   private val client: WebTestClient,
   private val service: FileService
 ) {
@@ -41,20 +45,7 @@ class FindListTest @Autowired constructor(
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.size()").isEqualTo(2)
-
-      .jsonPath("$[0].id").isEqualTo(f2.id)
-      .jsonPath("$[0].module").isEqualTo(f2.module)
-      .jsonPath("$[0].name").isEqualTo(f2.name)
-      .jsonPath("$[0].type").isEqualTo(f2.type)
-      .jsonPath("$[0].size").isEqualTo(f2.size)
-
-      .jsonPath("$[1].id").isEqualTo(f1.id)
-      .jsonPath("$[1].module").isEqualTo(f1.module)
-      .jsonPath("$[1].name").isEqualTo(f1.name)
-      .jsonPath("$[1].type").isEqualTo(f1.type)
-      .jsonPath("$[1].size").isEqualTo(f1.size)
+      .expectBody<String>().isEqualTo(json.encodeToString(listOf(f2, f1)))
   }
 
   @Test
@@ -69,7 +60,6 @@ class FindListTest @Autowired constructor(
     client.get().uri("/?module=$module")
       .exchange()
       .expectStatus().isOk
-      .expectBody()
-      .json("[]")
+      .expectBody<String>().isEqualTo("[]")
   }
 }

@@ -1,5 +1,6 @@
 package tech.simter.file.test.rest
 
+import kotlinx.serialization.json.Json
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +24,7 @@ import java.nio.file.Paths
  */
 @SpringBootTest(classes = [UnitTestConfiguration::class])
 class DownloadByPathTest @Autowired constructor(
+  private val json: Json,
   private val client: WebTestClient
 ) {
   @Test
@@ -30,7 +32,7 @@ class DownloadByPathTest @Autowired constructor(
     // prepare data
     val module = randomModuleValue()
     uploadOneFile(client = client, module = module)
-    val fileViews = findAllFileView(client = client, module = module)
+    val fileViews = findAllFileView(client = client, module = module, json = json)
     assertThat(fileViews).hasSize(1)
     val file = fileViews.first()
     val encodedPath = URLEncoder.encode(file.path, "UTF-8")

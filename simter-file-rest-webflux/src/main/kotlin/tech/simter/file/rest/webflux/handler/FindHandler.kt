@@ -1,5 +1,7 @@
 package tech.simter.file.rest.webflux.handler
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.MediaType.APPLICATION_JSON
@@ -17,6 +19,8 @@ import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.DEFAULT_MODULE_VALUE
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher.Companion.autoModuleMatcher
+import tech.simter.kotlin.data.Page
+import tech.simter.kotlin.data.Page.Companion.MappedType.OffsetLimit
 
 /**
  * The [HandlerFunction] for find file-view data.
@@ -29,6 +33,7 @@ import tech.simter.file.core.ModuleMatcher.Companion.autoModuleMatcher
  */
 @Component
 class FindHandler @Autowired constructor(
+  private val json: Json,
   private val fileService: FileService
 ) : HandlerFunction<ServerResponse> {
   override fun handle(request: ServerRequest): Mono<ServerResponse> {
@@ -36,24 +41,27 @@ class FindHandler @Autowired constructor(
     val module = request.queryParam("module").orElse(DEFAULT_MODULE_VALUE)
     val search = request.queryParam("search")
     val limit = request.queryParam("limit").map { it.toInt() }
-    val offset = request.queryParam("offset").map { it.toInt() }
+    val offset = request.queryParam("offset").map { it.toLong() }
 
     val queryResult = if (pageable.isPresent) { // pageable query
       fileService.findPage(
-          moduleMatcher = autoModuleMatcher(module),
-          search = search,
-          offset = offset,
-          limit = limit
-        )
-        .flatMap { ok().contentType(APPLICATION_JSON).bodyValue(it) }
+        moduleMatcher = autoModuleMatcher(module),
+        search = search,
+        offset = offset,
+        limit = limit
+      )
+        // TODO delete json.encodeToString when spring-boot support auto config
+        .flatMap {
+          ok().contentType(APPLICATION_JSON).bodyValue(json.encodeToString(Page.toMap(it, json, OffsetLimit)))
+        }
     } else {                                    // none-pageable query
       fileService.findList(
-          moduleMatcher = autoModuleMatcher(module),
-          search = search,
-          limit = limit
-        )
+        moduleMatcher = autoModuleMatcher(module),
+        search = search,
+        limit = limit
+      )
         .collectList()
-        .flatMap { ok().contentType(APPLICATION_JSON).bodyValue(it) }
+        .flatMap { ok().contentType(APPLICATION_JSON).bodyValue(json.encodeToString(it)) }
     }
 
     return queryResult.onErrorResume(PermissionDeniedException::class.java) {

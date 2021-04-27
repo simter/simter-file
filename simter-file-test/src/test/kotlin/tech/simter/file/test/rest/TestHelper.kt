@@ -1,6 +1,7 @@
 package tech.simter.file.test.rest
 
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.assertj.core.api.Assertions.assertThat
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.*
@@ -8,7 +9,6 @@ import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import tech.simter.file.core.FileDescriber
 import tech.simter.file.core.FileStore
-import tech.simter.file.kotlinJson
 import tech.simter.file.test.TestHelper.randomModuleValue
 
 object TestHelper {
@@ -59,7 +59,8 @@ object TestHelper {
 
   fun findAllFileView(
     client: WebTestClient,
-    module: String
+    module: String,
+    json: Json
   ): List<FileStore> {
     val body: String = client.get().uri("/?module=$module")
       .exchange()
@@ -68,6 +69,6 @@ object TestHelper {
       .expectBody<String>()
       .returnResult().responseBody!!
 
-    return kotlinJson.decodeFromString<List<FileStore.Impl>>(body)
+    return json.decodeFromString<List<FileStore.Impl>>(body)
   }
 }

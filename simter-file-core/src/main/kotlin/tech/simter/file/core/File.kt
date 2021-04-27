@@ -1,5 +1,6 @@
 package tech.simter.file.core
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.reactivestreams.Publisher
 import org.springframework.core.io.Resource
@@ -46,6 +47,7 @@ interface FileStore : FileDescriber, FilePack {
   val modifier: String
 
   @Serializable
+  @SerialName("FileStore")
   data class Impl(
     override val id: String,
     override val module: String,

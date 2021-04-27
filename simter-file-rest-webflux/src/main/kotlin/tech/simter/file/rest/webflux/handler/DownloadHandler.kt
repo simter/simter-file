@@ -1,6 +1,7 @@
 package tech.simter.file.rest.webflux.handler
 
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
@@ -23,7 +24,6 @@ import tech.simter.file.core.FileDownload.Source.FromDataBufferPublisher
 import tech.simter.file.core.FileDownload.Source.FromPath
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher
-import tech.simter.file.kotlinJson
 import tech.simter.file.packFilesTo
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -42,6 +42,7 @@ import java.util.*
  */
 @Component
 class DownloadHandler @Autowired constructor(
+  private val json: Json,
   @Value("\${$BASE_DATA_DIR}") private val baseDir: String,
   @Value("\${simter-file.pack-limits: 25}") private val packLimits: Int,
   private val fileService: FileService
@@ -169,7 +170,7 @@ class DownloadHandler @Autowired constructor(
                   val mapperString = decodeParam(request.queryParam("mapper").orElse(""))
                   val mapper: Map<String, String> = when {
                     mapperString.isEmpty() -> emptyMap()
-                    mapperString.startsWith("{") -> kotlinJson.decodeFromString(mapperString)
+                    mapperString.startsWith("{") -> json.decodeFromString(mapperString)
                     else -> mapOf("_" to mapperString)
                   }
                   // pack to zip format

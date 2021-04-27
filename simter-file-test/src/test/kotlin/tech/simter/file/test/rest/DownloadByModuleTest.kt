@@ -1,5 +1,6 @@
 package tech.simter.file.test.rest
 
+import kotlinx.serialization.json.Json
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,6 +29,7 @@ import java.nio.file.Paths
 @SpringBootTest(classes = [UnitTestConfiguration::class])
 class DownloadByModuleTest @Autowired constructor(
   @Value("\${$BASE_DATA_DIR}") private val baseDir: String,
+  private val json: Json,
   private val client: WebTestClient
 ) {
   @Test
@@ -35,7 +37,7 @@ class DownloadByModuleTest @Autowired constructor(
     // prepare data
     val module = randomModuleValue()
     uploadOneFile(client = client, module = module)
-    val fileViews = findAllFileView(client = client, module = module)
+    val fileViews = findAllFileView(client = client, module = module, json = json)
     assertThat(fileViews).hasSize(1)
     val file = fileViews.first()
 
@@ -60,7 +62,7 @@ class DownloadByModuleTest @Autowired constructor(
     val fuzzyModule = "$module%"
     uploadOneFile(client = client, module = module + "a/", name = "file1")
     uploadOneFile(client = client, module = module + "b/", name = "file2")
-    val fileViews = findAllFileView(client = client, module = fuzzyModule)
+    val fileViews = findAllFileView(client = client, module = fuzzyModule, json = json)
     assertThat(fileViews).hasSize(2)
 
     // 1. download with default file name "unknown.zip"

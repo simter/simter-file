@@ -2,19 +2,24 @@ package tech.simter.file.rest.webflux.handler
 
 import io.mockk.every
 import io.mockk.verify
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Mono
 import tech.simter.file.core.FileService
+import tech.simter.file.core.FileStore
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import tech.simter.file.test.TestHelper.randomFileStore
 import tech.simter.file.test.TestHelper.randomModuleValue
 import tech.simter.kotlin.data.Page
+import tech.simter.kotlin.data.Page.Companion.MappedType.OffsetLimit
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
@@ -27,6 +32,7 @@ import java.util.*
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
 class FindPageTest @Autowired constructor(
+  private val json: Json,
   private val client: WebTestClient,
   private val service: FileService
 ) {
@@ -44,42 +50,18 @@ class FindPageTest @Autowired constructor(
     // mock
     val limit = 20
     val total = rows.size.toLong()
+    val page = Page.of(rows = rows, total = total, limit = limit, offset = 0)
+    val pageJsonString = json.encodeToString(Page.toMap(page, json, OffsetLimit))
     every {
       service.findPage(moduleMatcher = moduleMatcher, limit = Optional.of(limit))
-    } returns Mono.just(Page.of(rows = rows, total = total, limit = limit, offset = 0))
+    } returns Mono.just(page)
 
     // find it
     client.get().uri("/?pageable&module=$module&limit=$limit")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.offset").isEqualTo(0)
-      .jsonPath("$.limit").isEqualTo(limit)
-      .jsonPath("$.total").isEqualTo(total)
-      .jsonPath("$.rows.size()").isEqualTo(rows.size)
-
-      .jsonPath("$.rows[0].id").isEqualTo(rows[0].id)
-      .jsonPath("$.rows[0].module").isEqualTo(rows[0].module)
-      .jsonPath("$.rows[0].name").isEqualTo(rows[0].name)
-      .jsonPath("$.rows[0].type").isEqualTo(rows[0].type)
-      .jsonPath("$.rows[0].path").isEqualTo(rows[0].path)
-      .jsonPath("$.rows[0].size").isEqualTo(rows[0].size)
-      .jsonPath("$.rows[0].creator").isEqualTo(rows[0].creator)
-      .jsonPath("$.rows[0].modifier").isEqualTo(rows[0].modifier)
-      .jsonPath("$.rows[0].createOn").isEqualTo(rows[0].createOn.toString())
-      .jsonPath("$.rows[0].modifyOn").isEqualTo(rows[0].modifyOn.toString())
-
-      .jsonPath("$.rows[1].id").isEqualTo(rows[1].id)
-      .jsonPath("$.rows[1].module").isEqualTo(rows[1].module)
-      .jsonPath("$.rows[1].name").isEqualTo(rows[1].name)
-      .jsonPath("$.rows[1].type").isEqualTo(rows[1].type)
-      .jsonPath("$.rows[1].path").isEqualTo(rows[1].path)
-      .jsonPath("$.rows[1].size").isEqualTo(rows[1].size)
-      .jsonPath("$.rows[1].creator").isEqualTo(rows[1].creator)
-      .jsonPath("$.rows[1].modifier").isEqualTo(rows[1].modifier)
-      .jsonPath("$.rows[1].createOn").isEqualTo(rows[1].createOn.toString())
-      .jsonPath("$.rows[1].modifyOn").isEqualTo(rows[1].modifyOn.toString())
+      .expectBody<String>().isEqualTo(pageJsonString)
     verify(exactly = 1) {
       service.findPage(moduleMatcher = moduleMatcher, limit = Optional.of(limit))
     }
@@ -92,21 +74,19 @@ class FindPageTest @Autowired constructor(
     val moduleMatcher = ModuleEquals(module)
 
     // mock
-    every { service.findPage(moduleMatcher) } returns Mono.just(Page.of(
-      rows = emptyList(),
+    val emptyPage = Page.of(
+      rows = emptyList<FileStore>(),
       total = 0,
       offset = 0,
       limit = 25
-    ))
+    )
+    every { service.findPage(moduleMatcher) } returns Mono.just(emptyPage)
+    val pageJsonString = json.encodeToString(Page.toMap(emptyPage, json, OffsetLimit))
 
     client.get().uri("/?pageable&module=$module")
       .exchange()
       .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$.offset").isEqualTo(0)
-      .jsonPath("$.limit").isEqualTo(25)
-      .jsonPath("$.total").isEqualTo(0)
-      .jsonPath("$.rows.size()").isEqualTo(0)
+      .expectBody<String>().isEqualTo(pageJsonString)
     verify(exactly = 1) { service.findPage(moduleMatcher) }
   }
 }
