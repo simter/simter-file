@@ -1,9 +1,8 @@
 package tech.simter.file.rest.webflux
 
 import com.ninjasquad.springmockk.MockkBean
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Import
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.config.EnableWebFlux
 import org.springframework.web.reactive.function.server.RouterFunction
@@ -42,14 +41,6 @@ import tech.simter.file.core.FileService
  */
 @Configuration
 @EnableWebFlux
-@Import(
-  // active Jackson auto config: auto register an ObjectMapper instance and so on.
-  JacksonAutoConfiguration::class,
-  // see also simter-reactive-web/README.md: global register java-time serialization and deserialization
-  // accurate to minutes
-  tech.simter.reactive.web.webflux.WebFluxConfiguration::class,
-  // this module
-  tech.simter.file.rest.webflux.ModuleConfiguration::class
-)
+@ComponentScan("tech.simter", "cn.gftaxi")
 @MockkBean(FileService::class)
 class UnitTestConfiguration
