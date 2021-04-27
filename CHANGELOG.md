@@ -1,5 +1,11 @@
 # simter-file changelog
 
+## 2.0.0-M2 - 2021-04-27
+
+- Upgrade to simter-3.0.0-M2 (spring-boot-2.4.5)
+- Remove jackson dependency
+- Change parameter offset to Long type
+
 ## 2.0.0-M1 - 2020-12-28
 
 - Upgrade to simter-3.0.0-M1 (spring-boot-2.4.1)
