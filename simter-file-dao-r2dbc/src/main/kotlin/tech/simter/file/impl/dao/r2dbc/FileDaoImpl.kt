@@ -35,7 +35,7 @@ class FileDaoImpl @Autowired constructor(
     moduleMatcher: ModuleMatcher,
     search: Optional<String>,
     limit: Int,
-    offset: Int
+    offset: Long
   ): Mono<Page<FileStore>> {
     // create common query
     val select = entityOperations.select(FileStorePo::class.java).from(TABLE_FILE)
@@ -72,7 +72,7 @@ class FileDaoImpl @Autowired constructor(
           select.matching(
             query(condition).sort(sort)
               .limit(limit)
-              .offset(offset.toLong())
+              .offset(offset)
           ).all()
             .collectList()
             .map { rows ->

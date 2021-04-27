@@ -25,7 +25,7 @@ class FileDaoImpl @Autowired constructor(
     moduleMatcher: ModuleMatcher,
     search: Optional<String>,
     limit: Int,
-    offset: Int
+    offset: Long
   ): Mono<Page<FileStore>> {
     return wrapper.fromCallable {
       blockDao.findPage(

@@ -24,7 +24,7 @@ interface FileService {
     moduleMatcher: ModuleMatcher,
     search: Optional<String> = Optional.empty(),
     limit: Optional<Int> = Optional.empty(),
-    offset: Optional<Int> = Optional.empty()
+    offset: Optional<Long> = Optional.empty()
   ): Mono<Page<FileStore>>
 
   /**

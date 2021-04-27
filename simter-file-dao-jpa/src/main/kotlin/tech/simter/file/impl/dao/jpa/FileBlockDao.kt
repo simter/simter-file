@@ -23,7 +23,7 @@ interface FileBlockDao {
     moduleMatcher: ModuleMatcher,
     search: Optional<String> = Optional.empty(),
     limit: Int,
-    offset: Int = 0
+    offset: Long = 0
   ): Page<FileStore>
 
   /**

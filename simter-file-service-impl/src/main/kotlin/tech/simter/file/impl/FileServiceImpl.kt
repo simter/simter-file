@@ -47,7 +47,7 @@ class FileServiceImpl @Autowired constructor(
     moduleMatcher: ModuleMatcher,
     search: Optional<String>,
     limit: Optional<Int>,
-    offset: Optional<Int>
+    offset: Optional<Long>
   ): Mono<Page<FileStore>> {
     return fileDao.findPage(
       moduleMatcher = moduleMatcher,

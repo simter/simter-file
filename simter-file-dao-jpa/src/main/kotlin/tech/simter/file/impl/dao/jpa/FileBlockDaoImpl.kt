@@ -26,7 +26,7 @@ class FileBlockDaoImpl @Autowired constructor(
     moduleMatcher: ModuleMatcher,
     search: Optional<String>,
     limit: Int,
-    offset: Int
+    offset: Long
   ): Page<FileStore> {
     val params = mutableMapOf<String, Any>()
     val conditions = mutableListOf<String>()
@@ -66,7 +66,7 @@ class FileBlockDaoImpl @Autowired constructor(
     """.trimIndent()
     val rowsQuery = em.createNativeQuery(rowsSql, FileStorePo::class.java)
       .setMaxResults(limit)
-      .setFirstResult(offset)
+      .setFirstResult(offset.toInt())
     params.forEach { rowsQuery.setParameter(it.key, it.value) }
 
     val countSql = """
