@@ -15,7 +15,7 @@ import tech.simter.file.core.FileStore
 @Configuration("$PACKAGE.core")
 class ModuleConfiguration {
   @Bean
-  fun serializersModule4FileStoreImpl(): SerializersModule {
+  fun serializersModule4FileStore(): SerializersModule {
     return SerializersModule {
       polymorphic(FileStore::class) {
         subclass(FileStore.Impl::class)
