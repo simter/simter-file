@@ -43,6 +43,7 @@ class UploadHandler @Autowired constructor(
     val module = request.queryParam("module").orElse("/default/")
     val name = request.queryParam("name").orElse("unknown")
     val type = request.queryParam("type").orElse("xyz")
+    val size = request.queryParam("size").orElse("0").toLong()
 
     // upload file
     val uploadResult = if (contentType.get().isCompatibleWith(MULTIPART_FORM_DATA)
@@ -62,7 +63,7 @@ class UploadHandler @Autowired constructor(
                     module = module,
                     name = name,
                     type = type,
-                    size = file.headers().contentLength
+                    size = if (size != 0L) size else file.headers().contentLength
                   ),
                   source = FileUploadSource.FromFilePart(file)
                 )
