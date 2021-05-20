@@ -135,7 +135,7 @@ class DownloadHandler @Autowired constructor(
   }
 
   private fun downloadByModule(request: ServerRequest): Mono<ServerResponse> {
-    val module = decodeParam(request.pathVariable("id"))
+    val module = request.pathVariable("id")
     return fileService.findList(ModuleMatcher.autoModuleMatcher(module))
       .collectList()
       .flatMap { fileViews ->
