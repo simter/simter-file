@@ -111,7 +111,7 @@ DELETE /$id?module
 
 | Name        | Require | Description
 |-------------|---------|-------------
-| id          | true    | file id or module depends on whether has 'module' query param 
+| id          | true    | file id or module depends on whether has 'module' query param, multiple file ids can be concatenated with ','
 | module      | false   | specify this query param means $id is a url-encode module value
 
 > If specify module query param, $id value ends with '/' means equation-module strategy, 
