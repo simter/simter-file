@@ -147,6 +147,11 @@ class FileBlockDaoImpl @Autowired constructor(
     return repository.findById(id) as Optional<FileStore>
   }
 
+  @Transactional(readOnly = true)
+  override fun findById(vararg ids: String): List<FileStore> {
+    return repository.findAllById(ids.toList())
+  }
+
   @Transactional(readOnly = false)
   override fun delete(vararg ids: String): Int {
     val sql = "delete from $TABLE_FILE where id in (:ids)"

@@ -146,6 +146,14 @@ class FileDaoImpl @Autowired constructor(
       .one() as Mono<FileStore>
   }
 
+  @Suppress("UNCHECKED_CAST")
+  override fun findById(vararg ids: String): Flux<FileStore> {
+    return entityOperations.select(FileStorePo::class.java)
+      .from(TABLE_FILE)
+      .matching(query(where("id").`in`(*ids)))
+      .all() as Flux<FileStore>
+  }
+
   override fun delete(vararg ids: String): Mono<Int> {
     return entityOperations.delete(FileStorePo::class.java)
       .from(TABLE_FILE)

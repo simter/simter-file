@@ -60,6 +60,11 @@ class FileDaoImpl @Autowired constructor(
       .flatMap { if (it.isPresent) Mono.just(it.get()) else Mono.empty() }
   }
 
+  override fun findById(vararg ids: String): Flux<FileStore> {
+    return wrapper.fromCallable { blockDao.findById(*ids) }
+      .flatMapMany { if (it.isNotEmpty()) Flux.fromIterable(it) else Flux.empty() }
+  }
+
   override fun delete(vararg ids: String): Mono<Int> {
     return wrapper.fromCallable { blockDao.delete(*ids) }
       .flatMap { Mono.just(it) }

@@ -55,6 +55,13 @@ interface FileDao {
   fun get(id: String): Mono<FileStore>
 
   /**
+   * Find all match files by id.
+   *
+   * Return [Flux.empty] if it is not exists.
+   */
+  fun findById(vararg ids: String): Flux<FileStore>
+
+  /**
    * Delete the specific [ids] files.
    *
    * Return the really deleted files count otherwise return 0 if no files deleted.
