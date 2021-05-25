@@ -147,10 +147,25 @@ class FileDaoImpl @Autowired constructor(
   }
 
   override fun delete(vararg ids: String): Mono<Int> {
-    TODO("Not yet implemented")
+    return entityOperations.delete(FileStorePo::class.java)
+      .from(TABLE_FILE)
+      .matching(query(where("id").`in`(*ids)))
+      .all()
   }
 
   override fun delete(moduleMatcher: ModuleMatcher): Mono<Int> {
-    TODO("Not yet implemented")
+    // module condition
+    var condition = Criteria.empty()
+    condition = when (moduleMatcher) {
+      is ModuleEquals -> condition.and("module").`is`(moduleMatcher.module)
+      else -> condition.and("module").like(
+        if (moduleMatcher.module.endsWith("%")) moduleMatcher.module
+        else moduleMatcher.module + "%"
+      )
+    }
+    return entityOperations.delete(FileStorePo::class.java)
+      .from(TABLE_FILE)
+      .matching(query(condition))
+      .all()
   }
 }
