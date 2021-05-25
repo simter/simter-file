@@ -1,5 +1,6 @@
 package tech.simter.file.impl.dao.jpa
 
+import reactor.core.publisher.Mono
 import tech.simter.file.core.FileStore
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.kotlin.data.Page
@@ -53,4 +54,18 @@ interface FileBlockDao {
    * Return [Optional.empty] if it is not exists.
    */
   fun get(id: String): Optional<FileStore>
+
+  /**
+   * Delete the specific [ids] files.
+   *
+   * Return the really deleted files count otherwise return 0 if no files deleted.
+   */
+  fun delete(vararg ids: String): Int
+
+  /**
+   * Delete files match the specific [moduleMatcher].
+   *
+   * Return the really deleted files count otherwise return 0 if no files deleted.
+   */
+  fun delete(moduleMatcher: ModuleMatcher): Int
 }

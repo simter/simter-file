@@ -61,10 +61,12 @@ class FileDaoImpl @Autowired constructor(
   }
 
   override fun delete(vararg ids: String): Mono<Int> {
-    TODO("Not yet implemented")
+    return wrapper.fromCallable { blockDao.delete(*ids) }
+      .flatMap { Mono.just(it) }
   }
 
   override fun delete(moduleMatcher: ModuleMatcher): Mono<Int> {
-    TODO("Not yet implemented")
+    return wrapper.fromCallable { blockDao.delete(moduleMatcher) }
+      .flatMap { Mono.just(it) }
   }
 }
