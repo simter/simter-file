@@ -53,4 +53,18 @@ interface FileDao {
    * Return [Mono.empty] if it is not exists.
    */
   fun get(id: String): Mono<FileStore>
+
+  /**
+   * Delete the specific [ids] files.
+   *
+   * Return the really deleted files count otherwise return 0 if no files deleted.
+   */
+  fun delete(vararg ids: String): Mono<Int>
+
+  /**
+   * Delete files match the specific [moduleMatcher].
+   *
+   * Return the really deleted files count otherwise return 0 if no files deleted.
+   */
+  fun delete(moduleMatcher: ModuleMatcher): Mono<Int>
 }

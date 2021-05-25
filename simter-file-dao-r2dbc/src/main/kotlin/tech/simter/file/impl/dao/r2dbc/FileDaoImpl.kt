@@ -145,4 +145,12 @@ class FileDaoImpl @Autowired constructor(
       .matching(query(where("id").`is`(id)))
       .one() as Mono<FileStore>
   }
+
+  override fun delete(vararg ids: String): Mono<Int> {
+    TODO("Not yet implemented")
+  }
+
+  override fun delete(moduleMatcher: ModuleMatcher): Mono<Int> {
+    TODO("Not yet implemented")
+  }
 }
