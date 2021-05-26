@@ -77,6 +77,8 @@
             <plugin>spring</plugin>
             <!-- JPA support: https://kotlinlang.org/docs/reference/compiler-plugins.html#jpa-support -->
             <plugin>jpa</plugin>
+            <!-- Kotlin serialization support: https://github.com/Kotlin/kotlinx.serialization -->
+            <plugin>kotlinx-serialization</plugin>
           </compilerPlugins>
         </configuration>
       </plugin>

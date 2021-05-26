@@ -1,7 +1,9 @@
 package tech.simter.file.impl.dao.jpa.po
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import kotlinx.serialization.Serializable
 import tech.simter.file.core.FileStore
+import tech.simter.kotlin.serialization.serializer.javatime.iso.IsoOffsetDateTimeSerializer
 import java.time.OffsetDateTime
 import javax.persistence.*
 
@@ -12,6 +14,7 @@ import javax.persistence.*
  */
 @Entity
 @Table(name = "st_file")
+@Serializable
 data class FileStorePo(
   @Id @Column(nullable = false, length = 36)
   override val id: String,
@@ -28,10 +31,12 @@ data class FileStorePo(
   @Column(nullable = false, length = 50)
   override val creator: String,
   @Column(nullable = false)
+  @Serializable(with = IsoOffsetDateTimeSerializer::class)
   override val createOn: OffsetDateTime,
   @Column(nullable = false, length = 50)
   override val modifier: String,
   @Column(nullable = false)
+  @Serializable(with = IsoOffsetDateTimeSerializer::class)
   override val modifyOn: OffsetDateTime
 ) : FileStore {
   @get:JsonIgnore
