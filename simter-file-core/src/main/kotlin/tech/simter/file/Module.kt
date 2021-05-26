@@ -169,13 +169,10 @@ fun packFilesTo(
   // zip all files
   files.map { file ->
     // 1. map origin `$module` to the custom name
-    val mappedName = Paths.get(moduleMapper.getOrDefault(
-      file.module,
-      moduleMapper.getOrDefault("_", file.module) // "_" for fallback to map everything
-    ), file.fileName)
+    val mappedName = Paths.get(prefixMapped(file.module, moduleMapper), file.fileName)
 
     // 2. remove start slash to avoid create the zip root folder '_'
-    val zipEntryName = if (mappedName.isAbsolute) mappedName.toString().substring(1)
+    val zipEntryName = if (mappedName.startsWith("/")) mappedName.toString().substring(1)
     else mappedName.toString()
 
     // 3. add zip entry
@@ -196,4 +193,27 @@ fun packFilesTo(
 
   // close output stream
   if (autoClose) zipOutputStream.close()
+}
+
+/**
+ * Map the prefix of [originValue] to another value by the [mapper].
+ *
+ * Sample:
+ * - originValue=/a/b/f.txt, mapper={"/a/b/": "/m/"}, return=/m/f.txt
+ */
+fun prefixMapped(originValue: String, mapper: Map<String, String>): String {
+  if (mapper.isEmpty()) return originValue
+  else {
+    var mappedValue: String = originValue
+    run loop@{
+      mapper.forEach { (key, value) ->
+        if (originValue.startsWith(key)) {
+          mappedValue = if (originValue.length == key.length) value
+          else value + originValue.substring(key.length)
+          return@loop
+        }
+      }
+    }
+    return mappedValue
+  }
 }

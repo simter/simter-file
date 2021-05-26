@@ -38,6 +38,20 @@ interface FilePack : FileDescriber {
   val path: String
   val createOn: OffsetDateTime
   val modifyOn: OffsetDateTime
+
+  @Serializable
+  @SerialName("FilePack")
+  data class Impl(
+    override val module: String,
+    override val name: String,
+    override val type: String,
+    override val size: Long,
+    override val path: String,
+    @Serializable(with = IsoOffsetDateTimeSerializer::class)
+    override val createOn: OffsetDateTime,
+    @Serializable(with = IsoOffsetDateTimeSerializer::class)
+    override val modifyOn: OffsetDateTime
+  ) : FilePack
 }
 
 /** The file store information */
