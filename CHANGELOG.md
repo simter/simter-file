@@ -1,5 +1,14 @@
 # simter-file changelog
 
+## 2.0.0-M3 - 2021-05-26
+
+- Support custom upload file size by param 'size'
+- Not need to decode pathVariable value
+- Fixed module value mapped
+- Implement delete file interface by [PR#79]
+
+[PR#79]: https://github.com/simter/simter-file/pull/79
+
 ## 2.0.0-M2 - 2021-04-27
 
 - Upgrade to simter-3.0.0-M2 (spring-boot-2.4.5)
