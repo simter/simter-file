@@ -168,7 +168,7 @@ GET /$id?type=x&filename=x&inline&pack
 | GET /$id?pack   | compress and download origin file with zip format and `filename=$name.$type.zip`
 
 > If want to download multiple ids, just use ',' to concat them. if has multiple ids, 
-> they will be compress and download with file name '$filename' and always has a '.zip' extension.
+> they will be compressed and download with file name '$filename' and always has a '.zip' extension.
 > Fallback to use 'unknown.zip' if missing 'filename' query param.
 
 **URL sample for download specific file path:**
