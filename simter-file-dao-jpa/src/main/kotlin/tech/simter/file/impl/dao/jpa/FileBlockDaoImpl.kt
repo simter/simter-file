@@ -146,4 +146,39 @@ class FileBlockDaoImpl @Autowired constructor(
   override fun get(id: String): Optional<FileStore> {
     return repository.findById(id) as Optional<FileStore>
   }
+
+  @Transactional(readOnly = true)
+  override fun findById(vararg ids: String): List<FileStore> {
+    return repository.findAllById(ids.toList())
+  }
+
+  @Transactional(readOnly = false)
+  override fun delete(vararg ids: String): Int {
+    val sql = "delete from $TABLE_FILE where id in (:ids)"
+    return em.createNativeQuery(sql).setParameter("ids", ids.toList()).executeUpdate()
+  }
+
+  @Transactional(readOnly = false)
+  override fun delete(moduleMatcher: ModuleMatcher): Int {
+    val param: String
+    val condition: String
+
+    // module condition
+    when (moduleMatcher) {
+      is ModuleEquals -> {
+        condition = "module = :module"
+        param = moduleMatcher.module
+      }
+      else -> {
+        condition = "module like :module"
+        val value = if (moduleMatcher.module.endsWith("%")) moduleMatcher.module
+        else moduleMatcher.module + "%"
+        param = value
+      }
+    }
+
+    val sql = "delete from $TABLE_FILE where $condition"
+
+    return em.createNativeQuery(sql).setParameter("module", param).executeUpdate()
+  }
 }

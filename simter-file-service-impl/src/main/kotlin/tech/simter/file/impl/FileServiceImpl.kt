@@ -151,10 +151,28 @@ class FileServiceImpl @Autowired constructor(
   }
 
   override fun delete(vararg ids: String): Mono<Int> {
-    TODO("Not yet implemented")
+    return fileDao.findById(*ids).collectList().flatMap { list ->
+      fileDao.delete(*ids).flatMap {
+        for (fileStore in list) {
+          val file = Paths.get(baseDir, fileStore.path).toFile()
+          if (file.delete()) logger.info("delete file '{}'", file.absolutePath)
+        }
+
+        Mono.just(it)
+      }
+    }
   }
 
   override fun delete(moduleMatcher: ModuleMatcher): Mono<Int> {
-    TODO("Not yet implemented")
+    return fileDao.findList(moduleMatcher = moduleMatcher).collectList().flatMap { list ->
+      fileDao.delete(moduleMatcher).flatMap {
+        for (fileStore in list) {
+          val file = Paths.get(baseDir, fileStore.path).toFile()
+          if (file.delete()) logger.info("delete file '{}'", file.absolutePath)
+        }
+
+        Mono.just(it)
+      }
+    }
   }
 }
