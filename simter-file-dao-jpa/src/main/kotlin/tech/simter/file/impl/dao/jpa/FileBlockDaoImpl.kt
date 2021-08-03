@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import tech.simter.file.TABLE_FILE
 import tech.simter.file.core.FileStore
+import tech.simter.file.core.FileUpdate
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.impl.dao.jpa.po.FileStorePo
@@ -180,5 +181,9 @@ class FileBlockDaoImpl @Autowired constructor(
     val sql = "delete from $TABLE_FILE where $condition"
 
     return em.createNativeQuery(sql).setParameter("module", param).executeUpdate()
+  }
+
+  override fun update(id: String, updateInfo: FileUpdate): Boolean {
+    TODO("Not yet implemented")
   }
 }

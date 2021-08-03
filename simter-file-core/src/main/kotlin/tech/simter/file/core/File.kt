@@ -111,7 +111,7 @@ interface FileDownload {
   ) : FileDownload
 }
 
-/** The file update info */
+/** The file update info describe */
 interface FileUpdateDescriber {
   val module: Optional<String>
   val name: Optional<String>
@@ -124,4 +124,21 @@ interface FileUpdateDescriber {
     override val type: Optional<String> = Optional.empty(),
     override val size: OptionalLong = OptionalLong.empty()
   ) : FileUpdateDescriber
+}
+
+/** The file update info */
+interface FileUpdate: FileUpdateDescriber {
+  val path: Optional<String>
+  val modifier: Optional<String>
+  val modifyOn: Optional<OffsetDateTime>
+
+  data class Impl(
+    override val module: Optional<String> = Optional.empty(),
+    override val name: Optional<String> = Optional.empty(),
+    override val type: Optional<String> = Optional.empty(),
+    override val size: OptionalLong = OptionalLong.empty(),
+    override val path: Optional<String> = Optional.empty(),
+    override val modifier: Optional<String> = Optional.empty(),
+    override val modifyOn: Optional<OffsetDateTime> = Optional.empty()
+  ) : FileUpdate
 }

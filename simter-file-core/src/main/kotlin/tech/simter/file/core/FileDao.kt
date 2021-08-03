@@ -74,4 +74,11 @@ interface FileDao {
    * Return the really deleted files count otherwise return 0 if no files deleted.
    */
   fun delete(moduleMatcher: ModuleMatcher): Mono<Int>
+
+  /**
+   * Update the specific [id] file store information.
+   *
+   * Return true if the actual update was performed, otherwise return false.
+   */
+  fun update(id: String, updateInfo: FileUpdate): Mono<Boolean>
 }

@@ -14,6 +14,7 @@ import reactor.core.publisher.Mono
 import tech.simter.file.TABLE_FILE
 import tech.simter.file.core.FileDao
 import tech.simter.file.core.FileStore
+import tech.simter.file.core.FileUpdate
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.impl.dao.r2dbc.po.FileStorePo
@@ -175,5 +176,9 @@ class FileDaoImpl @Autowired constructor(
       .from(TABLE_FILE)
       .matching(query(condition))
       .all()
+  }
+
+  override fun update(id: String, updateInfo: FileUpdate): Mono<Boolean> {
+    TODO("Not yet implemented")
   }
 }

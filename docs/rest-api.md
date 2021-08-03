@@ -99,7 +99,52 @@ $fileData
 
 ## 2. Update exists file
 
-Request and response are same with `<1. Upload new file>` but the request url add `/$id` path.
+**Request:**
+
+```
+PATCH /id?module=x&name=x&type=x&size=x&input-name=
+Content-Type: $contentType
+Content-Length: $len
+
+$fileDate
+```
+
+| Name        | Require | Description
+|-------------|---------|-------------
+| module      | false   | business module identity, must url-encoded, starts and ends with '/'
+| name        | false   | file name without extension
+| type        | false   | file extension
+| size        | false   | file size with byte unit
+| len         | true    | request body size with byte unit
+| contentType | false   | support two value: <br>1. `application/octet-stream` for ajax upload<br>2. `multipart/form-data` for traditional form submit
+| input-name  | false   | only for traditional form submit, custom the `<input type=file name=file>` name attribute value, default 'file'
+
+**Response:**
+
+```
+204 NoContent
+```
+
+If the attachment does not exist, the response returns:
+
+```
+404 Not Found
+Content-Type : plain/text
+
+no file to update was found！
+```
+
+### 1.1. Update by ajax
+
+With request Content-Type `application/octet-stream`.
+The request body contains all the file binary data.
+
+### 1.2. Update by traditional form submit
+
+With request Content-Type `multipart/form-data`.
+The request body contains all the form submit data.
+
+Use a traditional `'<input type="file" name="$inputName">'` way to submit a form.
 
 ## 3. Delete file
 

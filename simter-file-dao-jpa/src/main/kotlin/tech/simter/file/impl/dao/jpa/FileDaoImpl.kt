@@ -6,6 +6,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.core.FileDao
 import tech.simter.file.core.FileStore
+import tech.simter.file.core.FileUpdate
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.kotlin.data.Page
 import tech.simter.reactive.jpa.ReactiveJpaWrapper
@@ -73,5 +74,9 @@ class FileDaoImpl @Autowired constructor(
   override fun delete(moduleMatcher: ModuleMatcher): Mono<Int> {
     return wrapper.fromCallable { blockDao.delete(moduleMatcher) }
       .flatMap { Mono.just(it) }
+  }
+
+  override fun update(id: String, updateInfo: FileUpdate): Mono<Boolean> {
+    TODO("Not yet implemented")
   }
 }
