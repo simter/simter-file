@@ -24,7 +24,7 @@ import java.util.*
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @DataR2dbcTest
-class FindListMethodImplTest @Autowired constructor(
+class FindListTest @Autowired constructor(
   private val client: DatabaseClient,
   private val dao: FileDao
 ) {

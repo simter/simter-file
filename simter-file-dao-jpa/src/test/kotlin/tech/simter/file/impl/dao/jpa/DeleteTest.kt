@@ -20,7 +20,7 @@ import java.time.temporal.ChronoUnit
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @ReactiveDataJpaTest
-class DeleteMethodImplTest @Autowired constructor(
+class DeleteTest @Autowired constructor(
   val rem: TestEntityManager,
   val dao: FileDao
 ) {

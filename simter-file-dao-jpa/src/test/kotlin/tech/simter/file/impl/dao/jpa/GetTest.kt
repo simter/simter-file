@@ -20,7 +20,7 @@ import java.time.temporal.ChronoUnit.SECONDS
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @ReactiveDataJpaTest
-class GetMethodImplTest @Autowired constructor(
+class GetTest @Autowired constructor(
   val rem: TestEntityManager,
   val dao: FileDao
 ) {

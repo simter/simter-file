@@ -24,7 +24,7 @@ import java.util.*
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @ReactiveDataJpaTest
-class FindListMethodImplTest @Autowired constructor(
+class FindListTest @Autowired constructor(
   val rem: TestEntityManager,
   val dao: FileDao
 ) {

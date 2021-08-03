@@ -17,7 +17,7 @@ import tech.simter.file.test.TestHelper.randomFileStore
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @DataR2dbcTest
-class DeleteMethodImplTest @Autowired constructor(
+class DeleteTest @Autowired constructor(
   private val dao: FileDao
 ) {
   private val file1 = randomFileStore(module = "/a/b/")

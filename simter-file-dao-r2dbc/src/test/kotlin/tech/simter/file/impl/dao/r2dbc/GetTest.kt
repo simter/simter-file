@@ -18,7 +18,7 @@ import tech.simter.file.test.TestHelper.randomFileId
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @DataR2dbcTest
-class GetMethodImplTest @Autowired constructor(
+class GetTest @Autowired constructor(
   private val client: DatabaseClient,
   private val dao: FileDao
 ) {
