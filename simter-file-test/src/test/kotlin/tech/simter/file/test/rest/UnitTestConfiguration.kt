@@ -11,7 +11,7 @@ import tech.simter.reactive.web.Utils.createClientHttpConnector
 @Configuration
 @ComponentScan("tech.simter")
 class UnitTestConfiguration @Autowired constructor(
-  @Value("\${simter-file.server-url}")
+  @Value("\${server.url}")
   private val serverUrl: String,
   @Value("\${proxy.host:#{null}}")
   private val proxyHost: String?,
@@ -20,7 +20,6 @@ class UnitTestConfiguration @Autowired constructor(
 ) {
   @Bean
   fun webTestClient(): WebTestClient {
-    //return WebTestClient.bindToServer().baseUrl(serverUrl).build()
     return WebTestClient
       .bindToServer(
         createClientHttpConnector(
