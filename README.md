@@ -4,7 +4,7 @@ A file manage server.
 
 ## Data Structure
 
-*Database table name is st_file**. A different database should have different column type, 
+**Database table name is st_file**. A different database should have different column type, 
 check database script from [here](./simter-file-core/src/main/resources/tech/simter/file/sql).
 
 ## Maven Modules
@@ -27,10 +27,10 @@ check database script from [here](./simter-file-core/src/main/resources/tech/sim
 ## Requirement
 
 - Maven 3.6+
-- Kotlin 1.4+
+- Kotlin 1.5+
 - Java 8+
 - Spring Framework 5.3+
-- Spring Boot 2.4+
+- Spring Boot 2.5+
 - Reactor 3.4+
 
 
