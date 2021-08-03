@@ -3,9 +3,8 @@
 #proxy.port: 8888
 
 server.url: @server.url@
+data.dir: @data.dir@
 spring.main.banner-mode: 'off'
-simter-file:
-  base-data-dir: @base-data-dir@
 logging:
   file.name: target/test.log
   level: # TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF

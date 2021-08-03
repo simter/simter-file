@@ -34,10 +34,10 @@ This will run all the integration test on each rest-api define in <[rest-api.md]
 
 Want to run the integration test on the real server, just add two specific params:
 
-| ParamName     | Remark               | Default value
-|---------------|----------------------|---------------
-| server.url    | server address       | http://127.0.0.1:9013/file
-| base-data-dir | server base data dir | ../simter-file-starter/target/data
+| ParamName  | Remark               | Default value
+|------------|----------------------|---------------
+| server.url | server address       | http://127.0.0.1:9013/file
+| data.dir   | server base data dir | ../simter-file-starter/target/data
 
 Such as:
 
