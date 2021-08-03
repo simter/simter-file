@@ -77,6 +77,6 @@ class FileDaoImpl @Autowired constructor(
   }
 
   override fun update(id: String, updateInfo: FileUpdate): Mono<Boolean> {
-    TODO("Not yet implemented")
+    return wrapper.fromCallable { blockDao.update(id, updateInfo) }
   }
 }
