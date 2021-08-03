@@ -1,5 +1,17 @@
 # simter-file changelog
 
+## 2.0.0-M4 - 2021-08-03
+
+- Upgrade to simter-3.0.0-M3 (spring-boot-2.5.3)
+- Simplify unit test class name
+  > Such as rename `Delete...Test` to `DeleteTest`
+- simter-file-test:
+    - Rename property `server-url` to `server.url`
+    - Rename property `base-data-url` to `data.url`
+- dao-jpa - Upgrade to new database init config
+- dao-r2dbc - Upgrade to new database init config and delete embedded database profile
+- starter - Upgrade to new database init config and delete embedded database profile
+
 ## 2.0.0-M3 - 2021-05-26
 
 - Support custom upload file size by param 'size'
