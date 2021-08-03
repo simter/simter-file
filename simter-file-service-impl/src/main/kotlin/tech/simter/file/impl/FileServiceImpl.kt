@@ -7,12 +7,14 @@ import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.exception.NotFoundException
 import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.core.*
 import tech.simter.kotlin.data.Page
 import tech.simter.reactive.security.ReactiveSecurityService
 import java.nio.channels.AsynchronousFileChannel
 import java.nio.channels.FileChannel
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardOpenOption.CREATE_NEW
@@ -142,7 +144,72 @@ class FileServiceImpl @Autowired constructor(
     describer: FileUpdateDescriber,
     source: Optional<FileUploadSource>
   ): Mono<Void> {
-    TODO("not implemented")
+    // unique markup
+    val ts = Optional.of(OffsetDateTime.now())
+    val uuid = Optional.of(UUID.randomUUID())
+
+    return fileDao.get(id)
+      .switchIfEmpty(Mono.error(NotFoundException("no file to update was found!")))
+      .flatMap { fileStore ->
+        val fileDescriber = FileDescriber.Impl(
+          module = describer.module.orElse(fileStore.module),
+          name = describer.name.orElse(fileStore.name),
+          type = describer.type.orElse(fileStore.type),
+          size = describer.size.orElse(fileStore.size)
+        )
+        val filePath = filePathGenerator.resolve(describer = fileDescriber, ts = ts, uuid = uuid)
+        val targetFile = basePath.resolve(filePath)
+        val parentDir = targetFile.toFile().parentFile
+        if (!parentDir.exists()) {
+          parentDir.mkdirs()
+          logger.info("create directory '{}'", parentDir)
+        }
+
+        val mono = if (source.isPresent) {
+          val oldFile = Paths.get(baseDir, fileStore.path).toFile()
+          if (oldFile.delete()) logger.info("delete old file '{}'", oldFile.absolutePath)
+
+          val fileSource = source.get()
+          when (fileSource) {
+            is FileUploadSource.FromFilePart -> fileSource.value.transferTo(targetFile).doOnSuccess {
+              // verify real file size
+              if (verifyRealFileSize && targetFile.toFile().length() != describer.size.asLong)
+                throw IllegalArgumentException("specific update file size not match the real file size " + targetFile.toFile().length() + "|" + describer.size.asLong)
+            }
+            is FileUploadSource.FromResource -> {
+              // zero-copy for disk file
+              FileChannel.open(targetFile, CREATE_NEW, WRITE)
+                .transferFrom(fileSource.value.readableChannel(), 0, fileSource.value.contentLength())
+              Mono.empty()
+            }
+            is FileUploadSource.FromDataBufferPublisher -> {
+              val channel = AsynchronousFileChannel.open(targetFile, CREATE_NEW, WRITE)
+              DataBufferUtils.write(fileSource.value, channel)
+                .map {
+                  DataBufferUtils.release(it)
+                  it
+                }
+                .doOnTerminate { channel.close() }
+                .then()
+            }
+          }.doOnSuccess { logger.info("transfer file data to target file '{}'", targetFile) }
+        } else {
+          Files.move(Paths.get(baseDir, fileStore.path), targetFile)
+          Mono.empty<Void>()
+        }
+
+        mono.then(Mono.defer { getCurrentUser() }).flatMap { modifier ->
+          fileDao.update(id, FileUpdate.Impl(
+            module = describer.module,
+            name = describer.name,
+            type = describer.type,
+            size = describer.size,
+            path = Optional.of(filePath.toString()),
+            modifier = Optional.of(modifier),
+            modifyOn = ts
+          ))
+        }.then()
+      }
   }
 
   override fun download(id: String): Mono<FileDownload> {
