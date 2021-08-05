@@ -80,5 +80,5 @@ interface FileDao {
    *
    * Return true if the actual update was performed, otherwise return false.
    */
-  fun update(id: String, updateInfo: FileUpdate): Mono<Boolean>
+  fun update(id: String, updateInfo: FileUpdateDescriber): Mono<Boolean>
 }

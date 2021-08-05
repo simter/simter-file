@@ -1,7 +1,7 @@
 package tech.simter.file.impl.dao.jpa
 
 import tech.simter.file.core.FileStore
-import tech.simter.file.core.FileUpdate
+import tech.simter.file.core.FileUpdateDescriber
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.kotlin.data.Page
 import java.util.*
@@ -81,5 +81,5 @@ interface FileBlockDao {
    *
    * Return true if the actual update was performed, otherwise return false.
    */
-  fun update(id: String, updateInfo: FileUpdate): Boolean
+  fun update(id: String, updateInfo: FileUpdateDescriber): Boolean
 }

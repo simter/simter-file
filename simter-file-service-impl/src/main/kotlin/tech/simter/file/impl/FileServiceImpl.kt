@@ -199,7 +199,7 @@ class FileServiceImpl @Autowired constructor(
         }
 
         mono.then(Mono.defer { getCurrentUser() }).flatMap { modifier ->
-          fileDao.update(id, FileUpdate.Impl(
+          fileDao.update(id, FileUpdateDescriber.Impl(
             module = describer.module,
             name = describer.name,
             type = describer.type,

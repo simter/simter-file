@@ -12,10 +12,7 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.TABLE_FILE
-import tech.simter.file.core.FileDao
-import tech.simter.file.core.FileStore
-import tech.simter.file.core.FileUpdate
-import tech.simter.file.core.ModuleMatcher
+import tech.simter.file.core.*
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.impl.dao.r2dbc.po.FileStorePo
 import tech.simter.file.standardModuleValue
@@ -178,7 +175,7 @@ class FileDaoImpl @Autowired constructor(
       .all()
   }
 
-  override fun update(id: String, updateInfo: FileUpdate): Mono<Boolean> {
+  override fun update(id: String, updateInfo: FileUpdateDescriber): Mono<Boolean> {
     val conditions = mutableListOf<String>()
     val params = mutableMapOf<String, Any>()
     updateInfo.module.ifPresent { conditions.add("module = :module"); params["module"] = it; }

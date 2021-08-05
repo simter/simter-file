@@ -8,7 +8,7 @@ import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.FileDao
-import tech.simter.file.core.FileUpdate
+import tech.simter.file.core.FileUpdateDescriber
 import tech.simter.file.impl.dao.r2dbc.TestHelper.insert
 import java.util.*
 
@@ -27,7 +27,7 @@ class UpdateMethodImplTest @Autowired constructor(
   fun test() {
     // prepare data
     val file = insert(client = client)
-    val updateInfo = FileUpdate.Impl(module = Optional.of("test"))
+    val updateInfo = FileUpdateDescriber.Impl(module = Optional.of("test"))
 
     // verify and invoke
     dao.update(file.id, updateInfo).test().expectNext(true).verifyComplete()

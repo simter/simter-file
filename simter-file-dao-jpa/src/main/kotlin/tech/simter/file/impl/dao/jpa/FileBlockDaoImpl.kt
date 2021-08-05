@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import tech.simter.file.TABLE_FILE
 import tech.simter.file.core.FileStore
-import tech.simter.file.core.FileUpdate
+import tech.simter.file.core.FileUpdateDescriber
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.impl.dao.jpa.po.FileStorePo
@@ -184,7 +184,7 @@ class FileBlockDaoImpl @Autowired constructor(
   }
 
   @Transactional(readOnly = false)
-  override fun update(id: String, updateInfo: FileUpdate): Boolean {
+  override fun update(id: String, updateInfo: FileUpdateDescriber): Boolean {
     val conditions = mutableListOf<String>()
     val params = mutableMapOf<String, Any>()
     updateInfo.module.ifPresent { conditions.add("module = :module"); params["module"] = it; }

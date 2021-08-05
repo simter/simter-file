@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import reactor.kotlin.test.test
 import tech.simter.file.core.FileDao
-import tech.simter.file.core.FileUpdate
+import tech.simter.file.core.FileUpdateDescriber
 import tech.simter.file.test.TestHelper.randomFileStore
 import tech.simter.reactive.test.jpa.ReactiveDataJpaTest
 import tech.simter.reactive.test.jpa.TestEntityManager
@@ -30,7 +30,7 @@ class UpdateMethodImplTest @Autowired constructor(
     // prepare data
     val file = randomFileStore(ts = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS))
     val id = dao.create(file).block()!!
-    val updateInfo = FileUpdate.Impl(module = Optional.of("test"))
+    val updateInfo = FileUpdateDescriber.Impl(module = Optional.of("test"))
 
     // invoke and verify
     dao.update(id, updateInfo).test().expectNext(true).verifyComplete()

@@ -4,10 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import tech.simter.file.core.FileDao
-import tech.simter.file.core.FileStore
-import tech.simter.file.core.FileUpdate
-import tech.simter.file.core.ModuleMatcher
+import tech.simter.file.core.*
 import tech.simter.kotlin.data.Page
 import tech.simter.reactive.jpa.ReactiveJpaWrapper
 import java.util.*
@@ -76,7 +73,7 @@ class FileDaoImpl @Autowired constructor(
       .flatMap { Mono.just(it) }
   }
 
-  override fun update(id: String, updateInfo: FileUpdate): Mono<Boolean> {
+  override fun update(id: String, updateInfo: FileUpdateDescriber): Mono<Boolean> {
     return wrapper.fromCallable { blockDao.update(id, updateInfo) }
   }
 }
