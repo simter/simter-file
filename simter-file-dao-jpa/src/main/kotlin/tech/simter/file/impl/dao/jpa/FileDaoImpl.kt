@@ -73,7 +73,7 @@ class FileDaoImpl @Autowired constructor(
       .flatMap { Mono.just(it) }
   }
 
-  override fun update(id: String, updateInfo: FileUpdateDescriber): Mono<Boolean> {
-    return wrapper.fromCallable { blockDao.update(id, updateInfo) }
+  override fun update(id: String, info: FileUpdateDescriber): Mono<Boolean> {
+    return wrapper.fromCallable { blockDao.update(id, info) }
   }
 }

@@ -151,13 +151,18 @@ class FileServiceImpl @Autowired constructor(
     return fileDao.get(id)
       .switchIfEmpty(Mono.error(NotFoundException("no file to update was found!")))
       .flatMap { fileStore ->
+        var size = fileStore.size
         val fileDescriber = FileDescriber.Impl(
           module = describer.module.orElse(fileStore.module),
           name = describer.name.orElse(fileStore.name),
           type = describer.type.orElse(fileStore.type),
-          size = describer.size.orElse(fileStore.size)
+          size = size
         )
-        val filePath = filePathGenerator.resolve(describer = fileDescriber, ts = ts, uuid = uuid)
+        val filePath = filePathGenerator.resolve(
+          describer = fileDescriber,
+          ts = if (source.isPresent) ts else Optional.of(fileStore.createOn),
+          uuid = uuid
+        )
         val targetFile = basePath.resolve(filePath)
         val parentDir = targetFile.toFile().parentFile
         if (!parentDir.exists()) {
@@ -166,16 +171,9 @@ class FileServiceImpl @Autowired constructor(
         }
 
         val mono = if (source.isPresent) {
-          val oldFile = Paths.get(baseDir, fileStore.path).toFile()
-          if (oldFile.delete()) logger.info("delete old file '{}'", oldFile.absolutePath)
-
           val fileSource = source.get()
           when (fileSource) {
-            is FileUploadSource.FromFilePart -> fileSource.value.transferTo(targetFile).doOnSuccess {
-              // verify real file size
-              if (verifyRealFileSize && targetFile.toFile().length() != describer.size.asLong)
-                throw IllegalArgumentException("specific update file size not match the real file size " + targetFile.toFile().length() + "|" + describer.size.asLong)
-            }
+            is FileUploadSource.FromFilePart -> fileSource.value.transferTo(targetFile)
             is FileUploadSource.FromResource -> {
               // zero-copy for disk file
               FileChannel.open(targetFile, CREATE_NEW, WRITE)
@@ -192,7 +190,13 @@ class FileServiceImpl @Autowired constructor(
                 .doOnTerminate { channel.close() }
                 .then()
             }
-          }.doOnSuccess { logger.info("transfer file data to target file '{}'", targetFile) }
+          }.doOnSuccess {
+            logger.info("transfer file data to target file '{}'", targetFile)
+            size = targetFile.toFile().length()
+
+            val oldFile = Paths.get(baseDir, fileStore.path).toFile()
+            if (oldFile.delete()) logger.info("delete old file '{}'", oldFile.absolutePath)
+          }
         } else {
           Files.move(Paths.get(baseDir, fileStore.path), targetFile)
           Mono.empty<Void>()
@@ -203,7 +207,7 @@ class FileServiceImpl @Autowired constructor(
             module = describer.module,
             name = describer.name,
             type = describer.type,
-            size = describer.size,
+            size = OptionalLong.of(size),
             path = Optional.of(filePath.toString()),
             modifier = Optional.of(modifier),
             modifyOn = ts

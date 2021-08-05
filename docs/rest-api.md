@@ -102,7 +102,7 @@ $fileData
 **Request:**
 
 ```
-PATCH /id?module=x&name=x&type=x&size=x&input-name=
+PATCH /id?module=x&name=x&type=x&input-name=
 Content-Type: $contentType
 Content-Length: $len
 
@@ -114,7 +114,6 @@ $fileDate
 | module      | false   | business module identity, must url-encoded, starts and ends with '/'
 | name        | false   | file name without extension
 | type        | false   | file extension
-| size        | false   | file size with byte unit
 | len         | true    | request body size with byte unit
 | contentType | false   | support two value: <br>1. `application/octet-stream` for ajax upload<br>2. `multipart/form-data` for traditional form submit
 | input-name  | false   | only for traditional form submit, custom the `<input type=file name=file>` name attribute value, default 'file'

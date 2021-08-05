@@ -36,10 +36,7 @@ class UpdateHandler @Autowired constructor(
     val module = request.queryParam("module")
     val name = request.queryParam("name")
     val type = request.queryParam("type")
-    val size = request.queryParam("size")
-    val fileUpdateDescriber = FileUpdateDescriber.Impl(
-      module = module, name = name, type = type, size = if (size.isPresent) OptionalLong.of(size.get().toLong()) else OptionalLong.empty()
-    )
+    val fileUpdateDescriber = FileUpdateDescriber.Impl(module = module, name = name, type = type)
 
     // verify header
     val headers = request.headers()

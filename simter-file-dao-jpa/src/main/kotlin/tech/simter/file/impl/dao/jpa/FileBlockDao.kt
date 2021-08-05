@@ -81,5 +81,5 @@ interface FileBlockDao {
    *
    * Return true if the actual update was performed, otherwise return false.
    */
-  fun update(id: String, updateInfo: FileUpdateDescriber): Boolean
+  fun update(id: String, info: FileUpdateDescriber): Boolean
 }

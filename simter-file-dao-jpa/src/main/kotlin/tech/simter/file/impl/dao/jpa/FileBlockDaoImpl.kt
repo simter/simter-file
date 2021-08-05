@@ -184,16 +184,16 @@ class FileBlockDaoImpl @Autowired constructor(
   }
 
   @Transactional(readOnly = false)
-  override fun update(id: String, updateInfo: FileUpdateDescriber): Boolean {
+  override fun update(id: String, info: FileUpdateDescriber): Boolean {
     val conditions = mutableListOf<String>()
     val params = mutableMapOf<String, Any>()
-    updateInfo.module.ifPresent { conditions.add("module = :module"); params["module"] = it; }
-    updateInfo.name.ifPresent { conditions.add("name = :name"); params["name"] = it; }
-    updateInfo.type.ifPresent { conditions.add("type = :type"); params["type"] = it; }
-    updateInfo.size.ifPresent { conditions.add("size = :size"); params["size"] = it; }
-    updateInfo.path.ifPresent { conditions.add("path = :path"); params["path"] = it; }
-    updateInfo.modifier.ifPresent { conditions.add("modifier = :modifier"); params["modifier"] = it; }
-    updateInfo.modifyOn.ifPresent { conditions.add("modify_on = :modifyOn"); params["modifyOn"] = it; }
+    info.module.ifPresent { conditions.add("module = :module"); params["module"] = it; }
+    info.name.ifPresent { conditions.add("name = :name"); params["name"] = it; }
+    info.type.ifPresent { conditions.add("type = :type"); params["type"] = it; }
+    info.size.ifPresent { conditions.add("size = :size"); params["size"] = it; }
+    info.path.ifPresent { conditions.add("path = :path"); params["path"] = it; }
+    info.modifier.ifPresent { conditions.add("modifier = :modifier"); params["modifier"] = it; }
+    info.modifyOn.ifPresent { conditions.add("modify_on = :modifyOn"); params["modifyOn"] = it; }
     if (conditions.isEmpty()) return false
     var spec = em.createNativeQuery("update $TABLE_FILE set ${conditions.joinToString(", ")} where id = :id")
       .setParameter("id", id)
