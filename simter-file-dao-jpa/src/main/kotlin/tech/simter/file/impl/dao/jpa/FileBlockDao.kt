@@ -1,6 +1,7 @@
 package tech.simter.file.impl.dao.jpa
 
 import tech.simter.file.core.FileStore
+import tech.simter.file.core.FileUpdateDescriber
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.kotlin.data.Page
 import java.util.*
@@ -74,4 +75,11 @@ interface FileBlockDao {
    * Return the really deleted files count otherwise return 0 if no files deleted.
    */
   fun delete(moduleMatcher: ModuleMatcher): Int
+
+  /**
+   * Update the specific [id] file store information.
+   *
+   * Return true if the actual update was performed, otherwise return false.
+   */
+  fun update(id: String, info: FileUpdateDescriber): Boolean
 }

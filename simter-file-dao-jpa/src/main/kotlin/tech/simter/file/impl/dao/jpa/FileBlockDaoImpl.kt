@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import tech.simter.file.TABLE_FILE
 import tech.simter.file.core.FileStore
+import tech.simter.file.core.FileUpdateDescriber
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.impl.dao.jpa.po.FileStorePo
@@ -180,5 +181,23 @@ class FileBlockDaoImpl @Autowired constructor(
     val sql = "delete from $TABLE_FILE where $condition"
 
     return em.createNativeQuery(sql).setParameter("module", param).executeUpdate()
+  }
+
+  @Transactional(readOnly = false)
+  override fun update(id: String, info: FileUpdateDescriber): Boolean {
+    val conditions = mutableListOf<String>()
+    val params = mutableMapOf<String, Any>()
+    info.module.ifPresent { conditions.add("module = :module"); params["module"] = it; }
+    info.name.ifPresent { conditions.add("name = :name"); params["name"] = it; }
+    info.type.ifPresent { conditions.add("type = :type"); params["type"] = it; }
+    info.size.ifPresent { conditions.add("size = :size"); params["size"] = it; }
+    info.path.ifPresent { conditions.add("path = :path"); params["path"] = it; }
+    info.modifier.ifPresent { conditions.add("modifier = :modifier"); params["modifier"] = it; }
+    info.modifyOn.ifPresent { conditions.add("modify_on = :modifyOn"); params["modifyOn"] = it; }
+    if (conditions.isEmpty()) return false
+    var spec = em.createNativeQuery("update $TABLE_FILE set ${conditions.joinToString(", ")} where id = :id")
+      .setParameter("id", id)
+    params.forEach { spec = spec.setParameter(it.key, it.value)  }
+    return spec.executeUpdate() > 0
   }
 }

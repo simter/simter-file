@@ -12,6 +12,7 @@ import tech.simter.file.rest.webflux.handler.DownloadHandler as DownloadFileHand
 import tech.simter.file.rest.webflux.handler.FindHandler as FindFileViewDataHandler
 import tech.simter.file.rest.webflux.handler.UploadHandler as UploadFileHandler
 import tech.simter.file.rest.webflux.handler.DeleteHandler as DeleteFileHandler
+import tech.simter.file.rest.webflux.handler.UpdateHandler as UpdateFileHandler
 
 /**
  * All configuration for this module.
@@ -30,7 +31,8 @@ class ModuleConfiguration @Autowired constructor(
   private val downloadFileHandler: DownloadFileHandler,
   private val findFileViewDataHandler: FindFileViewDataHandler,
   private val uploadFileHandler: UploadFileHandler,
-  private val deleteFileHandler: DeleteFileHandler
+  private val deleteFileHandler: DeleteFileHandler,
+  private val updateFileHandler: UpdateFileHandler
 ) {
   /** Register a `RouterFunction<ServerResponse>` with all routers for this module */
   @Bean("$PACKAGE.rest.webflux.Routes")
@@ -45,6 +47,8 @@ class ModuleConfiguration @Autowired constructor(
       UploadFileHandler.REQUEST_PREDICATE.invoke(uploadFileHandler::handle)
       // delete file
       DeleteFileHandler.REQUEST_PREDICATE.invoke(deleteFileHandler::handle)
+      // update file
+      UpdateFileHandler.REQUEST_PREDICATE.invoke(updateFileHandler::handle)
     }
   }
 }

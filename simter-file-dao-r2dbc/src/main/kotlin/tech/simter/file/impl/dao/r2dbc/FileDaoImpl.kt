@@ -12,9 +12,7 @@ import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import tech.simter.file.TABLE_FILE
-import tech.simter.file.core.FileDao
-import tech.simter.file.core.FileStore
-import tech.simter.file.core.ModuleMatcher
+import tech.simter.file.core.*
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.impl.dao.r2dbc.po.FileStorePo
 import tech.simter.file.standardModuleValue
@@ -175,5 +173,23 @@ class FileDaoImpl @Autowired constructor(
       .from(TABLE_FILE)
       .matching(query(condition))
       .all()
+  }
+
+  override fun update(id: String, info: FileUpdateDescriber): Mono<Boolean> {
+    val conditions = mutableListOf<String>()
+    val params = mutableMapOf<String, Any>()
+    info.module.ifPresent { conditions.add("module = :module"); params["module"] = it; }
+    info.name.ifPresent { conditions.add("name = :name"); params["name"] = it; }
+    info.type.ifPresent { conditions.add("type = :type"); params["type"] = it; }
+    info.size.ifPresent { conditions.add("size = :size"); params["size"] = it; }
+    info.path.ifPresent { conditions.add("path = :path"); params["path"] = it; }
+    info.modifier.ifPresent { conditions.add("modifier = :modifier"); params["modifier"] = it; }
+    info.modifyOn.ifPresent { conditions.add("modify_on = :modifyOn"); params["modifyOn"] = it; }
+    if (conditions.isEmpty()) return Mono.just(false)
+    var spec = databaseClient
+      .sql("update $TABLE_FILE set ${conditions.joinToString(", ")} where id = :id")
+      .bind("id", id)
+    params.forEach { spec = spec.bind(it.key, it.value)  }
+    return spec.fetch().rowsUpdated().map { it > 0 }
   }
 }
