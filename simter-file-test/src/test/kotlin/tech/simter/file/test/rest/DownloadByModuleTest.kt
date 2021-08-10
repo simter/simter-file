@@ -13,7 +13,6 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.util.FileCopyUtils
-import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.buildContentDisposition
 import tech.simter.file.test.TestHelper.randomModuleValue
 import java.net.URLEncoder.encode
@@ -32,7 +31,7 @@ import java.nio.file.Paths
 class DownloadByModuleTest @Autowired constructor(
   @Value("\${server.context-path}")
   private val contextPath: String,
-  @Value("\${$BASE_DATA_DIR}") private val baseDir: String,
+  @Value("\${data.dir}") private val dataDir: String,
   private val client: WebTestClient,
   private val helper: TestHelper
 ) {
@@ -147,7 +146,7 @@ class DownloadByModuleTest @Autowired constructor(
   }
 
   private fun saveZipFle(data: ByteArray, module: String, fileName: String) {
-    val file = Paths.get(baseDir, module, fileName).toFile()
+    val file = Paths.get(dataDir, module, fileName).toFile()
     if (!file.parentFile.exists()) file.parentFile.mkdirs()
     FileCopyUtils.copy(data, file)
   }
