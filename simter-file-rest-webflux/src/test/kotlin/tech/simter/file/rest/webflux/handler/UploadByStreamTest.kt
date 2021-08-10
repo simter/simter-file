@@ -3,8 +3,12 @@ package tech.simter.file.rest.webflux.handler
 import io.mockk.every
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.APPLICATION_OCTET_STREAM
@@ -17,6 +21,7 @@ import tech.simter.file.core.FileService
 import tech.simter.file.core.FileUploadSource
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import tech.simter.file.test.TestHelper.randomFileStore
+import java.util.stream.Stream
 
 /**
  * Test upload file by ajax.
@@ -25,12 +30,20 @@ import tech.simter.file.test.TestHelper.randomFileStore
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
+@TestInstance(PER_CLASS)
 class UploadByStreamTest @Autowired constructor(
+  @Value("\${simter-file.rest-context-path}")
+  private val contextPath: String,
   private val client: WebTestClient,
   private val service: FileService
 ) {
-  @Test
-  fun success() {
+  private fun urlProvider(): Stream<String> {
+    return Stream.of(contextPath, "$contextPath/")
+  }
+
+  @ParameterizedTest
+  @MethodSource("urlProvider")
+  fun success(url: String) {
     // prepare data
     val name = "logback-test"
     val type = "xml"
@@ -46,12 +59,12 @@ class UploadByStreamTest @Autowired constructor(
 
     // invoke request
     client.post().uri {
-        it.path("/")
-          .queryParam("module", file.module)
-          .queryParam("name", file.name)
-          .queryParam("type", file.type)
-          .build()
-      }
+      it.path(url)
+        .queryParam("module", file.module)
+        .queryParam("name", file.name)
+        .queryParam("type", file.type)
+        .build()
+    }
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(file.size)
       .bodyValue(resource.file.readBytes())
@@ -66,7 +79,7 @@ class UploadByStreamTest @Autowired constructor(
     verify {
       service.upload(
         match {
-          assertThat(it).isEqualToComparingFieldByField(file)
+          assertThat(it).usingRecursiveComparison().isEqualTo(file)
           true
         },
         match {

@@ -17,14 +17,14 @@ import org.springframework.web.reactive.function.server.ServerResponse.badReques
 import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
-import tech.simter.file.core.FileService
 import tech.simter.file.core.FileDescriber
+import tech.simter.file.core.FileService
 import tech.simter.file.core.FileUploadSource
 
 /**
  * The [HandlerFunction] for upload file.
  *
- * Request url pattern `POST /?module=x&name=x&type=x&input-name=x`.
+ * Request url pattern `POST /file?module=x&name=x&type=x&input-name=x`.
  *
  * See [rest-api.md#upload-file](https://github.com/simter/simter-file/blob/master/docs/rest-api.md#1-upload-file)
  *
@@ -59,14 +59,14 @@ class UploadHandler @Autowired constructor(
             else -> {
               val file = files.first() as FilePart
               fileService.upload(
-                  describer = FileDescriber.Impl(
-                    module = module,
-                    name = name,
-                    type = type,
-                    size = if (size != 0L) size else file.headers().contentLength
-                  ),
-                  source = FileUploadSource.FromFilePart(file)
-                )
+                describer = FileDescriber.Impl(
+                  module = module,
+                  name = name,
+                  type = type,
+                  size = if (size != 0L) size else file.headers().contentLength
+                ),
+                source = FileUploadSource.FromFilePart(file)
+              )
                 .flatMap { status(CREATED).bodyValue(it) }
             }
           }
@@ -74,18 +74,18 @@ class UploadHandler @Autowired constructor(
     } else {
       // upload file by directly transmit file binary data through request body
       // contentType value as the real file media type
-      val size = headers.contentLength()
-      if (!size.isPresent) badRequest().bodyValue("missing header 'Content-Length'")
+      val headerSize = headers.contentLength()
+      if (!headerSize.isPresent) badRequest().bodyValue("missing header 'Content-Length'")
       else {
         fileService.upload(
-            describer = FileDescriber.Impl(
-              module = module,
-              name = name,
-              type = type,
-              size = size.asLong
-            ),
-            source = FileUploadSource.FromDataBufferPublisher(request.body(BodyExtractors.toDataBuffers()))
-          )
+          describer = FileDescriber.Impl(
+            module = module,
+            name = name,
+            type = type,
+            size = headerSize.asLong
+          ),
+          source = FileUploadSource.FromDataBufferPublisher(request.body(BodyExtractors.toDataBuffers()))
+        )
           .flatMap { status(CREATED).bodyValue(it) }
       }
     }
@@ -97,6 +97,6 @@ class UploadHandler @Autowired constructor(
 
   companion object {
     /** The default [RequestPredicate] */
-    val REQUEST_PREDICATE: RequestPredicate = POST("/")
+    val REQUEST_PREDICATE: RequestPredicate = POST("").or(POST("/"))
   }
 }
