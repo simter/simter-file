@@ -34,15 +34,16 @@ This will run all the integration test on each rest-api define in <[rest-api.md]
 
 Want to run the integration test on the real server, just add two specific params:
 
-| ParamName  | Remark               | Default value
-|------------|----------------------|---------------
-| server.url | server address       | http://127.0.0.1:9013/file
-| data.dir   | server base data dir | ../simter-file-starter/target/data
+| ParamName           | Remark                 | Default value
+|---------------------|------------------------|---------------
+| server.url          | server address         | http://127.0.0.1:9013
+| server.context-path | operation context-path | /file
+| data.dir            | server base data dir   | ../simter-file-starter/target/data
 
 Such as:
 
 ```shell
-$ mvn clean test -P integration-test -D server.url=http://127.0.0.1:9013/file
+$ mvn clean test -P integration-test -D server.url=http://127.0.0.1:9013
 ```
 
 
