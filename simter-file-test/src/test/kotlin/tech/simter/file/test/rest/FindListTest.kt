@@ -1,31 +1,46 @@
 package tech.simter.file.test.rest
 
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import tech.simter.file.test.TestHelper.randomModuleValue
-import tech.simter.file.test.rest.TestHelper.uploadOneFile
+import java.util.stream.Stream
 
 /**
  * Test find files none-pageable.
  *
  * @author RJ
  */
-@SpringBootTest(classes = [UnitTestConfiguration::class])
+@SpringJUnitConfig(UnitTestConfiguration::class)
+@WebFluxTest
+@TestInstance(PER_CLASS)
 class FindListTest @Autowired constructor(
-  private val client: WebTestClient
+  @Value("\${server.context-path}")
+  private val contextPath: String,
+  private val client: WebTestClient,
+  private val helper: TestHelper
 ) {
-  @Test
-  fun found() {
+  private fun urlProvider(): Stream<String> {
+    return Stream.of(contextPath, "$contextPath/")
+  }
+
+  @ParameterizedTest
+  @MethodSource("urlProvider")
+  fun found(url: String) {
     // prepare data
     val module = randomModuleValue()
-    val r0 = uploadOneFile(client = client, module = module)
-    val r1 = uploadOneFile(client = client, module = module)
+    val r0 = helper.uploadOneFile(module = module)
+    val r1 = helper.uploadOneFile(module = module)
 
     // find it
-    client.get().uri("/?module=$module")
+    client.get().uri("$url?module=$module")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
@@ -45,9 +60,10 @@ class FindListTest @Autowired constructor(
       .jsonPath("$[1].size").isEqualTo(r1.describer.size)
   }
 
-  @Test
-  fun notFound() {
-    client.get().uri("/?module=${randomModuleValue()}")
+  @ParameterizedTest
+  @MethodSource("urlProvider")
+  fun notFound(url: String) {
+    client.get().uri("$url?module=${randomModuleValue()}")
       .exchange()
       .expectStatus().isOk
       .expectBody()
