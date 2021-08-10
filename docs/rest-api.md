@@ -1,18 +1,17 @@
 # simter-file Rest API
 
-The rest context path `{context-path}` could be configured by property `module.rest-context-path.simter-file`.
-Its default value is `/file`. The below URL is all relative to this context path.
-For example a url `/x`, its really path should be `{context-path}/x`.
+The rest context-path could be configured by property `simter-file.rest-context-path`.
+Its default value is `/file`. The below URL use the default context-path value.
 
 Provide rest APIs:
 
-|    | Method | Url                                       | Description
-|----|--------|-------------------------------------------|-------------
-| 1  | POST   | /?module=x&name=x&type=x&input-name=x     | Upload file
-| 2  | PATCH  | /$id?module=x&name=x&type=x&input-name=x  | Update exists file
-| 3  | DELETE | /$id?module                               | Delete file
-| 4  | GET    | /$id?type=x&filename=x&inline&pack        | Download file
-| 5  | GET    | /?pageable&offset=&limit=&module=$search= | Find file-view data
+|    | Method | Url                                            | Description
+|----|--------|------------------------------------------------|-------------
+| 1  | POST   | /file?module=x&name=x&type=x&input-name=x      | Upload file
+| 2  | PATCH  | /file/$id?module=x&name=x&type=x&input-name=x  | Update exists file
+| 3  | DELETE | /file/$id?module                               | Delete file
+| 4  | GET    | /file/$id?type=x&filename=x&inline&pack        | Download file
+| 5  | GET    | /file?pageable&offset=&limit=&module=$search=  | Find file-view data
 
 **$FILE:**
 
@@ -34,7 +33,7 @@ Provide rest APIs:
 **Request:**
 
 ```
-POST /?module=x&name=x&type=x&input-name=
+POST /file?module=x&name=x&type=x&input-name=
 Content-Type: $contentType
 Content-Length: $len
 
@@ -102,7 +101,7 @@ $fileData
 **Request:**
 
 ```
-PATCH /id?module=x&name=x&type=x&input-name=
+PATCH /file/id?module=x&name=x&type=x&input-name=
 Content-Type: $contentType
 Content-Length: $len
 
@@ -150,7 +149,7 @@ Use a traditional `'<input type="file" name="$inputName">'` way to submit a form
 **Request:**
 
 ```
-DELETE /$id?module
+DELETE /file/$id?module
 ```
 
 | Name        | Require | Description
@@ -177,7 +176,7 @@ $deletedCount
 **Request:**
 
 ```
-GET /$id?type=x&filename=x&inline&pack
+GET /file/$id?type=x&filename=x&inline&pack
 ```
 
 | Name        | Require | Description
@@ -265,7 +264,7 @@ from [here](https://www.iana.org/assignments/media-types/media-types.xhtml).
 **Request:**
 
 ```
-GET /?pageable&offset=&limit=&module=$search=
+GET /file?pageable&offset=&limit=&module=$search=
 ```
 
 | Name     | Description
