@@ -1,5 +1,18 @@
 # simter-file changelog
 
+## 2.0.0-M5 - 2021-08-10
+
+- Add update file interface and implementation
+- Polishing rest-api.md to make context-path more clear
+- Refactor rest-unit-test code to use configurable context-path
+    > And also test with default context-path
+- Fixed `GET /file` api implementation
+  > Compatible with `GET /file/`
+- Fixed `POST /file` api implementation
+  > Compatible with `POST /file/`
+- Separate `server.url` to `server.url` and `server.context-path`
+- Refactor rest-integration-test code to use configurable context-path
+
 ## 2.0.0-M4 - 2021-08-03
 
 - Upgrade to simter-3.0.0-M3 (spring-boot-2.5.3)
