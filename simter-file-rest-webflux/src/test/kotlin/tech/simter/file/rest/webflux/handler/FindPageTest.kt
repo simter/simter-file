@@ -4,8 +4,12 @@ import io.mockk.every
 import io.mockk.verify
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
@@ -23,6 +27,7 @@ import tech.simter.kotlin.data.Page.Companion.MappedType.OffsetLimit
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
+import java.util.stream.Stream
 
 /**
  * Test find files pageable.
@@ -31,13 +36,21 @@ import java.util.*
  */
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
+@TestInstance(PER_CLASS)
 class FindPageTest @Autowired constructor(
+  @Value("\${simter-file.rest-context-path}")
+  private val contextPath: String,
   private val json: Json,
   private val client: WebTestClient,
   private val service: FileService
 ) {
-  @Test
-  fun found() {
+  private fun urlProvider(): Stream<String> {
+    return Stream.of(contextPath, "$contextPath/")
+  }
+
+  @ParameterizedTest
+  @MethodSource("urlProvider")
+  fun found(url: String) {
     // prepare data
     val module = randomModuleValue()
     val moduleMatcher = ModuleEquals(module)
@@ -57,7 +70,7 @@ class FindPageTest @Autowired constructor(
     } returns Mono.just(page)
 
     // find it
-    client.get().uri("/?pageable&module=$module&limit=$limit")
+    client.get().uri("$url?pageable&module=$module&limit=$limit")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
@@ -67,8 +80,9 @@ class FindPageTest @Autowired constructor(
     }
   }
 
-  @Test
-  fun notFound() {
+  @ParameterizedTest
+  @MethodSource("urlProvider")
+  fun notFound(url: String) {
     // prepare data
     val module = randomModuleValue()
     val moduleMatcher = ModuleEquals(module)
@@ -83,7 +97,7 @@ class FindPageTest @Autowired constructor(
     every { service.findPage(moduleMatcher) } returns Mono.just(emptyPage)
     val pageJsonString = json.encodeToString(Page.toMap(emptyPage, json, OffsetLimit))
 
-    client.get().uri("/?pageable&module=$module")
+    client.get().uri("$url?pageable&module=$module")
       .exchange()
       .expectStatus().isOk
       .expectBody<String>().isEqualTo(pageJsonString)

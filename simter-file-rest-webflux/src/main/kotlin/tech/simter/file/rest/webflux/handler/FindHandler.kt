@@ -25,7 +25,7 @@ import tech.simter.kotlin.data.Page.Companion.MappedType.OffsetLimit
 /**
  * The [HandlerFunction] for find file-view data.
  *
- * Request url pattern `GET /?pageable&offset=&limit=&module=$search=`.
+ * Request url pattern `GET /file?pageable&offset=&limit=&module=$search=`.
  *
  * See [rest-api.md#upload-file](https://github.com/simter/simter-file/blob/master/docs/rest-api.md#5-find-file-view-data)
  *
@@ -72,6 +72,6 @@ class FindHandler @Autowired constructor(
 
   companion object {
     /** The default [RequestPredicate] */
-    val REQUEST_PREDICATE: RequestPredicate = GET("/")
+    val REQUEST_PREDICATE: RequestPredicate = GET("").or(GET("/"))
   }
 }
