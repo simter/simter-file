@@ -21,7 +21,7 @@ import java.util.*
 /**
  * The [HandlerFunction] for update file.
  *
- * Request url pattern `PATCH /id?module=x&name=x&type=x&input-name=x`.
+ * Request url pattern `PATCH /file/id?module=x&name=x&type=x&input-name=x`.
  *
  * See [rest-api.md#update-file](https://github.com/simter/simter-file/blob/master/docs/rest-api.md#2-update-file)
  *

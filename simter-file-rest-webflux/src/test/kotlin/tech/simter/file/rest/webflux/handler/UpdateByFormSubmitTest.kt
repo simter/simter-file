@@ -5,6 +5,7 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA
@@ -28,6 +29,8 @@ import java.util.*
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
 class UpdateByFormSubmitTest @Autowired constructor(
+  @Value("\${simter-file.rest-context-path}")
+  private val contextPath: String,
   private val client: WebTestClient,
   private val service: FileService
 ) {
@@ -51,7 +54,7 @@ class UpdateByFormSubmitTest @Autowired constructor(
 
     // invoke request
     client.patch().uri {
-      it.path("/${id}")
+      it.path("$contextPath/${id}")
         .queryParam("name", name)
         .queryParam("type", type)
         .build()

@@ -11,7 +11,7 @@ import tech.simter.file.core.ModuleMatcher.Companion.autoModuleMatcher
 /**
  * The [HandlerFunction] for delete file.
  *
- * Request url pattern `DELETE /$id?module`.
+ * Request url pattern `DELETE /file$id?module`.
  *
  * See [rest-api.md#delete-file](https://github.com/simter/simter-file/blob/master/docs/rest-api.md#3-delete-file)
  *

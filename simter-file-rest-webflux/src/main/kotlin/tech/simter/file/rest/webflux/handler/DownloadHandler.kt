@@ -34,7 +34,7 @@ import java.util.*
 /**
  * The [HandlerFunction] for download file.
  *
- * Request url pattern `GET /$id?type=x&filename=x&inline&pack`.
+ * Request url pattern `GET /file/$id?type=x&filename=x&inline&pack`.
  *
  * See [rest-api.md#download-file](https://github.com/simter/simter-file/blob/master/docs/rest-api.md#4-download-file)
  *

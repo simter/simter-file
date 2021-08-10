@@ -1,7 +1,7 @@
 simter-file:
   version: @project.version@
   base-data-dir: target/data
-  rest-context-path: /
+  rest-context-path: /file
 spring.main.banner-mode: 'off'
 logging:
   file.name: target/test.log

@@ -27,6 +27,8 @@ import java.nio.file.Paths
 @WebFluxTest
 @TestPropertySource(properties = ["$BASE_DATA_DIR=target"])
 class DownloadByPathTest @Autowired constructor(
+  @Value("\${simter-file.rest-context-path}")
+  private val contextPath: String,
   @Value("\${$BASE_DATA_DIR}")
   private val baseDir: String,
   private val client: WebTestClient
@@ -40,7 +42,7 @@ class DownloadByPathTest @Autowired constructor(
     val fileSize = Paths.get(baseDir, path).toFile().length()
 
     // 1. download with default attachment mode
-    client.get().uri("/$encodedPath?type=path")
+    client.get().uri("$contextPath/$encodedPath?type=path")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -53,7 +55,7 @@ class DownloadByPathTest @Autowired constructor(
       }
 
     // 2. download with inline mode
-    client.get().uri("/$encodedPath?type=path&inline")
+    client.get().uri("$contextPath/$encodedPath?type=path&inline")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -67,7 +69,7 @@ class DownloadByPathTest @Autowired constructor(
 
     // 3. download with custom filename
     val customFileName = "abc-123-中文.xml"
-    client.get().uri("/$encodedPath?type=path&filename=$customFileName")
+    client.get().uri("$contextPath/$encodedPath?type=path&filename=$customFileName")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -83,7 +85,7 @@ class DownloadByPathTest @Autowired constructor(
   @Test
   fun notFound() {
     val path: String = URLEncoder.encode("not-exists-dir/not-exists-file.xyz", "UTF-8")
-    client.get().uri("/$path?type=path")
+    client.get().uri("$contextPath/$path?type=path")
       .exchange()
       .expectStatus().isNotFound
   }

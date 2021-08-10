@@ -4,6 +4,7 @@ import io.mockk.every
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -22,6 +23,8 @@ import java.util.*
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
 class UpdateOnlyStoreInfoTest @Autowired constructor(
+  @Value("\${simter-file.rest-context-path}")
+  private val contextPath: String,
   private val client: WebTestClient,
   private val service: FileService
 ) {
@@ -37,7 +40,7 @@ class UpdateOnlyStoreInfoTest @Autowired constructor(
 
     // invoke request
     client.patch()
-      .uri { it.path("/${id}").queryParam("module", module).build() }
+      .uri { it.path("$contextPath/${id}").queryParam("module", module).build() }
       .exchange()
       .expectStatus().isNoContent
 

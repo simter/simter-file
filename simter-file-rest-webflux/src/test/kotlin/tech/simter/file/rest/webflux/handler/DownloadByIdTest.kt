@@ -5,6 +5,7 @@ import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.MediaType.APPLICATION_XML
@@ -30,6 +31,8 @@ import java.nio.file.Paths
 @SpringJUnitConfig(UnitTestConfiguration::class)
 @WebFluxTest
 class DownloadByIdTest @Autowired constructor(
+  @Value("\${simter-file.rest-context-path}")
+  private val contextPath: String,
   private val client: WebTestClient,
   private val service: FileService
 ) {
@@ -52,7 +55,7 @@ class DownloadByIdTest @Autowired constructor(
     ))
 
     // 1. download with default attachment mode
-    client.get().uri("/${file.id}")
+    client.get().uri("$contextPath/${file.id}")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -66,7 +69,7 @@ class DownloadByIdTest @Autowired constructor(
     verify(exactly = 1) { service.download(file.id) }
 
     // 2. download with inline mode
-    client.get().uri("/${file.id}?inline")
+    client.get().uri("$contextPath/${file.id}?inline")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -81,7 +84,7 @@ class DownloadByIdTest @Autowired constructor(
 
     // 3. download with custom filename
     val customFileName = "abc-123-中文.xml"
-    client.get().uri("/${file.id}?filename=$customFileName")
+    client.get().uri("$contextPath/${file.id}?filename=$customFileName")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -101,7 +104,7 @@ class DownloadByIdTest @Autowired constructor(
     every { service.download(any()) } returns Mono.empty()
 
     // invoke
-    client.get().uri("/${randomFileId()}")
+    client.get().uri("$contextPath/${randomFileId()}")
       .exchange()
       .expectStatus().isNotFound
 
