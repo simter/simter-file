@@ -60,10 +60,10 @@ class UploadByStreamTest @Autowired constructor(
     // invoke request
     client.post().uri {
       it.path(url)
-        .queryParam("module", file.module)
+        .queryParam("module", "{module}")
         .queryParam("name", file.name)
         .queryParam("type", file.type)
-        .build()
+        .build(file.module)
     }
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(file.size)

@@ -13,7 +13,6 @@ import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import tech.simter.util.RandomUtils.randomString
-import java.net.URLEncoder
 
 /**
  * Test delete file.
@@ -43,11 +42,10 @@ class DeleteTest @Autowired constructor(
   @Test
   fun `delete by module`() {
     val module = "default"
-    val encodeModule = URLEncoder.encode(module, "UTF-8")
     val moduleMatcher = ModuleEquals(module)
     every { service.delete(moduleMatcher) } returns Mono.just(1)
 
-    client.delete().uri("$contextPath/${encodeModule}/?module").exchange()
+    client.delete().uri("$contextPath/{module}/?module", module).exchange()
       .expectStatus().isOk
       .expectBody<String>().isEqualTo("1")
   }

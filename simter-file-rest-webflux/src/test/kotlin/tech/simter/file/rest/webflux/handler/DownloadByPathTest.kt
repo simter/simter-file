@@ -13,7 +13,6 @@ import org.springframework.test.web.reactive.server.expectBody
 import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.buildContentDisposition
 import tech.simter.file.rest.webflux.UnitTestConfiguration
-import java.net.URLEncoder
 import java.nio.file.Paths
 
 /**
@@ -37,12 +36,11 @@ class DownloadByPathTest @Autowired constructor(
   fun found() {
     // prepare data
     val path = "test-classes/logback-test.xml"
-    val encodedPath = URLEncoder.encode(path, "UTF-8")
     val fileName = Paths.get(path).fileName.toString()
     val fileSize = Paths.get(baseDir, path).toFile().length()
 
     // 1. download with default attachment mode
-    client.get().uri("$contextPath/$encodedPath?type=path")
+    client.get().uri("$contextPath/{path}?type=path", path)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -55,7 +53,7 @@ class DownloadByPathTest @Autowired constructor(
       }
 
     // 2. download with inline mode
-    client.get().uri("$contextPath/$encodedPath?type=path&inline")
+    client.get().uri("$contextPath/{path}?type=path&inline", path)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -69,7 +67,7 @@ class DownloadByPathTest @Autowired constructor(
 
     // 3. download with custom filename
     val customFileName = "abc-123-中文.xml"
-    client.get().uri("$contextPath/$encodedPath?type=path&filename=$customFileName")
+    client.get().uri("$contextPath/{path}?type=path&filename=$customFileName", path)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -84,8 +82,8 @@ class DownloadByPathTest @Autowired constructor(
 
   @Test
   fun notFound() {
-    val path: String = URLEncoder.encode("not-exists-dir/not-exists-file.xyz", "UTF-8")
-    client.get().uri("$contextPath/$path?type=path")
+    val path = "not-exists-dir/not-exists-file.xyz"
+    client.get().uri("$contextPath/{path}?type=path", path)
       .exchange()
       .expectStatus().isNotFound
   }
