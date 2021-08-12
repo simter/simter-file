@@ -49,10 +49,10 @@ class UploadByFormSubmitTest @Autowired constructor(
     // upload file
     client.post().uri {
       it.path(url)
-        .queryParam("module", randomModuleValue())
+        .queryParam("module", "{module}")
         .queryParam("name", "logback-test")
         .queryParam("type", "xml")
-        .build()
+        .build(randomModuleValue())
     }
       .contentType(MULTIPART_FORM_DATA) // not explicit set this also ok
       //.contentLength(fileSize) // setting this will truncate the content

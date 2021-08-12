@@ -41,7 +41,7 @@ class FindPageTest @Autowired constructor(
 
     // find it
     val limit = 20
-    client.get().uri("$url?pageable&module=$module&limit=$limit")
+    client.get().uri("$url?pageable&module={module}&limit=$limit", module)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
@@ -69,7 +69,7 @@ class FindPageTest @Autowired constructor(
   fun notFound(url: String) {
     val module = randomModuleValue()
     val limit = 20
-    client.get().uri("$url?pageable&module=$module&limit=$limit")
+    client.get().uri("$url?pageable&module={module}&limit=$limit", module)
       .exchange()
       .expectStatus().isOk
       .expectBody()

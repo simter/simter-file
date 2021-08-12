@@ -38,10 +38,10 @@ class TestHelper @Autowired constructor(
     var id = ""
     client.post().uri {
       it.path(contextPath)
-        .queryParam("module", module)
+        .queryParam("module", "{module}")
         .queryParam("name", name)
         .queryParam("type", type)
-        .build()
+        .build(module)
     }
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(size)
@@ -66,7 +66,7 @@ class TestHelper @Autowired constructor(
   }
 
   fun findAllFileView(module: String): List<FileStore> {
-    val body: String = client.get().uri("$contextPath?module=$module")
+    val body: String = client.get().uri("$contextPath?module={module}", module)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)

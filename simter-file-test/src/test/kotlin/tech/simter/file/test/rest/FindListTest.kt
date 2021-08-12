@@ -40,7 +40,7 @@ class FindListTest @Autowired constructor(
     val r1 = helper.uploadOneFile(module = module)
 
     // find it
-    client.get().uri("$url?module=$module")
+    client.get().uri("$url?module={module}", module)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
@@ -63,7 +63,7 @@ class FindListTest @Autowired constructor(
   @ParameterizedTest
   @MethodSource("urlProvider")
   fun notFound(url: String) {
-    client.get().uri("$url?module=${randomModuleValue()}")
+    client.get().uri("$url?module={module}", randomModuleValue())
       .exchange()
       .expectStatus().isOk
       .expectBody()
