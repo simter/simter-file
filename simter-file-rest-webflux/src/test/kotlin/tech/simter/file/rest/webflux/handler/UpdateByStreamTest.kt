@@ -52,10 +52,10 @@ class UpdateByStreamTest @Autowired constructor(
     // invoke request
     client.patch().uri {
       it.path("$contextPath/${id}")
-        .queryParam("module", module)
+        .queryParam("module", "{module}")
         .queryParam("name", name)
         .queryParam("type", type)
-        .build()
+        .build(module)
     }
       .contentType(APPLICATION_OCTET_STREAM)
       .contentLength(resource.contentLength())

@@ -15,7 +15,6 @@ import org.springframework.test.web.reactive.server.expectBody
 import org.springframework.util.FileCopyUtils
 import tech.simter.file.buildContentDisposition
 import tech.simter.file.test.TestHelper.randomModuleValue
-import java.net.URLEncoder.encode
 import java.nio.file.Paths
 
 /**
@@ -45,7 +44,7 @@ class DownloadByModuleTest @Autowired constructor(
     val file = fileViews.first()
 
     // download with default attachment mode
-    client.get().uri("$contextPath/${encode(module, "UTF-8")}?type=module")
+    client.get().uri("$contextPath/{module}?type=module", module)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_XML)
@@ -70,7 +69,7 @@ class DownloadByModuleTest @Autowired constructor(
 
     // 1. download with default file name "unknown.zip"
     var zipFileSize = 0
-    client.get().uri("$contextPath/${encode(fuzzyModule, "UTF-8")}?type=module")
+    client.get().uri("$contextPath/{fuzzyModule}?type=module", fuzzyModule)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_OCTET_STREAM)
@@ -91,13 +90,13 @@ class DownloadByModuleTest @Autowired constructor(
     // 2. download with custom file name and simple mapper
     zipFileSize = 0
     client.get()
-      //.uri("/${encode(module, "UTF-8")}?type=module&filename=test&mapper=test")
+      //.uri("/{fuzzyModule}?type=module&filename=test&mapper=test")
       .uri {
-        it.path("$contextPath/${encode(fuzzyModule, "UTF-8")}")
+        it.path("$contextPath/{fuzzyModule}")
           .queryParam("type", "module")
           .queryParam("filename", "test")
           .queryParam("mapper", "test")
-          .build()
+          .build(fuzzyModule)
       }
       .exchange()
       .expectStatus().isOk
@@ -118,14 +117,15 @@ class DownloadByModuleTest @Autowired constructor(
 
     // 3. download with custom file name and complex mapper
     zipFileSize = 0
+    val mapper = "{\"${module}a/\": \"test-a\"}"
     client.get()
-      //.uri("/${encode(module, "UTF-8")}?type=module&filename=test&mapper=test")
+      //.uri("/{fuzzyModule}?type=module&filename=test&mapper=test")
       .uri {
-        it.path("$contextPath/${encode(fuzzyModule, "UTF-8")}")
+        it.path("$contextPath/{fuzzyModule}")
           .queryParam("type", "module")
           .queryParam("filename", "test")
-          .queryParam("mapper", encode("{\"${module}a/\": \"test-a\"}", "UTF-8"))
-          .build()
+          .queryParam("mapper", "{mapper}")
+          .build(fuzzyModule, mapper)
       }
       .exchange()
       .expectStatus().isOk
@@ -153,7 +153,7 @@ class DownloadByModuleTest @Autowired constructor(
 
   @Test
   fun notFound() {
-    client.get().uri("$contextPath/${encode("/not-exists-module/", "UTF-8")}?type=module")
+    client.get().uri("$contextPath/{module}?type=module", "/not-exists-module/")
       .exchange()
       .expectStatus().isNotFound
   }

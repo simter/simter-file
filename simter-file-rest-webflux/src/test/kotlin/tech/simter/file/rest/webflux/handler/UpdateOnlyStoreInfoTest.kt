@@ -40,7 +40,7 @@ class UpdateOnlyStoreInfoTest @Autowired constructor(
 
     // invoke request
     client.patch()
-      .uri { it.path("$contextPath/${id}").queryParam("module", module).build() }
+      .uri { it.path("$contextPath/${id}").queryParam("module", "{module}").build(module) }
       .exchange()
       .expectStatus().isNoContent
 

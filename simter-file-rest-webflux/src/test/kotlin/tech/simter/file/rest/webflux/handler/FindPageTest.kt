@@ -70,7 +70,7 @@ class FindPageTest @Autowired constructor(
     } returns Mono.just(page)
 
     // find it
-    client.get().uri("$url?pageable&module=$module&limit=$limit")
+    client.get().uri("$url?pageable&module={module}&limit=$limit", module)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
@@ -97,7 +97,7 @@ class FindPageTest @Autowired constructor(
     every { service.findPage(moduleMatcher) } returns Mono.just(emptyPage)
     val pageJsonString = json.encodeToString(Page.toMap(emptyPage, json, OffsetLimit))
 
-    client.get().uri("$url?pageable&module=$module")
+    client.get().uri("$url?pageable&module={module}", module)
       .exchange()
       .expectStatus().isOk
       .expectBody<String>().isEqualTo(pageJsonString)

@@ -54,7 +54,7 @@ class FindListTest @Autowired constructor(
     every { service.findList(moduleMatcher) } returns Flux.just(f2, f1)
 
     // find it
-    client.get().uri("$url?module=$module")
+    client.get().uri("$url?module={module}", module)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(APPLICATION_JSON)
@@ -71,7 +71,7 @@ class FindListTest @Autowired constructor(
     // mock
     every { service.findList(moduleMatcher) } returns Flux.empty()
 
-    client.get().uri("$url?module=$module")
+    client.get().uri("$url?module={module}", module)
       .exchange()
       .expectStatus().isOk
       .expectBody<String>().isEqualTo("[]")

@@ -65,10 +65,10 @@ class UploadByFormSubmitTest @Autowired constructor(
     // invoke request
     client.post().uri {
       it.path(url)
-        .queryParam("module", file.module)
+        .queryParam("module", "{module}")
         .queryParam("name", file.name)
         .queryParam("type", file.type)
-        .build()
+        .build(file.module)
     }
       .contentType(MULTIPART_FORM_DATA) // not explicit set this also ok
       //.contentLength(fileSize) // setting this will truncate the content
