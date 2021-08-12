@@ -1,5 +1,12 @@
 # simter-file changelog
 
+## 2.0.0-M6 - 2021-08-12
+
+- Fixed uri encode-decode error
+    > Because `request.queryParam(...)` and `request.pathVariable(...)` auto decode param value.  
+    > `client.get|post().uri("$contextPath/{path}/?param={param}", module, param)` can auto encode value.  
+    > If you encode a value to the uri string, this final request url would be double encode.
+
 ## 2.0.0-M5 - 2021-08-10
 
 - Add update file interface and implementation
