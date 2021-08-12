@@ -25,8 +25,6 @@ import tech.simter.file.core.FileDownload.Source.FromPath
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.packFilesTo
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -100,7 +98,7 @@ class DownloadHandler @Autowired constructor(
 
   private fun downloadByPath(request: ServerRequest): Mono<ServerResponse> {
     return downloadByPath(
-      path = decodeParam(request.pathVariable("id")),
+      path = request.pathVariable("id"),
       pack = request.queryParam("pack").isPresent,
       inline = request.queryParam("inline").isPresent,
       customFilename = request.queryParam("filename")
@@ -135,8 +133,7 @@ class DownloadHandler @Autowired constructor(
   }
 
   private fun downloadByModule(request: ServerRequest): Mono<ServerResponse> {
-    val module = decodeParam(request.pathVariable("id"))
-    return fileService.findList(ModuleMatcher.autoModuleMatcher(module))
+    return fileService.findList(ModuleMatcher.autoModuleMatcher(request.pathVariable("id")))
       .collectList()
       .flatMap { fileViews ->
         when {
@@ -167,7 +164,7 @@ class DownloadHandler @Autowired constructor(
                 )
                 .body { outputMessage, _ ->
                   // get custom mapper
-                  val mapperString = decodeParam(request.queryParam("mapper").orElse(""))
+                  val mapperString = request.queryParam("mapper").orElse("")
                   val mapper: Map<String, String> = when {
                     mapperString.isEmpty() -> emptyMap()
                     mapperString.startsWith("{") -> json.decodeFromString(mapperString)
@@ -193,9 +190,5 @@ class DownloadHandler @Autowired constructor(
   companion object {
     /** The default [RequestPredicate] */
     val REQUEST_PREDICATE: RequestPredicate = GET("/{id}")
-
-    fun decodeParam(encodedString: String): String {
-      return URLDecoder.decode(encodedString, StandardCharsets.UTF_8.name())
-    }
   }
 }
