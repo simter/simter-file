@@ -23,7 +23,7 @@ simter-file:
       #  DELETE.roles: ["ADMIN"]
     # All business modules access-control.
     # See tech.simter.file.impl.ModuleConfiguration.moduleAuthorizers(...) bean.
-    # If without these config, fallback to use the upper default config.
+    # If without this config, fallback to use the upper default config.
     modules:
       # a sample for a business module-a access-control.
       # see tech.simter.reactive.security.properties.ModuleAuthorizeProperties
@@ -42,7 +42,7 @@ simter:
   jwt:
     secret-key: @simter.jwt.secret-key@
     require-authorized: @simter.jwt.require-authorized@
-    exclude-paths: /static, /scheduler, /favicon.ico
+    exclude-paths: GET:/file,GET:/static,GET:/favicon.ico
   mongodb:
     enabled-logging-event-listener: ${debug:false}
 spring:

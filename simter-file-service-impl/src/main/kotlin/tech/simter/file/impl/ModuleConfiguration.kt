@@ -48,7 +48,7 @@ class ModuleConfiguration {
   /**
    * Starter could config multiple yml key [MODULES_AUTHORIZER_KEY] to
    * support specific business module access-control when it is necessary,
-   * otherwise all business modules access-control would fallback to use [ModuleConfiguration.defaultModuleAuthorizer].
+   * otherwise all business modules access-control would fall back to use [ModuleConfiguration.defaultModuleAuthorizer].
    */
   @Bean("$MODULES_AUTHORIZER_KEY.properties")
   @ConfigurationProperties(prefix = MODULES_AUTHORIZER_KEY)
