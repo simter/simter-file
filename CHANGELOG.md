@@ -1,5 +1,9 @@
 # simter-file changelog
 
+## 2.0.0-M7 - 2021-11-22
+
+- Upgrade to simter-3.0.0-M5 (spring-boot-2.5.7)
+
 ## 2.0.0-M6 - 2021-08-12
 
 - Fixed uri encode-decode error
