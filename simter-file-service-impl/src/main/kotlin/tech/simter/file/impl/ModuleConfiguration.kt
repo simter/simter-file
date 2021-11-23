@@ -1,14 +1,16 @@
 package tech.simter.file.impl
 
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
+import tech.simter.file.AUTHORIZER_DENY_MESSAGE_KEY
 import tech.simter.file.DEFAULT_MODULE_AUTHORIZER_KEY
-import tech.simter.file.PACKAGE
 import tech.simter.file.MODULES_AUTHORIZER_KEY
+import tech.simter.file.PACKAGE
 import tech.simter.reactive.security.ModuleAuthorizer
 import tech.simter.reactive.security.ReactiveSecurityService
 import tech.simter.reactive.security.properties.ModuleAuthorizeProperties
@@ -23,7 +25,10 @@ import tech.simter.reactive.security.properties.PermissionStrategy.Allow
 @Configuration("$PACKAGE.impl.ModuleConfiguration")
 @EnableConfigurationProperties
 @ComponentScan
-class ModuleConfiguration {
+class ModuleConfiguration(
+  @Value("\${$AUTHORIZER_DENY_MESSAGE_KEY:\"Permission denied on %1\\\$s %2\\\$s\"}")
+  private val denyMessage: String // such as 'Permission denied on User CREATE'
+) {
   /**
    * Starter should config a yml key [DEFAULT_MODULE_AUTHORIZER_KEY] to support default module access-control,
    * otherwise the [ModuleConfiguration.defaultModuleAuthorizer] would allow anything default.
@@ -42,7 +47,11 @@ class ModuleConfiguration {
     properties: ModuleAuthorizeProperties,
     securityService: ReactiveSecurityService
   ): ModuleAuthorizer {
-    return ModuleAuthorizer.create(properties, securityService)
+    return ModuleAuthorizer.create(
+      properties = properties,
+      securityService = securityService,
+      denyMessage = denyMessage
+    )
   }
 
   /**
@@ -62,6 +71,12 @@ class ModuleConfiguration {
     properties: Map<String, ModuleAuthorizeProperties>,
     securityService: ReactiveSecurityService
   ): Map<String, ModuleAuthorizer> {
-    return properties.mapValues { ModuleAuthorizer.create(it.value, securityService) }
+    return properties.mapValues {
+      ModuleAuthorizer.create(
+        properties = it.value,
+        securityService = securityService,
+        denyMessage = denyMessage
+      )
+    }
   }
 }
