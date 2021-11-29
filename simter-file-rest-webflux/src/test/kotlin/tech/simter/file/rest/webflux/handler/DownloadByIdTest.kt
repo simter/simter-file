@@ -8,17 +8,20 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.core.io.ClassPathResource
+import org.springframework.http.MediaType
 import org.springframework.http.MediaType.APPLICATION_XML
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.buildContentDisposition
 import tech.simter.file.core.FileDownload
 import tech.simter.file.core.FileService
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import tech.simter.file.test.TestHelper.randomFileId
 import tech.simter.file.test.TestHelper.randomFileStore
+import tech.simter.util.RandomUtils
 import java.nio.file.Paths
 
 /**
@@ -107,6 +110,23 @@ class DownloadByIdTest @Autowired constructor(
     client.get().uri("$contextPath/${randomFileId()}")
       .exchange()
       .expectStatus().isNotFound
+
+    // verify
+    verify(exactly = 1) { service.download(any()) }
+  }
+
+  @Test
+  fun `failed by permission denied`() {
+    // mock
+    val msg = RandomUtils.randomString()
+    every { service.download(any()) } returns Mono.error(PermissionDeniedException(msg))
+
+    // invoke
+    client.get().uri("$contextPath/${randomFileId()}")
+      .exchange()
+      .expectStatus().isForbidden
+      .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_PLAIN)
+      .expectBody<String>().isEqualTo(msg)
 
     // verify
     verify(exactly = 1) { service.download(any()) }

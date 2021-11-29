@@ -1,21 +1,23 @@
 package tech.simter.file.rest.webflux.handler
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus.FORBIDDEN
-import org.springframework.http.HttpStatus.NOT_FOUND
-import org.springframework.http.MediaType.*
+import org.springframework.http.MediaType.MULTIPART_FORM_DATA
+import org.springframework.http.MediaType.MULTIPART_MIXED
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.http.codec.multipart.Part
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyExtractors
 import org.springframework.web.reactive.function.server.*
-import org.springframework.web.reactive.function.server.ServerResponse.*
+import org.springframework.web.reactive.function.server.ServerResponse.badRequest
+import org.springframework.web.reactive.function.server.ServerResponse.noContent
 import reactor.core.publisher.Mono
 import tech.simter.exception.NotFoundException
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.FileService
 import tech.simter.file.core.FileUpdateDescriber
 import tech.simter.file.core.FileUploadSource
+import tech.simter.reactive.web.Utils.responseForbiddenStatus
+import tech.simter.reactive.web.Utils.responseGoneStatus
 import java.util.*
 
 /**
@@ -70,13 +72,11 @@ class UpdateHandler @Autowired constructor(
       }
     }
 
-    return updateResult.onErrorResume(NotFoundException::class.java) {
-      if (it.message.isNullOrEmpty()) status(NOT_FOUND).build()
-      else status(NOT_FOUND).contentType(TEXT_PLAIN).bodyValue(it.message!!)
-    }.onErrorResume(PermissionDeniedException::class.java) {
-      if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-      else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
-    }
+    return updateResult
+      // resource not exists
+      .onErrorResume(NotFoundException::class.java, ::responseGoneStatus)
+      // permission denied
+      .onErrorResume(PermissionDeniedException::class.java, ::responseForbiddenStatus)
   }
 
   companion object {

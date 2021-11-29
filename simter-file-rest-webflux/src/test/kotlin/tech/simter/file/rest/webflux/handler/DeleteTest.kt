@@ -1,14 +1,17 @@
 package tech.simter.file.rest.webflux.handler
 
 import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.rest.webflux.UnitTestConfiguration
@@ -48,5 +51,20 @@ class DeleteTest @Autowired constructor(
     client.delete().uri("$contextPath/{module}/?module", module).exchange()
       .expectStatus().isOk
       .expectBody<String>().isEqualTo("1")
+  }
+
+  @Test
+  fun `failed by permission denied`() {
+    // mock
+    val id = randomString()
+    val msg = randomString()
+    every { service.delete(id) } returns Mono.error(PermissionDeniedException(msg))
+
+    // invoke and verify
+    client.delete().uri("$contextPath/$id").exchange()
+      .expectStatus().isForbidden
+      .expectHeader().contentTypeCompatibleWith(TEXT_PLAIN)
+      .expectBody<String>().isEqualTo(msg)
+    verify(exactly = 1) { service.delete(id) }
   }
 }

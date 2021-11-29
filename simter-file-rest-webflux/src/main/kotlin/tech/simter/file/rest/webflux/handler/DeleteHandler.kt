@@ -5,8 +5,10 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
 import org.springframework.web.reactive.function.server.ServerResponse.ok
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher.Companion.autoModuleMatcher
+import tech.simter.reactive.web.Utils.responseForbiddenStatus
 
 /**
  * The [HandlerFunction] for delete file.
@@ -29,6 +31,8 @@ class DeleteHandler @Autowired constructor(
     }
 
     return mono.flatMap { ok().bodyValue(it) }
+      // permission denied
+      .onErrorResume(PermissionDeniedException::class.java, ::responseForbiddenStatus)
   }
 
   companion object {
