@@ -13,30 +13,40 @@ simter-file:
     admin-role: ADMIN
     # Default module access-control, mostly for admin permission.
     # See tech.simter.file.impl.ModuleConfiguration.defaultModuleAuthorizer(...) bean.
-    # If without module.authorization.simter-file.modules config, fallback to use this.
+    # If without simter-file.authorization.modules config, fallback to use this.
     default:
+      name: "super"
       defaultPermission: "Allow"   # Allow|Deny
-      #operations:
-      #  READ.roles: ["ADMIN"]
-      #  CREATE.roles: ["ADMIN"]
-      #  UPDATE.roles: ["ADMIN"]
-      #  DELETE.roles: ["ADMIN"]
+      operations:
+        #READ.roles: ["ADMIN"] # default allow all user read
+        CREATE.roles: ["ADMIN"]
+        UPDATE.roles: ["ADMIN"]
+        DELETE.roles: ["ADMIN"]
     # All business modules access-control.
     # See tech.simter.file.impl.ModuleConfiguration.moduleAuthorizers(...) bean.
-    # If without this config, fallback to use the upper default config.
+    # If without this config, fall back to use the upper default config.
     modules:
       # a sample for a business module-a access-control.
       # see tech.simter.reactive.security.properties.ModuleAuthorizeProperties
       module-a:
+        name: "module-a"
         defaultPermission: "Allow"   # Allow|Deny, default Deny
         operations:
           READ:
+            name: "Read"
             roles: ["X_READ1", "X_READ2"]  # actual role identity
             strategy: "Or"                 # And|Or, default Or
-          "[CREATE,UPDATE]":               # create or update
-            roles: ["X_CREATE", "X_UPDATE"]
+          CREATE:
+            name: "Upload"
+            roles: ["X_CREATE"]
             strategy: "And"
-          DELETE.roles: "X_DELETE"
+          UPDATE:
+            name: "Update"
+            roles: ["X_UPDATE"]
+            strategy: "And"
+          DELETE:
+            name: "Delete"
+            roles: "X_DELETE"
       #module-b: ...
 simter:
   jwt:
