@@ -1,5 +1,7 @@
 package tech.simter.file.impl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
@@ -20,6 +22,13 @@ class FileAuthorizer @Autowired constructor(
   @Qualifier("$MODULES_AUTHORIZER_KEY.authorizers")
   private val modulesAuthorizers: Map<String, ModuleAuthorizer>
 ) {
+  private val logger: Logger = LoggerFactory.getLogger(FileAuthorizer::class.java)
+
+  init {
+    logger.warn("defaultAuthorizer={}, modulesAuthorizers={}",
+      defaultModuleAuthorizer, modulesAuthorizers.keys.joinToString(","))
+  }
+
   /**
    * Determine whether the system-context has permission to do the specific [operation] on the [module].
    *
