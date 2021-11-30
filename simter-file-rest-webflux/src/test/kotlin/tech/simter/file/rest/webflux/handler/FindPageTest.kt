@@ -12,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
 import org.springframework.http.MediaType.APPLICATION_JSON
+import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.FileService
 import tech.simter.file.core.FileStore
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
@@ -24,6 +26,7 @@ import tech.simter.file.test.TestHelper.randomFileStore
 import tech.simter.file.test.TestHelper.randomModuleValue
 import tech.simter.kotlin.data.Page
 import tech.simter.kotlin.data.Page.Companion.MappedType.OffsetLimit
+import tech.simter.util.RandomUtils.randomString
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit.SECONDS
 import java.util.*
@@ -101,6 +104,28 @@ class FindPageTest @Autowired constructor(
       .exchange()
       .expectStatus().isOk
       .expectBody<String>().isEqualTo(pageJsonString)
+    verify(exactly = 1) { service.findPage(moduleMatcher) }
+  }
+
+  @ParameterizedTest
+  @MethodSource("urlProvider")
+  fun `failed by permission denied`(url: String) {
+    // prepare data
+    val module = randomModuleValue()
+    val moduleMatcher = ModuleEquals(module)
+
+    // mock
+    val msg = randomString()
+    every { service.findPage(moduleMatcher) } returns Mono.error(PermissionDeniedException(msg))
+
+    // invoke request
+    client.get().uri("$url?pageable&module={module}", module)
+      .exchange()
+      .expectStatus().isForbidden
+      .expectHeader().contentTypeCompatibleWith(TEXT_PLAIN)
+      .expectBody<String>().isEqualTo(msg)
+
+    // verify
     verify(exactly = 1) { service.findPage(moduleMatcher) }
   }
 }

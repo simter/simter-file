@@ -25,6 +25,7 @@ import tech.simter.file.core.FileDownload.Source.FromPath
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher
 import tech.simter.file.packFilesTo
+import tech.simter.reactive.web.Utils.responseForbiddenStatus
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
@@ -59,10 +60,8 @@ class DownloadHandler @Autowired constructor(
     return response
       // not found
       .switchIfEmpty(notFound().build())
-      .onErrorResume(PermissionDeniedException::class.java) {
-        if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-        else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
-      }
+      // permission denied
+      .onErrorResume(PermissionDeniedException::class.java, ::responseForbiddenStatus)
   }
 
   private fun downloadById(request: ServerRequest): Mono<ServerResponse> {

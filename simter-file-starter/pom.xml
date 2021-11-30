@@ -15,7 +15,7 @@
   <properties>
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <simter.jwt.secret-key>simter-demo</simter.jwt.secret-key>
-    <simter.jwt.require-authorized>false</simter.jwt.require-authorized>
+    <simter.jwt.require-authorized>true</simter.jwt.require-authorized>
 
     <!-- database:jdbc|r2dbc -->
     <db.platform>none</db.platform>

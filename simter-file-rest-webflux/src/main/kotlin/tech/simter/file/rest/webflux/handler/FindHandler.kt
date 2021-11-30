@@ -3,9 +3,7 @@ package tech.simter.file.rest.webflux.handler
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus.FORBIDDEN
 import org.springframework.http.MediaType.APPLICATION_JSON
-import org.springframework.http.MediaType.TEXT_PLAIN
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.HandlerFunction
 import org.springframework.web.reactive.function.server.RequestPredicate
@@ -13,7 +11,6 @@ import org.springframework.web.reactive.function.server.RequestPredicates.GET
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.ok
-import org.springframework.web.reactive.function.server.ServerResponse.status
 import reactor.core.publisher.Mono
 import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.DEFAULT_MODULE_VALUE
@@ -21,6 +18,7 @@ import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher.Companion.autoModuleMatcher
 import tech.simter.kotlin.data.Page
 import tech.simter.kotlin.data.Page.Companion.MappedType.OffsetLimit
+import tech.simter.reactive.web.Utils.responseForbiddenStatus
 
 /**
  * The [HandlerFunction] for find file-view data.
@@ -64,10 +62,9 @@ class FindHandler @Autowired constructor(
         .flatMap { ok().contentType(APPLICATION_JSON).bodyValue(json.encodeToString(it)) }
     }
 
-    return queryResult.onErrorResume(PermissionDeniedException::class.java) {
-      if (it.message.isNullOrEmpty()) status(FORBIDDEN).build()
-      else status(FORBIDDEN).contentType(TEXT_PLAIN).bodyValue(it.message!!)
-    }
+    return queryResult
+      // permission denied
+      .onErrorResume(PermissionDeniedException::class.java, ::responseForbiddenStatus)
   }
 
   companion object {

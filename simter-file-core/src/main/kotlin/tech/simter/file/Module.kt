@@ -22,7 +22,7 @@ const val PACKAGE = "tech.simter.file"
 /**
  * The default admin role code to manage this module.
  *
- * Can be override through yam key [ADMIN_ROLE_KEY] value.
+ * Can be overridden through yam key [ADMIN_ROLE_KEY] value.
  */
 const val DEFAULT_ADMIN_ROLE = "ADMIN"
 
@@ -34,6 +34,9 @@ const val ADMIN_ROLE_KEY = "simter-file.authorization.admin-role"
 
 /** Default module authorizer key */
 const val DEFAULT_MODULE_AUTHORIZER_KEY = "simter-file.authorization.default"
+
+/** Authorization deny-message key */
+const val AUTHORIZER_DENY_MESSAGE_KEY = "simter-file.authorization.deny-message"
 
 /** All business modules' authorizer key */
 const val MODULES_AUTHORIZER_KEY = "simter-file.authorization.modules"

@@ -1,5 +1,31 @@
 # simter-file changelog
 
+## 2.0.0-M8 - 2021-11-29
+
+- Default enable  jwt in starter
+- Implements file permission on each service api method, and config by such as:
+    ```yaml
+    simter-file:
+      authorization:
+        default:
+          name: "super"
+          defaultPermission: "Allow"   # Allow|Deny
+          operations:
+            CREATE.roles: ["ADMIN"]
+            #...
+        modules:
+          module-a:
+            name: "module-a"
+            defaultPermission: "Allow"
+            operations:
+              READ:
+                name: "Read"
+                roles: ["X_READ1", "X_READ2"]
+                strategy: "Or"
+              #...
+          #module-b: ...
+    ```
+
 ## 2.0.0-M7 - 2021-11-22
 
 - Upgrade to simter-3.0.0-M5 (spring-boot-2.5.7)

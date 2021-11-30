@@ -1,6 +1,7 @@
 package tech.simter.file.rest.webflux.handler
 
 import io.mockk.every
+import io.mockk.verify
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.TestInstance
@@ -10,16 +11,19 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest
+import org.springframework.http.MediaType
 import org.springframework.http.MediaType.APPLICATION_JSON
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.test.web.reactive.server.expectBody
 import reactor.core.publisher.Flux
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.core.FileService
 import tech.simter.file.core.ModuleMatcher.ModuleEquals
 import tech.simter.file.rest.webflux.UnitTestConfiguration
 import tech.simter.file.test.TestHelper.randomFileStore
 import tech.simter.file.test.TestHelper.randomModuleValue
+import tech.simter.util.RandomUtils.randomString
 import java.util.stream.Stream
 
 /**
@@ -75,5 +79,27 @@ class FindListTest @Autowired constructor(
       .exchange()
       .expectStatus().isOk
       .expectBody<String>().isEqualTo("[]")
+  }
+
+  @ParameterizedTest
+  @MethodSource("urlProvider")
+  fun `failed by permission denied`(url: String) {
+    // prepare data
+    val module = randomModuleValue()
+    val moduleMatcher = ModuleEquals(module)
+
+    // mock
+    val msg = randomString()
+    every { service.findList(moduleMatcher) } returns Flux.error(PermissionDeniedException(msg))
+
+    // invoke request
+    client.get().uri("$url?module={module}", module)
+      .exchange()
+      .expectStatus().isForbidden
+      .expectHeader().contentTypeCompatibleWith(MediaType.TEXT_PLAIN)
+      .expectBody<String>().isEqualTo(msg)
+
+    // verify
+    verify(exactly = 1) { service.findList(moduleMatcher) }
   }
 }

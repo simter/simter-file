@@ -15,8 +15,8 @@ interface FilePathGenerator {
    * Generate a file path within the [ts] and [uuid] context.
    *
    * If the return value is not a absolute path, means it is a path relative to the basePath.
-   * Whether resolve to a absolute path dependents on the implementation.
-   * If resolve to a absolute path, you should make sure the application has
+   * Whether resolve to an absolute path dependents on the implementation.
+   * If resolve to an absolute path, you should make sure the application has
    * the right permission to access it.
    *
    * @param[describer] the file describer
