@@ -6,6 +6,7 @@ import tech.simter.util.RandomUtils.randomInt
 import tech.simter.util.RandomUtils.randomString
 import java.nio.file.Paths
 import java.time.OffsetDateTime
+import java.time.temporal.ChronoUnit
 
 /**
  * Some common tools for simter-file unit test.
@@ -30,7 +31,7 @@ object TestHelper {
     name: String = randomString(8),
     type: String = "xyz",
     size: Long = randomInt().toLong(),
-    ts: OffsetDateTime = OffsetDateTime.now()
+    ts: OffsetDateTime = OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS)
   ): FileStore {
     val path = Paths.get(
       if (module.startsWith("/")) module.substring(1) else module,
