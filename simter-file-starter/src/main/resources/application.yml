@@ -16,11 +16,11 @@ simter-file:
     default:
       name: "file"
       defaultPermission: "Allow"   # Allow|Deny
-      operations:
+      #operations:
         #READ.roles: ["ADMIN"] # default allow all user read
-        CREATE.roles: ["ADMIN"]
-        UPDATE.roles: ["ADMIN"]
-        DELETE.roles: ["ADMIN"]
+        #CREATE.roles: ["ADMIN"]
+        #UPDATE.roles: ["ADMIN"]
+        #DELETE.roles: ["ADMIN"]
     # All business modules access-control.
     # See tech.simter.file.impl.ModuleConfiguration.moduleAuthorizers(...) bean.
     # If without this config, fall back to use the upper default config.
