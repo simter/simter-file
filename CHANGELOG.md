@@ -1,5 +1,14 @@
 # simter-file changelog
 
+## 2.0.0 - 2022-06-27
+
+- Upgrade to simter-3.0.0 (spring-boot-2.7.0 and Java-17)
+- Upgrade embedded mongo config (spring-boot-2.7 drops Embedded Mongo 3.4 supported)
+- Upgrade `r2dbc-postgresql` groupId to `org.postgresql` (Since 0.9+)
+- Fixed kotlin-1.6+ compile error on @JvmField
+- Set starter to no r2dbc-pool config by default
+- Add r2dbc-pool dependency to real database profile
+
 ## 2.0.0-M8 - 2021-11-29
 
 - Default enable  jwt in starter
