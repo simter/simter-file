@@ -17,7 +17,7 @@ import javax.persistence.*
 @Serializable
 data class FileStorePo(
   @Id @Column(nullable = false, length = 36)
-  override val id: String,
+  private val id: String,
   @Column(nullable = false)
   override val module: String,
   @Column(nullable = false, length = 100)
@@ -39,6 +39,9 @@ data class FileStorePo(
   @Serializable(with = IsoOffsetDateTimeSerializer::class)
   override val modifyOn: OffsetDateTime
 ) : FileStore {
+  override fun getId() = id
+  override fun isNew() = true
+
   @get:JsonIgnore
   @get:Transient
   override val fileName: String

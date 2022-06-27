@@ -15,7 +15,7 @@
   <properties>
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <simter.jwt.secret-key>simter-demo</simter.jwt.secret-key>
-    <simter.jwt.require-authorized>true</simter.jwt.require-authorized>
+    <simter.jwt.require-authorized>false</simter.jwt.require-authorized>
 
     <!-- database:jdbc|r2dbc -->
     <db.platform>none</db.platform>
@@ -151,6 +151,7 @@
       </activation>
       <properties>
         <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
+        <simter.jwt.require-authorized>true</simter.jwt.require-authorized>
         <db.init-mode>never</db.init-mode>
         <logging.file>${project.artifactId}-${project.version}.log</logging.file>
       </properties>
@@ -230,6 +231,11 @@
         </dependency>
         <dependency>
           <groupId>io.r2dbc</groupId>
+          <artifactId>r2dbc-pool</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.postgresql</groupId>
           <artifactId>r2dbc-postgresql</artifactId>
           <scope>runtime</scope>
         </dependency>
@@ -252,6 +258,11 @@
         <dependency>
           <groupId>tech.simter.file</groupId>
           <artifactId>simter-file-dao-r2dbc</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.r2dbc</groupId>
+          <artifactId>r2dbc-pool</artifactId>
           <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -278,6 +289,11 @@
         <dependency>
           <groupId>tech.simter.file</groupId>
           <artifactId>simter-file-dao-r2dbc</artifactId>
+          <scope>runtime</scope>
+        </dependency>
+        <dependency>
+          <groupId>io.r2dbc</groupId>
+          <artifactId>r2dbc-pool</artifactId>
           <scope>runtime</scope>
         </dependency>
         <dependency>

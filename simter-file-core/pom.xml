@@ -31,6 +31,10 @@
       <groupId>org.jetbrains.kotlinx</groupId>
       <artifactId>kotlinx-serialization-json</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-commons</artifactId>
+    </dependency>
   </dependencies>
   <url>https://github.com/simter/simter-file/tree/master/simter-file-core</url>
   <scm>

@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import org.reactivestreams.Publisher
 import org.springframework.core.io.Resource
 import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.data.domain.Persistable
 import org.springframework.http.codec.multipart.FilePart
 import tech.simter.kotlin.serialization.serializer.javatime.iso.IsoOffsetDateTimeSerializer
 import java.nio.file.Path
@@ -55,15 +56,15 @@ interface FilePack : FileDescriber {
 }
 
 /** The file store information */
-interface FileStore : FileDescriber, FilePack {
-  val id: String
+interface FileStore : FileDescriber, FilePack, Persistable<String> {
   val creator: String
   val modifier: String
+  override fun getId(): String
 
   @Serializable
   @SerialName("FileStore")
   data class Impl(
-    override val id: String,
+    private  val id: String,
     override val module: String,
     override val name: String,
     override val type: String,
@@ -75,7 +76,10 @@ interface FileStore : FileDescriber, FilePack {
     override val modifier: String,
     @Serializable(with = IsoOffsetDateTimeSerializer::class)
     override val modifyOn: OffsetDateTime
-  ) : FileStore
+  ) : FileStore {
+    override fun getId() = id
+    override fun isNew() = true
+  }
 }
 
 /** The file upload source for load the real file data */
