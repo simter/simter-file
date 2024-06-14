@@ -52,6 +52,7 @@ server:
   port: @server.port@
   servlet.context-path: /
   server-header: @project.artifactId@-@project.version@
+  max-http-header-size: 16384
 logging:
   file: @logging.file@
   #pattern.dateformat: yyyy-MM-dd HH:mm:ss.SSS,GMT+8:00
