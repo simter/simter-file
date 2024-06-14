@@ -109,14 +109,7 @@ class FileServiceImpl @Autowired constructor(
         Mono.empty()
       }
       is FileUploadSource.FromDataBufferPublisher -> {
-        val channel = AsynchronousFileChannel.open(targetFile, CREATE_NEW, WRITE)
-        DataBufferUtils.write(source.value, channel)
-          .map {
-            DataBufferUtils.release(it)
-            it
-          }
-          .doOnTerminate { channel.close() }
-          .then()
+        DataBufferUtils.write(source.value, targetFile, CREATE_NEW, WRITE)
       }
     }.doOnSuccess { logger.info("transfer file data to target file '{}'", targetFile) }
 
