@@ -1,5 +1,11 @@
 # simter-file changelog
 
+## 0.10.1 2022-06-14
+
+- Fixed 413 error on large header size
+- Throw error if create parent dirs failed
+- Use default auto close `DataBufferUtils.write` method
+
 ## 0.10.0 2020-06-28
 
 - Add a module simter-file-service-impl
