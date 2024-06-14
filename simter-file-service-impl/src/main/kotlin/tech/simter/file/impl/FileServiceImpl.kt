@@ -7,6 +7,7 @@ import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import tech.simter.exception.PermissionDeniedException
 import tech.simter.file.BASE_DATA_DIR
 import tech.simter.file.core.*
 import tech.simter.kotlin.data.Page
@@ -85,8 +86,13 @@ class FileServiceImpl @Autowired constructor(
     val targetFile = basePath.resolve(filePath)
     val parentDir = targetFile.toFile().parentFile
     if (!parentDir.exists()) {
-      parentDir.mkdirs()
-      logger.info("create directory '{}'", parentDir)
+      val result = parentDir.mkdirs()
+      if (!result) {
+        val msg = "create dir '$parentDir' failed. may be missing permission."
+        logger.error(msg)
+        throw PermissionDeniedException(msg)
+      }
+      logger.info("create directory '{}' {}", parentDir, result)
     }
 
     // 2. store file data to physical disk
